@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="top.tangyh.lamp.system.mapper.application.DefApplicationMapper">
+    <sql id="A_Column_List">
+        a
+        .
+        id
+        ,a.created_by, a.created_time, a.updated_by, a.updated_time, a.redirect,
+        a.app_key, a.app_secret, a.name, a.version, a.type, a.introduce, a.remark, a.url, a.is_visible, a.sort_value
+    </sql>
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="ResultVOMap" type="top.tangyh.lamp.system.vo.result.application.DefApplicationResultVO"
+               extends="BaseResultMap">
+        <result column="expiration_time" jdbcType="TIMESTAMP" property="expirationTime"/>
+    </resultMap>
+
+    <select id="findApplicationListByTenantId" parameterType="java.util.Map" resultMap="BaseResultMap">
+        SELECT
+        <include refid="A_Column_List"/>
+        from def_application a left join
+        def_tenant_application_rel ta on a.id = ta.application_id
+        where ta.tenant_id = #{tenantId}
+    </select>
+
+    <!-- 查询我的应用 -->
+    <select id="findMyApplication" parameterType="java.util.Map" resultMap="ResultVOMap">
+        select<include refid="A_Column_List"/>, tar.expiration_time from def_application a left join
+        def_tenant_application_rel tar on a.id =
+        tar.application_id
+        <where>
+            <if test="name != null and name != ''">
+                and a.name like #{name, typeHandler=fullLike}
+            </if>
+            and a.is_visible = 1
+            and tar.tenant_id = #{tenantId}
+        </where>
+        order by a.sort_value asc
+    </select>
+    <!-- 查询推荐应用 -->
+    <select id="findRecommendApplication" parameterType="java.util.Map" resultMap="ResultVOMap">
+        SELECT
+        <include refid="A_Column_List"/>
+        from def_application a
+        <where>
+            <if test="name != null and name != ''">
+                and a.name like #{name, typeHandler=fullLike}
+            </if>
+            and
+            a.is_visible = 1 and a.id not in (
+            select application_id from def_tenant_application_rel tar
+            where a.id = tar.application_id and tar.tenant_id = #{tenantId}
+            )
+        </where>
+        ORDER BY a.sort_value asc
+    </select>
+
+    <!-- 查询员工拥有的应用 -->
+    <select id="findApplicationByEmployeeId" parameterType="java.util.Map" resultType="java.lang.Long">
+        select DISTINCT tar.application_id
+        from def_tenant_application_rel tar
+                 INNER JOIN def_user_tenant_rel utr on tar.tenant_id = utr.tenant_id
+        where utr.id = #{employeeId}
+          and (tar.expiration_time >= #{now} or tar.expiration_time is null)
+    </select>
+
+</mapper>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="top.tangyh.lamp.system.mapper.tenant.DefTenantMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="top.tangyh.lamp.system.entity.tenant.DefTenant">
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="created_time" jdbcType="TIMESTAMP" property="createdTime"/>
+        <result column="created_by" jdbcType="BIGINT" property="createdBy"/>
+        <result column="updated_time" jdbcType="TIMESTAMP" property="updatedTime"/>
+        <result column="updated_by" jdbcType="BIGINT" property="updatedBy"/>
+        <result column="code" jdbcType="VARCHAR" property="code"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="abbreviation" jdbcType="VARCHAR" property="abbreviation"/>
+        <result column="classify" jdbcType="VARCHAR" property="classify"/>
+        <result column="credit_code" jdbcType="VARCHAR" property="creditCode"/>
+        <result column="contact_person" jdbcType="VARCHAR" property="contactPerson"/>
+        <result column="contact_phone" jdbcType="VARCHAR" property="contactPhone"/>
+        <result column="contact_email" jdbcType="VARCHAR" property="contactEmail"/>
+        <result column="province_id" jdbcType="BIGINT" property="provinceId"/>
+        <result column="province_name" jdbcType="VARCHAR" property="provinceName"/>
+        <result column="city_id" jdbcType="BIGINT" property="cityId"/>
+        <result column="city_name" jdbcType="VARCHAR" property="cityName"/>
+        <result column="district_id" jdbcType="BIGINT" property="districtId"/>
+        <result column="district_name" jdbcType="VARCHAR" property="districtName"/>
+        <result column="address" jdbcType="VARCHAR" property="address"/>
+        <result column="register_type" jdbcType="VARCHAR" property="registerType"/>
+        <result column="connect_type" jdbcType="VARCHAR" property="connectType"/>
+        <result column="state" jdbcType="BIT" property="state"/>
+        <result column="status" jdbcType="VARCHAR" property="status"/>
+        <result column="readonly_" jdbcType="BIT" property="readonly"/>
+        <result column="created_name" jdbcType="VARCHAR" property="createdName"/>
+        <result column="expiration_time" jdbcType="TIMESTAMP" property="expirationTime"/>
+        <result column="describe_" jdbcType="VARCHAR" property="describe"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id
+        , created_time, created_by, updated_time, updated_by, classify,
+        code, name, abbreviation, credit_code, contact_person, contact_phone, contact_email, province_id, province_name, city_id, city_name, district_id, district_name, address, register_type, connect_type, state, status, readonly_, created_name, expiration_time, describe_
+    </sql>
+
+</mapper>

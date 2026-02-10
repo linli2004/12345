@@ -1,0 +1,41 @@
+package top.tangyh.lamp.base.manager.user.impl;
+
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import top.tangyh.basic.base.manager.impl.SuperCacheManagerImpl;
+import top.tangyh.basic.model.cache.CacheKeyBuilder;
+import top.tangyh.lamp.base.entity.user.BaseEmployee;
+import top.tangyh.lamp.base.manager.user.BaseEmployeeManager;
+import top.tangyh.lamp.base.mapper.user.BaseEmployeeMapper;
+import top.tangyh.lamp.base.vo.query.user.BaseEmployeePageQuery;
+import top.tangyh.lamp.base.vo.result.user.BaseEmployeeResultVO;
+import top.tangyh.lamp.common.cache.base.user.EmployeeCacheKeyBuilder;
+
+/**
+ * <p>
+ * 通用业务实现类
+ * 员工
+ * </p>
+ *
+ * @author zuihou
+ * @date 2021-10-18
+ * @create [2021-10-18] [zuihou] [代码生成器生成]
+ */
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class BaseEmployeeManagerImpl extends SuperCacheManagerImpl<BaseEmployeeMapper, BaseEmployee> implements BaseEmployeeManager {
+
+    @Override
+    protected CacheKeyBuilder cacheKeyBuilder() {
+        return new EmployeeCacheKeyBuilder();
+    }
+
+    @Override
+    public IPage<BaseEmployeeResultVO> selectPageResultVO(IPage<BaseEmployee> page, Wrapper<BaseEmployee> wrapper, BaseEmployeePageQuery model) {
+        return baseMapper.selectPageResultVO(page, wrapper, model);
+    }
+}

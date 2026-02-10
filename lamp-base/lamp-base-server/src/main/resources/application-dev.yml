@@ -1,0 +1,51 @@
+
+magic-api:
+  #配置web页面入口
+  web: /magic/web
+  resource: #配置存储方式
+    type: database # 配置存储在数据库中
+    tableName: magic_api_file # 数据库中的表名
+    #    datasource: master #指定数据源（单数据源时无需配置，多数据源时默认使用主数据源，如果存在其他数据源中需要指定。）
+    prefix: /magic-api # key前缀
+    readonly: false # 是否是只读模式
+  #  security: # 安全配置
+  #    username: admin # 登录用的用户名
+  #    password: 123456 # 登录用的密码
+  prefix: /magic-api
+  editor-config: classpath:./magic-editor-config.js #编辑器配置
+  date-pattern: # 配置请求参数支持的日期格式
+    - yyyy-MM-dd
+    - yyyy-MM-dd HH:mm:ss
+    - yyyy/MM/dd
+    - yyyy/MM/dd HH:mm:ss
+    - yyyyMMddHHmmss
+    - yyyyMMdd
+  response: |- #配置JSON格式，格式为magic-script中的表达式
+    {
+      code: code,
+      msg: message,
+      data,
+      timestamp,
+      requestTime,
+      executeTime,
+    }
+  response-code:
+    success: 0 #执行成功的code值
+    invalid: 10400 #参数验证未通过的code值
+    exception: 10500 #执行出现异常的code值
+  backup: #备份相关配置
+    enable: true #是否启用
+    max-history: -1 #备份保留天数，-1为永久保留
+    table-name: magic_api_backup #使用数据库存储备份时的表名
+  #  crud: # CRUD相关配置
+  #    logic-delete-column: delete_mark #逻辑删除列
+  #    logic-delete-value: 1 #逻辑删除值
+  page:
+    size: size # 页大小的参数名称
+    page: limit # 页码的参数名称
+    default-page: 1 # 未传页码时的默认首页
+    default-size: 10 # 未传页大小时的默认页大小
+  debug:
+    timeout: 60 # 断点超时时间，默认60s
+  throw-exception: true # 执行出错时，异常将抛出处理
+  auto-import-module: db,http,log,request,response,env,magic #自动导入模块

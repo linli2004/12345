@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="top.tangyh.lamp.sop.mapper.SopDocInfoMapper">
+    <!--
+        代码生成器 by 2025-05-11 10:34:55
+        自定义sql建议在base文件夹同级新建ext文件夹，并新建同名且同namespace的xml进行编写。方便修改字段时，重新生成此文件。
+    -->
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="top.tangyh.lamp.sop.entity.SopDocInfo">
+        <id column="id" property="id"/>
+        <result column="doc_app_id" property="docAppId"/>
+        <result column="doc_title" property="docTitle"/>
+        <result column="doc_id" property="docId"/>
+        <result column="doc_code" property="docCode"/>
+        <result column="doc_type" property="docType"/>
+        <result column="source_type" property="sourceType"/>
+        <result column="doc_version" property="docVersion"/>
+        <result column="doc_name" property="docName"/>
+        <result column="description" property="description"/>
+        <result column="is_folder" property="isFolder"/>
+        <result column="is_publish" property="isPublish"/>
+        <result column="parent_id" property="parentId"/>
+        <result column="created_time" property="createdTime"/>
+        <result column="updated_time" property="updatedTime"/>
+        <result column="created_by" property="createdBy"/>
+        <result column="updated_by" property="updatedBy"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, doc_app_id, doc_title, doc_id, doc_code, doc_type, 
+        source_type, doc_version, doc_name, description, is_folder, is_publish, 
+        parent_id, created_time, updated_time, created_by, updated_by
+    </sql>
+
+
+</mapper>

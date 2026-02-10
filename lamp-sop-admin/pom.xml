@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>top.tangyh.lamp</groupId>
+        <artifactId>lamp-dependencies-parent</artifactId>
+        <version>${revision}</version>
+        <relativePath>../lamp-dependencies-parent/pom.xml</relativePath>
+    </parent>
+
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>top.tangyh.lamp</groupId>
+    <artifactId>lamp-sop-admin</artifactId>
+    <name>${project.artifactId}</name>
+    <description>SOP管理端服务</description>
+    <packaging>pom</packaging>
+
+    <!-- 同步于 by 2025年12月17日： 修复rest请求构建WebContext参数时请求头Headers获取不全问题 -->
+    <modules>
+        <module>lamp-sop-admin-facade</module>
+        <module>lamp-sop-admin-server</module>
+        <module>lamp-sop-admin-entity</module>
+        <module>lamp-sop-admin-biz</module>
+        <module>lamp-sop-admin-controller</module>
+    </modules>
+</project>

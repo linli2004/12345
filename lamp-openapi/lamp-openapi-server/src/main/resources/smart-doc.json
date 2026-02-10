@@ -1,0 +1,13 @@
+{
+  "framework": "sop",
+  "outPath": "target/doc",
+  "projectName": "灯灯开放平台",
+  "packageFilters": "top.tangyh.lamp.openapi.open.*",
+  "openUrl": "http://localhost:7700/api",
+  "appToken": "b70cb3c381fd4956a1f895d88b40830e",
+  "debugEnvName": "本地环境",
+  "debugEnvUrl": "http://127.0.0.1:18760",
+  "tornaDebug": true,
+  "replace": true,
+  "showValidation": false
+}

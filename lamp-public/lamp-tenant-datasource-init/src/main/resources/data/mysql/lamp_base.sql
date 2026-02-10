@@ -1,0 +1,2 @@
+-- 内置角色
+INSERT INTO `base_role`(`id`, `category`, `type_`, `name`, `code`, `remarks`, `state`, `readonly_`, `created_by`, `created_time`, `updated_by`, `updated_time`, `created_org_id`) VALUES (1452496398934081536, '10', '10', '租户管理员', 'TENANT_ADMIN', '租户管理员', b'1', b'0', 2, '2021-10-25 12:45:02', 2, '2021-10-26 18:25:50', 0);

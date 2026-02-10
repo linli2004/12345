@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="top.tangyh.lamp.system.mapper.tenant.DefTenantMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="ResultVOResultMap" type="top.tangyh.lamp.system.vo.result.tenant.DefTenantResultVO"
+               extends="BaseResultMap">
+        <result column="is_default" jdbcType="BIT" property="isDefault"/>
+        <result column="employee_state" jdbcType="BIT" property="employeeState"/>
+        <result column="employee_id" jdbcType="BIGINT" property="employeeId"/>
+    </resultMap>
+
+    <select id="listTenantByUserId" resultMap="ResultVOResultMap">
+        select t.*, utr.id as employee_id, utr.is_default, utr.state as employee_state
+        from def_tenant t
+                 left join def_user_tenant_rel utr on t.id = utr.tenant_id
+        where utr.user_id = #{userId}
+        ORDER BY utr.is_default desc, utr.state desc, t.state desc
+    </select>
+
+</mapper>

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>top.tangyh.lamp</groupId>
+        <artifactId>lamp-dependencies-parent</artifactId>
+        <version>${revision}</version>
+        <relativePath>../lamp-dependencies-parent/pom.xml</relativePath>
+    </parent>
+
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>top.tangyh.lamp</groupId>
+    <artifactId>lamp-openapi</artifactId>
+    <name>${project.artifactId}</name>
+    <description>开放接口服务</description>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>lamp-openapi-facade</module>
+        <module>lamp-openapi-server</module>
+        <module>lamp-openapi-entity</module>
+        <module>lamp-openapi-biz</module>
+        <module>lamp-openapi-controller</module>
+    </modules>
+
+    <build>
+        <plugins>
+            <!-- 文档推送 -->
+            <plugin>
+                <groupId>com.ly.smart-doc</groupId>
+                <artifactId>smart-doc-maven-plugin</artifactId>
+                <version>${smart-doc.version}</version>
+                <configuration>
+                    <!--指定生成文档的使用的配置文件-->
+                    <configFile>./src/main/resources/smart-doc.json</configFile>
+                    <!--指定项目名称-->
+                    <projectName>${project.artifactId}</projectName>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>top.tangyh.basic</groupId>
+                        <artifactId>sop-service-support</artifactId>
+                        <version>${lamp-util.version}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+        </plugins>
+    </build>
+</project>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="top.tangyh.lamp.sop.mapper.SopApiInfoMapper">
+
+    <resultMap id="ResultResultMap" type="top.tangyh.lamp.sop.vo.result.SopApiInfoResultVO" extends="BaseResultMap">
+    </resultMap>
+
+    <select id="groupPage" resultMap="ResultResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from sop_api_info a
+        <where>
+            ${ew.sqlSegment}
+            <if test="query.groupId != null">
+                and exists (
+                select 1 from sop_perm_group_permission p where p.api_id = a.id
+                and p.group_id = #{query.groupId}
+                )
+            </if>
+        </where>
+    </select>
+</mapper>

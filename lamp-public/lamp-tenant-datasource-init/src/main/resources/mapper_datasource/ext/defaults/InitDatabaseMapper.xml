@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="top.tangyh.lamp.tenant.mapper.InitDatabaseMapper">
+
+
+    <!--
+    id 相同时，IDEA 会有报错提示，但由于databaseId 不同， 会根据数据库类型选择用哪个配置
+    搜索代码片段： public DatabaseIdProvider getDatabaseIdProvider()
+    -->
+    <update id="grant" databaseId="oracle" parameterType="java.util.Map">
+        grant
+        create
+        session,
+        create table, create sequence, create view,resource to
+            ${database}
+    </update>
+    <update id="grant" parameterType="java.util.Map">
+        select 1
+    </update>
+
+    <update id="createDatabase" databaseId="dm" parameterType="java.util.Map">
+        CREATE SCHEMA ${database} AUTHORIZATION "${username}"
+    </update>
+    <update id="createDatabase" databaseId="sqlserver" parameterType="java.util.Map">
+        IF
+        DB_ID (N'${database}') IS NULL
+        CREATE
+            DATABASE
+            ${database}
+            COLLATE
+                Chinese_PRC_CI_AS
+    </update>
+    <update id="createDatabase" databaseId="oracle" parameterType="java.util.Map">
+        create
+            user
+            ${database}
+                identified
+                    by
+                    ${database}
+    </update>
+    <update id="createDatabase" parameterType="java.util.Map">
+        CREATE
+            DATABASE IF NOT EXISTS
+            ${database}
+            DEFAULT
+                CHARACTER
+                SET
+                utf8mb4
+            COLLATE
+                utf8mb4_general_ci
+    </update>
+
+    <delete id="dropDatabase" parameterType="java.util.Map">
+        DROP
+            DATABASE IF EXISTS
+            ${database}
+    </delete>
+    <delete id="dropDatabase" databaseId="dm" parameterType="java.util.Map">
+        DROP SCHEMA IF EXISTS ${database} CASCADE
+    </delete>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Tenant_Column_List">
+        id
+        , created_time, created_by, updated_time, updated_by,
+        code, name, abbreviation, credit_code, contact_person, contact_phone, contact_email, province_id, province_name, city_id, city_name, district_id, district_name, address, register_type, connect_type, state, status, readonly_, created_name, expiration_time, describe_
+    </sql>
+
+    <select id="selectTenantCodeList" resultType="java.lang.Long">
+        SELECT id FROM def_tenant where status in
+        <foreach close=")" collection="status" item="item" open="(" separator=",">
+            #{item}
+        </foreach>
+        <if test="connectType != null and connectType != ''">
+            and connect_type = #{connectType, jdbcType=VARCHAR}
+        </if>
+    </select>
+    <select id="selectDataSourceConfig"
+            resultType="top.tangyh.lamp.tenant.model.DefDatasourceConfigBO">
+        SELECT dc.id,
+        dc.created_time,
+        dc.created_by,
+        dc.updated_time,
+        dc.updated_by,
+        dc.name,
+        dc.username,
+        dc.password,
+        dc.url,
+        dc.driver_class_name driverClassName,
+        t.id as tenantId,
+        tdc.db_prefix as dbPrefix
+        from def_datasource_config dc
+        INNER JOIN def_tenant_ds_c_rel tdc on dc.id = tdc.datasource_config_id
+        INNER JOIN def_tenant t on t.id = tdc.tenant_id
+        where t.status in
+        <foreach close=")" collection="status" item="item" open="(" separator=",">
+            #{item}
+        </foreach>
+        and t.connect_type = #{connectType}
+    </select>
+
+    <select id="selectDataSourceConfigByTenantId"
+            resultType="top.tangyh.lamp.tenant.model.DefDatasourceConfigBO">
+        select dc.id,
+               dc.created_time,
+               dc.created_by,
+               dc.updated_time,
+               dc.updated_by,
+               dc.name,
+               dc.username,
+               dc.password,
+               dc.url,
+               dc.driver_class_name driverClassName,
+               tdc.tenant_id as     tenantId,
+               tdc.db_prefix as     dbPrefix
+        from def_datasource_config dc
+                 inner join def_tenant_ds_c_rel tdc on dc.id = tdc.datasource_config_id
+        where tdc.tenant_id = #{tenantId}
+    </select>
+    <select id="getTenantById" resultType="top.tangyh.lamp.tenant.model.DefTenantBO">
+        SELECT
+        <include refid="Tenant_Column_List"/>
+        FROM def_tenant where id = #{tenantId}
+    </select>
+</mapper>

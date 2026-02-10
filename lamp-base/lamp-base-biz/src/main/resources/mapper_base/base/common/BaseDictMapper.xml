@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="top.tangyh.lamp.base.mapper.common.BaseDictMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="top.tangyh.lamp.base.entity.common.BaseDict">
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="created_by" jdbcType="BIGINT" property="createdBy"/>
+        <result column="created_time" jdbcType="TIMESTAMP" property="createdTime"/>
+        <result column="updated_by" jdbcType="BIGINT" property="updatedBy"/>
+        <result column="updated_time" jdbcType="TIMESTAMP" property="updatedTime"/>
+        <result column="parent_id" jdbcType="BIGINT" property="parentId"/>
+        <result column="parent_key" jdbcType="VARCHAR" property="parentKey"/>
+        <result column="key_" jdbcType="VARCHAR" property="key"/>
+        <result column="classify" jdbcType="CHAR" property="classify"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="state" jdbcType="BIT" property="state"/>
+        <result column="remark" jdbcType="VARCHAR" property="remark"/>
+        <result column="sort_value" jdbcType="INTEGER" property="sortValue"/>
+        <result column="icon" jdbcType="VARCHAR" property="icon"/>
+        <result column="css_style" jdbcType="VARCHAR" property="cssStyle"/>
+        <result column="css_class" jdbcType="VARCHAR" property="cssClass"/>
+        <result column="created_org_id" jdbcType="BIGINT" property="createdOrgId"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id
+        , created_by, created_time, updated_by, updated_time,
+        parent_id, parent_key, key_, classify, name, state, remark, sort_value, icon, css_style, css_class, created_org_id
+    </sql>
+
+</mapper>
