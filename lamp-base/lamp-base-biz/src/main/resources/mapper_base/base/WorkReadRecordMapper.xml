@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="top.tangyh.lamp.base.mapper.WorkReadRecordMapper">
+
+    <select id="selectExistingRecords" resultType="top.tangyh.lamp.base.entity.WorkReadRecord">
+        SELECT read_key, role_code, read_random_str, true as readStatus
+        FROM work_read_record
+        WHERE (read_key, role_code, read_random_str) IN
+        <foreach collection="list" item="item" open="(" separator="," close=")">
+            (#{item.readKey}, #{item.roleCode}, #{item.readRandomStr})
+        </foreach>
+    </select>
+</mapper>
