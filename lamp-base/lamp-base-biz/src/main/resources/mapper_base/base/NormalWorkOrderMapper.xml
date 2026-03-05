@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="top.tangyh.lamp.base.mapper.NormalWorkOrderMapper">
+<!--
+    代码生成器 by 2026-03-03 11:47:40
+    自定义sql建议在base文件夹同级新建ext文件夹，并新建同名且同namespace的xml进行编写。方便修改字段时，重新生成此文件。
+-->
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="top.tangyh.lamp.base.entity.NormalWorkOrder">
+        <id column="id" property="id" />
+        <result column="order_no" property="orderNo" />
+        <result column="order_title" property="orderTitle" />
+        <result column="order_content" property="orderContent" />
+        <result column="appeal_type" property="appealType" />
+        <result column="order_category_id" property="orderCategoryId" />
+        <result column="order_category_name" property="orderCategoryName" />
+        <result column="region_assign_time" property="regionAssignTime" />
+        <result column="region_deadline" property="regionDeadline" />
+        <result column="urgency" property="urgency" />
+        <result column="source_dept_name" property="sourceDeptName" />
+        <result column="channel" property="channel" />
+        <result column="helper_name" property="helperName" />
+        <result column="contact_phone" property="contactPhone" />
+        <result column="gender" property="gender" />
+        <result column="incident_location" property="incidentLocation" />
+        <result column="address" property="address" />
+        <result column="is_difficult" property="isDifficult" />
+        <result column="difficult_content" property="difficultContent" />
+        <result column="host_dept_name" property="hostDeptName" />
+        <result column="assist_dept_name" property="assistDeptName" />
+        <result column="cc_dept_name" property="ccDeptName" />
+        <result column="settle_condition" property="settleCondition" />
+        <result column="last_operate_time" property="lastOperateTime" />
+        <result column="created_by" property="createdBy" />
+        <result column="created_time" property="createdTime" />
+        <result column="updated_by" property="updatedBy" />
+        <result column="updated_time" property="updatedTime" />
+        <result column="created_org_id" property="createdOrgId" />
+        <result column="allow_back" property="allowBack" />
+        <result column="allow_back_time" property="allowBackTime" />
+        <result column="allow_comment" property="allowComment" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, order_no, order_title, order_content, appeal_type, order_category_id, 
+        order_category_name, region_assign_time, region_deadline, urgency, source_dept_name, channel, 
+        helper_name, contact_phone, gender, incident_location, address, is_difficult, 
+        difficult_content, host_dept_name, assist_dept_name, cc_dept_name, settle_condition, last_operate_time, 
+        created_by, created_time, updated_by, updated_time, created_org_id, allow_back, allow_back_time, allow_comment
+    </sql>
+    <sql id="Base_Column_List2">
+        t3.id, t3.order_no, t3.order_title, t3.order_content, t3.appeal_type, t3.order_category_id, t3.
+        order_category_name, t3.region_assign_time, t3.region_deadline, t3.urgency, t3.source_dept_name, t3.channel, t3.
+        helper_name, t3.contact_phone, t3.gender, t3.incident_location, t3.address, t3.is_difficult, t3.
+        difficult_content, t3.host_dept_name, t3.assist_dept_name, t3.cc_dept_name, t3.settle_condition, t3.last_operate_time, t3.
+        created_by, t3.created_time, t3.updated_by, t3.updated_time, t3.created_org_id, t3.allow_back, t3.allow_back_time, t3.allow_comment
+    </sql>
+    <resultMap id="ResultVOResultMap" type="top.tangyh.lamp.base.vo.result.NormalWorkOrderResultVO"
+               extends="top.tangyh.lamp.base.mapper.NormalWorkOrderMapper.BaseResultMap">
+    </resultMap>
+
+    <select id="selectPageResultVO" resultMap="ResultVOResultMap">
+        select
+        <include refid="Base_Column_List2"/>
+        FROM
+            normal_work_order t3
+        RIGHT JOIN (
+            SELECT
+                DISTINCT t2.order_no as task_order_no
+            FROM
+                normal_work_order_task t2
+            WHERE
+                t2.current_node_code IN ( SELECT t1.node_code FROM role_status_mapping t1 WHERE t1.display_status = #{model.displayStatus} AND t1.role_code = #{model.roleCode} )
+        <if test='model.roleCode != null and model.roleCode != "1"'>AND t2.lead_unit_id = #{model.leadUnitId} </if>
+        and t2.valid = '1' <if test='model.roleCode != null and model.roleCode == "1"'> and t2.level = '0'</if>
+            ) t4 ON t3.order_no = t4.task_order_no
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+</mapper>
