@@ -110,32 +110,10 @@ public class NormalWorkOrderController extends SuperController<NormalWorkOrderSe
     }
 
 
-    @PostMapping("/export-complex-zip")
-    public void exportComplexZip(@RequestBody List<Long> idList, HttpServletResponse response) throws IOException {
-        response.setContentType("application/zip");
-        response.setHeader("Content-Disposition", "attachment; filename=\"project_package.zip\"");
-        List<NormalWorkOrder> normalWorkOrders = superService.listByIds(idList);
-        try (ZipOutputStream zos = new ZipOutputStream(response.getOutputStream())) {
-
-            ZipEntry excelEntry = new ZipEntry("工单.xlsx");
-            zos.putNextEntry(excelEntry);
-            zos.write(new byte[]{/* Excel 字节数据 */});
-            zos.closeEntry();
-
-            for (NormalWorkOrder normalWorkOrder : normalWorkOrders) {
-                String folderName = normalWorkOrder.getOrderNo() + "/";
-                ZipEntry directoryEntry = new ZipEntry(folderName);
-                zos.putNextEntry(directoryEntry);
-                zos.closeEntry();
-
-                ZipEntry wordEntry = new ZipEntry(folderName + "test.docx");
-                zos.putNextEntry(wordEntry);
-                zos.write(new byte[]{});
-                zos.closeEntry();
-            }
-
-            zos.finish();
-        }
+    @PostMapping("/exportTaskZip")
+    @Operation(summary = "普通工单导出压缩包", description = "普通工单导出压缩包")
+    public void exportTaskZip(@RequestBody List<Long> idList, HttpServletResponse response){
+        superService.exportTaskZip(idList, response);
     }
 }
 
