@@ -3,15 +3,13 @@ package top.tangyh.lamp.base.controller;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.compress.utils.Lists;
 import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import top.tangyh.basic.annotation.log.WebLog;
 import top.tangyh.basic.base.R;
 import top.tangyh.basic.base.controller.SuperController;
@@ -34,6 +32,8 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  * <p>
@@ -109,6 +109,34 @@ public class NormalWorkOrderController extends SuperController<NormalWorkOrderSe
         return R.success(page);
     }
 
+
+    @PostMapping("/export-complex-zip")
+    public void exportComplexZip(@RequestBody List<Long> idList, HttpServletResponse response) throws IOException {
+        response.setContentType("application/zip");
+        response.setHeader("Content-Disposition", "attachment; filename=\"project_package.zip\"");
+        List<NormalWorkOrder> normalWorkOrders = superService.listByIds(idList);
+        try (ZipOutputStream zos = new ZipOutputStream(response.getOutputStream())) {
+
+            ZipEntry excelEntry = new ZipEntry("工单.xlsx");
+            zos.putNextEntry(excelEntry);
+            zos.write(new byte[]{/* Excel 字节数据 */});
+            zos.closeEntry();
+
+            for (NormalWorkOrder normalWorkOrder : normalWorkOrders) {
+                String folderName = normalWorkOrder.getOrderNo() + "/";
+                ZipEntry directoryEntry = new ZipEntry(folderName);
+                zos.putNextEntry(directoryEntry);
+                zos.closeEntry();
+
+                ZipEntry wordEntry = new ZipEntry(folderName + "test.docx");
+                zos.putNextEntry(wordEntry);
+                zos.write(new byte[]{});
+                zos.closeEntry();
+            }
+
+            zos.finish();
+        }
+    }
 }
 
 

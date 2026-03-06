@@ -80,6 +80,7 @@ public class NormalWorkOrderTask extends Entity<Long> {
      */
     @TableField(value = "created_org_id", condition = EQUAL)
     private Long createdOrgId;
+    private String readRandomStr;
 
 
 }
