@@ -6,13 +6,16 @@ import com.alibaba.excel.read.listener.PageReadListener;
 import com.alibaba.fastjson2.JSON;
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.bind.annotation.RequestBody;
 import top.tangyh.basic.base.request.PageParams;
 import top.tangyh.basic.base.service.impl.SuperServiceImpl;
 import top.tangyh.basic.database.mybatis.conditions.Wraps;
@@ -31,10 +34,15 @@ import top.tangyh.lamp.base.vo.result.NormalWorkOrderResultVO;
 import top.tangyh.lamp.base.vo.update.NormalWorkOrderTaskActionVO;
 import top.tangyh.lamp.common.constant.DsConstant;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  * <p>
@@ -140,6 +148,40 @@ public class NormalWorkOrderServiceImpl extends SuperServiceImpl<NormalWorkOrder
                     }
                 });
         return superManager.selectPageResultVO(page, wrap, model);
+    }
+
+    @Override
+    @SneakyThrows
+    public void exportTaskZip(@RequestBody List<Long> idList, HttpServletResponse response) {
+        String fileName = URLEncoder.encode("项目资料包.zip", StandardCharsets.UTF_8).replaceAll("\\+", "%20");
+        response.setContentType("application/zip");
+        response.setHeader("Content-Disposition", "attachment; filename=" + fileName);
+        List<NormalWorkOrder> normalWorkOrders = superManager.listByIds(idList);
+        List<NormalWorkOrderExcel> normalWorkOrderExcels = BeanUtil.copyToList(normalWorkOrders, NormalWorkOrderExcel.class);
+        try (ZipOutputStream zos = new ZipOutputStream(response.getOutputStream())) {
+
+            ZipEntry excelEntry = new ZipEntry("工单.xlsx");
+            zos.putNextEntry(excelEntry);
+            EasyExcel.write(zos, NormalWorkOrderExcel.class)
+                    .autoCloseStream(Boolean.FALSE)
+                    .sheet("Sheet1")
+                    .doWrite(normalWorkOrderExcels);
+            zos.closeEntry(); // 完成当前文件的写入
+
+            for (NormalWorkOrder normalWorkOrder : normalWorkOrders) {
+                String folderName = normalWorkOrder.getOrderNo() + "/";
+                ZipEntry directoryEntry = new ZipEntry(folderName);
+                zos.putNextEntry(directoryEntry);
+                zos.closeEntry();
+
+                ZipEntry wordEntry = new ZipEntry(folderName + "test.docx");
+                zos.putNextEntry(wordEntry);
+                zos.write(new byte[]{});
+                zos.closeEntry();
+            }
+
+            zos.finish();
+        }
     }
 }
 
