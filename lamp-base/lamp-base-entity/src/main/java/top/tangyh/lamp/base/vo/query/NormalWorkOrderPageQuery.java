@@ -184,4 +184,13 @@ public class NormalWorkOrderPageQuery implements Serializable {
 
     @Schema(description = "处办中的联合查询的关键字")
     private String keyword;
+
+    @Schema(description = "临近超期的小时（如填48,就是48小时内将要过期的，包含已过期的）")
+    private String expireHour;
+
+    @Schema(description = "协办或抄送单位查询 1-co(协办) 2-cc(抄送)")
+    private String coOrccType;
+
+    @Schema(description = "co或cc的id")
+    private Long coOrccId;
 }

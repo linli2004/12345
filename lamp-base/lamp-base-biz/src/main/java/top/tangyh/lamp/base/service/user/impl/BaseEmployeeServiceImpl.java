@@ -64,6 +64,11 @@ public class BaseEmployeeServiceImpl extends SuperCacheServiceImpl<BaseEmployeeM
     }
 
     @Override
+    public List<BaseEmployeeResultVO> getEmployeeIdByRoleCodeAndOrgId(String roleCode, Long orgId) {
+        return superManager.getEmployeeIdByRoleCodeAndOrgId(roleCode, orgId);
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean saveBatch(Collection<BaseEmployee> entityList) {
         return superManager.saveBatch(entityList);

@@ -65,6 +65,7 @@ public class NormalWorkOrderServiceImpl extends SuperServiceImpl<NormalWorkOrder
                 try {
                     log.info("读取到一条数据{}", JSON.toJSONString(cell));
                     NormalWorkOrder normalWorkOrder = BeanUtil.toBean(cell, NormalWorkOrder.class);
+                    normalWorkOrder.setIsDifficult(!"普通" .equals(cell.getIsDifficult()));
                     //查询是否存在此工单编号；如果是重复的工单编号 就更新
                     List<NormalWorkOrder> orderTempList = superManager.list(Wraps.<NormalWorkOrder>lbQ().eq(NormalWorkOrder::getOrderNo, normalWorkOrder.getOrderNo()));
                     if (!CollectionUtils.isEmpty(orderTempList)) normalWorkOrder.setId(orderTempList.get(0).getId());

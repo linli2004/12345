@@ -72,12 +72,29 @@
             FROM
                 normal_work_order_task t2
             WHERE
-                t2.current_node_code IN ( SELECT t1.node_code FROM role_status_mapping t1 WHERE t1.display_status = #{model.displayStatus} AND t1.role_code = #{model.roleCode} )
-        <if test='model.roleCode != null and model.roleCode != "1"'>AND t2.lead_unit_id = #{model.leadUnitId} </if>
-        and t2.valid = '1' <if test='model.roleCode != null and model.roleCode == "1"'> and t2.level = '0'</if>
+                <choose>
+                    <when test='model.coOrccType != null and model.coOrccType!= ""'>
+                        t2.current_node_code IN ( SELECT t1.node_code FROM role_status_mapping t1 WHERE t1.display_status = #{model.displayStatus} AND t1.role_code = '1' )
+                        and t2.valid = '1' and t2.level = '0'
+                        <if test="model.coOrccId != null and model.coOrccType eq '1'.toString()">
+                            AND FIND_IN_SET(#{model.coOrccId}, t2.co_unit_ids)
+                        </if>
+                        <if test="model.coOrccId != null and model.coOrccType eq '2'.toString()">
+                            AND FIND_IN_SET(#{model.coOrccId}, t2.cc_unit_ids)
+                        </if>
+                    </when>
+                    <otherwise>
+                        t2.current_node_code IN ( SELECT t1.node_code FROM role_status_mapping t1 WHERE t1.display_status = #{model.displayStatus} AND t1.role_code = #{model.roleCode} )
+                        <if test='model.roleCode != null and (model.roleCode != "1" and model.roleCode != "0")'>AND t2.lead_unit_id = #{model.leadUnitId} </if>
+                        and t2.valid = '1' <if test="model.roleCode != null and (model.roleCode eq '1'.toString() or model.roleCode eq '0'.toString())"> and t2.level = '0'</if>
+                    </otherwise>
+                </choose>
             ) t4 ON t3.order_no = t4.task_order_no
         <where>
             ${ew.sqlSegment}
+            <if test='model.expireHour != null'>
+            AND TIMESTAMPDIFF(HOUR, NOW(), t3.region_deadline) &lt;= #{model.expireHour}
+            </if>
         </where>
     </select>
 </mapper>

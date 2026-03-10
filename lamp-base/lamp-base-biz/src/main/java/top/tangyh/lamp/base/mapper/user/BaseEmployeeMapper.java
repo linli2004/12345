@@ -10,6 +10,8 @@ import top.tangyh.lamp.base.entity.user.BaseEmployee;
 import top.tangyh.lamp.base.vo.query.user.BaseEmployeePageQuery;
 import top.tangyh.lamp.base.vo.result.user.BaseEmployeeResultVO;
 
+import java.util.List;
+
 /**
  * <p>
  * Mapper 接口
@@ -32,4 +34,6 @@ public interface BaseEmployeeMapper extends SuperMapper<BaseEmployee> {
     IPage<BaseEmployeeResultVO> selectPageResultVO(IPage<BaseEmployee> page,
                                                    @Param(Constants.WRAPPER) Wrapper<BaseEmployee> wrapper,
                                                    @Param("model") BaseEmployeePageQuery model);
+
+    List<BaseEmployeeResultVO> getEmployeeIdByRoleCodeAndOrgId(@Param("roleCode") String roleCode, @Param("orgId") Long orgId);
 }

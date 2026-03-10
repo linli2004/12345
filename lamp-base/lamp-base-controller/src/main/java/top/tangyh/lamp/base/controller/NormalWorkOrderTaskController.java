@@ -49,7 +49,6 @@ public class NormalWorkOrderTaskController extends SuperController<NormalWorkOrd
         return echoService;
     }
 
-
     /**
      * 镇级：普通工单批量签收/单个签收
      */
@@ -59,6 +58,17 @@ public class NormalWorkOrderTaskController extends SuperController<NormalWorkOrd
     public R signNormalWorkOrder(@RequestBody NormalWorkOrderTaskActionVO signVO) {
         ArgumentAssert.notEmpty(signVO.getOrderNoList(), "请选择工单");
         return R.success(superService.batchSignNormalWorkOrder(signVO));
+    }
+
+    /**
+     * 镇级：普通工单批量设置工单分类
+     */
+    @Operation(summary = "镇级：普通工单批量设置工单分类", description = "镇级：普通工单批量设置工单分类")
+    @PostMapping("/batchOrderCategory")
+    @WebLog("镇级：普通工单批量设置工单分类")
+    public R batchOrderCategory(@RequestBody NormalWorkOrderTaskActionVO workOrderVO) {
+        ArgumentAssert.notEmpty(workOrderVO.getOrderNoList(), "请选择工单");
+        return R.success(superService.batchOrderCategory(workOrderVO));
     }
 
     /**
@@ -125,6 +135,83 @@ public class NormalWorkOrderTaskController extends SuperController<NormalWorkOrd
     public R basicFinishNormalWorkOrder(@RequestBody NormalWorkOrderTaskActionVO finishVO) {
         ArgumentAssert.notNull(finishVO, "请选择工单");
         return R.success(superService.basicFinishNormalWorkOrder(finishVO));
+    }
+
+    /**
+     * 基层负责人：普通工单审核
+     */
+    @Operation(summary = "基层负责人：普通工单审核", description = "基层负责人：普通工单审核")
+    @PostMapping("/basic/directorAudit")
+    @WebLog("基层负责人：普通工单审核")
+    public R basicDirectorAuditNormalWorkOrder(@RequestBody NormalWorkOrderTaskActionVO auditVO) {
+        ArgumentAssert.notNull(auditVO, "请选择工单");
+        return R.success(superService.basicDirectorAuditNormalWorkOrder(auditVO));
+    }
+
+    /**
+     * 基层领导：普通工单审核
+     */
+    @Operation(summary = "基层领导：普通工单审核", description = "基层领导：普通工单审核")
+    @PostMapping("/basic/leaderAudit")
+    @WebLog("基层领导：普通工单审核")
+    public R basicLeaderAuditNormalWorkOrder(@RequestBody NormalWorkOrderTaskActionVO auditVO) {
+        ArgumentAssert.notNull(auditVO, "请选择工单");
+        return R.success(superService.basicLeaderAuditNormalWorkOrder(auditVO));
+    }
+
+    /**
+     * 镇级：处理基层普通工单退回
+     */
+    @Operation(summary = "镇级：处理基层普通工单退回", description = "镇级：处理基层普通工单退回")
+    @PostMapping("/townBasic/back")
+    @WebLog("镇级：处理基层普通工单退回")
+    public R townBasicBackNormalWorkOrder(@RequestBody NormalWorkOrderTaskActionVO backVO) {
+        ArgumentAssert.notNull(backVO, "请选择工单");
+        return R.success(superService.townBasicBackNormalWorkOrder(backVO));
+    }
+
+    /**
+     * 镇级：处理基层普通工单结案
+     */
+    @Operation(summary = "镇级：处理基层普通工单结案", description = "镇级：处理基层普通工单结案")
+    @PostMapping("/townBasic/finish")
+    @WebLog("镇级：处理基层普通工单结案")
+    public R townBasicFinishNormalWorkOrder(@RequestBody NormalWorkOrderTaskActionVO finishVO) {
+        ArgumentAssert.notNull(finishVO, "请选择工单");
+        return R.success(superService.townBasicFinishNormalWorkOrder(finishVO));
+    }
+
+    /**
+     * 镇级：普通工单撤回
+     */
+    @Operation(summary = "镇级：普通工单撤回", description = "镇级：普通工单撤回")
+    @PostMapping("/revoke")
+    @WebLog("镇级：普通工单撤回")
+    public R revokeNormalWorkOrder(@RequestBody NormalWorkOrderTaskActionVO revokeVO) {
+        ArgumentAssert.notNull(revokeVO, "请选择工单");
+        return R.success(superService.revokeNormalWorkOrder(revokeVO));
+    }
+
+    /**
+     * 镇级：普通工单催办
+     */
+    @Operation(summary = "镇级：普通工单催办", description = "镇级：普通工单催办")
+    @PostMapping("/urge")
+    @WebLog("镇级：普通工单催办")
+    public R urgeNormalWorkOrder(@RequestBody NormalWorkOrderTaskActionVO urgeVO) {
+        ArgumentAssert.notNull(urgeVO, "请选择工单");
+        return R.success(superService.urgeNormalWorkOrder(urgeVO));
+    }
+
+    /**
+     * 镇级：普通工单再次交办
+     */
+    @Operation(summary = "镇级：普通工单再次交办", description = "镇级：普通工单再次交办")
+    @PostMapping("/againProcessing")
+    @WebLog("镇级：普通工单再次交办")
+    public R againProcessingNormalWorkOrder(@RequestBody NormalWorkOrderTaskActionVO processingVO) {
+        ArgumentAssert.notNull(processingVO, "请选择工单");
+        return R.success(superService.againProcessingNormalWorkOrder(processingVO));
     }
 }
 

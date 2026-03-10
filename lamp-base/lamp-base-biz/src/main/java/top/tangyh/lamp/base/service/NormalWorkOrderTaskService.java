@@ -21,6 +21,8 @@ public interface NormalWorkOrderTaskService extends SuperService<Long, NormalWor
 
     boolean batchSignNormalWorkOrder(NormalWorkOrderTaskActionVO signVO);
 
+    boolean batchOrderCategory(NormalWorkOrderTaskActionVO workOrderVO);
+
     boolean batchProcessingNormalWorkOrder(List<NormalWorkOrderTaskActionVO> processingVOList);
 
     boolean batchBackNormalWorkOrder(List<NormalWorkOrderTaskActionVO> backVOList);
@@ -32,6 +34,20 @@ public interface NormalWorkOrderTaskService extends SuperService<Long, NormalWor
     boolean basicBackNormalWorkOrder(NormalWorkOrderTaskActionVO backVO);
 
     boolean basicFinishNormalWorkOrder(NormalWorkOrderTaskActionVO finishVO);
+
+    boolean basicDirectorAuditNormalWorkOrder(NormalWorkOrderTaskActionVO auditVO);
+
+    boolean basicLeaderAuditNormalWorkOrder(NormalWorkOrderTaskActionVO auditVO);
+
+    boolean townBasicBackNormalWorkOrder(NormalWorkOrderTaskActionVO backVO);
+
+    boolean townBasicFinishNormalWorkOrder(NormalWorkOrderTaskActionVO finishVO);
+
+    boolean revokeNormalWorkOrder(NormalWorkOrderTaskActionVO revokeVO);
+
+    boolean urgeNormalWorkOrder(NormalWorkOrderTaskActionVO urgeVO);
+
+    boolean againProcessingNormalWorkOrder(NormalWorkOrderTaskActionVO processingVO);
 }
 
 
