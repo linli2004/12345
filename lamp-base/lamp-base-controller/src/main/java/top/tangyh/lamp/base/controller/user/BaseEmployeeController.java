@@ -6,13 +6,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import top.tangyh.basic.annotation.log.WebLog;
 import top.tangyh.basic.base.R;
 import top.tangyh.basic.base.controller.SuperCacheController;
@@ -29,6 +23,7 @@ import top.tangyh.lamp.base.vo.update.user.BaseEmployeeUpdateVO;
 import top.tangyh.lamp.system.vo.save.tenant.DefTenantBindUserVO;
 
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -133,6 +128,13 @@ public class BaseEmployeeController extends SuperCacheController<BaseEmployeeSer
     @WebLog("运营者将用户设置为某个租户的租户管理员")
     public R<Boolean> bindTenantAdmin(@RequestBody @Validated DefTenantBindUserVO param) {
         return R.success(param.getIsBind() != null && param.getIsBind() ? baseEmployeeBiz.bindTenantAdmin(param) : baseEmployeeBiz.unBindTenantAdmin(param));
+    }
+
+    @Operation(summary = "查询登录用户的id,名称，联系电话，组织信息")
+    @PostMapping(value = "/getCurrentEmployee")
+    @WebLog("查询登录用户的id,名称，联系电话，组织信息")
+    public R<Map<String, String>> getCurrentEmployee() {
+        return R.success(baseEmployeeBiz.getCurrentUserMap());
     }
 
 }

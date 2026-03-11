@@ -30,11 +30,12 @@ import top.tangyh.lamp.base.manager.NormalWorkOrderTaskManager;
 import top.tangyh.lamp.base.manager.WorkOrderDynamicManager;
 import top.tangyh.lamp.base.service.NormalWorkOrderService;
 import top.tangyh.lamp.base.vo.query.NormalWorkOrderPageQuery;
+import top.tangyh.lamp.base.vo.result.NormalWorkOrderRankingResultVO;
 import top.tangyh.lamp.base.vo.result.NormalWorkOrderResultVO;
+import top.tangyh.lamp.base.vo.result.SignCategoryIsNullNormalWorkOrderResultVO;
 import top.tangyh.lamp.base.vo.update.NormalWorkOrderTaskActionVO;
 import top.tangyh.lamp.common.constant.DsConstant;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -182,6 +183,26 @@ public class NormalWorkOrderServiceImpl extends SuperServiceImpl<NormalWorkOrder
 
             zos.finish();
         }
+    }
+
+    @Override
+    public Long getWorkOrderCount(String displayStatus, String roleCode, String leadUnitId) {
+        return superManager.getWorkOrderCount(displayStatus, roleCode, leadUnitId);
+    }
+
+    @Override
+    public List<SignCategoryIsNullNormalWorkOrderResultVO> groupByCategoryWorkOrderCount(String roleCode, String leadUnitId) {
+        return superManager.groupByCategoryWorkOrderCount(roleCode, leadUnitId);
+    }
+
+    @Override
+    public Long signCategoryIsNull() {
+        return superManager.signCategoryIsNull();
+    }
+
+    @Override
+    public List<NormalWorkOrderRankingResultVO> getRanking() {
+        return superManager.getRanking();
     }
 }
 

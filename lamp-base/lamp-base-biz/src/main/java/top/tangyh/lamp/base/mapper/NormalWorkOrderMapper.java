@@ -8,7 +8,11 @@ import org.springframework.stereotype.Repository;
 import top.tangyh.basic.base.mapper.SuperMapper;
 import top.tangyh.lamp.base.entity.NormalWorkOrder;
 import top.tangyh.lamp.base.vo.query.NormalWorkOrderPageQuery;
+import top.tangyh.lamp.base.vo.result.NormalWorkOrderRankingResultVO;
 import top.tangyh.lamp.base.vo.result.NormalWorkOrderResultVO;
+import top.tangyh.lamp.base.vo.result.SignCategoryIsNullNormalWorkOrderResultVO;
+
+import java.util.List;
 
 /**
  * <p>
@@ -26,6 +30,14 @@ public interface NormalWorkOrderMapper extends SuperMapper<NormalWorkOrder> {
     IPage<NormalWorkOrderResultVO> selectPageResultVO(IPage<NormalWorkOrder> page,
                                                       @Param(Constants.WRAPPER) Wrapper<NormalWorkOrder> wrapper,
                                                       @Param("model") NormalWorkOrderPageQuery model);
+
+    Long getWorkOrderCount(@Param("displayStatus") String displayStatus, @Param("roleCode") String roleCode, @Param("leadUnitId") String leadUnitId);
+
+    List<SignCategoryIsNullNormalWorkOrderResultVO> groupByCategoryWorkOrderCount(@Param("roleCode") String roleCode, @Param("leadUnitId") String leadUnitId);
+
+    Long signCategoryIsNull();
+
+    List<NormalWorkOrderRankingResultVO> getRanking();
 }
 
 

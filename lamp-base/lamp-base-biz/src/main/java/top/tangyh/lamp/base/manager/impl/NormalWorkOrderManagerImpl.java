@@ -10,7 +10,11 @@ import top.tangyh.lamp.base.entity.NormalWorkOrder;
 import top.tangyh.lamp.base.manager.NormalWorkOrderManager;
 import top.tangyh.lamp.base.mapper.NormalWorkOrderMapper;
 import top.tangyh.lamp.base.vo.query.NormalWorkOrderPageQuery;
+import top.tangyh.lamp.base.vo.result.NormalWorkOrderRankingResultVO;
 import top.tangyh.lamp.base.vo.result.NormalWorkOrderResultVO;
+import top.tangyh.lamp.base.vo.result.SignCategoryIsNullNormalWorkOrderResultVO;
+
+import java.util.List;
 
 /**
  * <p>
@@ -30,6 +34,26 @@ public class NormalWorkOrderManagerImpl extends SuperManagerImpl<NormalWorkOrder
     @Override
     public IPage<NormalWorkOrderResultVO> selectPageResultVO(IPage<NormalWorkOrder> page, Wrapper<NormalWorkOrder> wrapper, NormalWorkOrderPageQuery model) {
         return baseMapper.selectPageResultVO(page, wrapper, model);
+    }
+
+    @Override
+    public Long getWorkOrderCount(String displayStatus, String roleCode, String leadUnitId) {
+        return baseMapper.getWorkOrderCount(displayStatus, roleCode, leadUnitId);
+    }
+
+    @Override
+    public List<SignCategoryIsNullNormalWorkOrderResultVO> groupByCategoryWorkOrderCount(String roleCode, String leadUnitId) {
+        return baseMapper.groupByCategoryWorkOrderCount(roleCode, leadUnitId);
+    }
+
+    @Override
+    public Long signCategoryIsNull() {
+        return baseMapper.signCategoryIsNull();
+    }
+
+    @Override
+    public List<NormalWorkOrderRankingResultVO> getRanking() {
+        return baseMapper.getRanking();
     }
 }
 

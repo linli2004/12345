@@ -29,8 +29,9 @@ public interface Constant {
     String SETTLE_CONDITION_ALL = "2";
 
     /**
-     * 角色编码:1-镇级网格专员;2-基层部门分管领导;3-基层部门负责人;4-基层部门专员
+     * 角色编码:0-镇级领导;1-镇级网格专员;2-基层部门分管领导;3-基层部门负责人;4-基层部门专员
      */
+    String ROLE_CODE_TOWN_LEADER = "0";
     String ROLE_CODE_TOWN_SPECIALIST = "1";
     String ROLE_CODE_DEPT_LEADER = "2";
     String ROLE_CODE_DEPT_DIRECTOR = "3";
