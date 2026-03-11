@@ -1,5 +1,6 @@
 package top.tangyh.lamp.base.entity;
 
+import com.alibaba.excel.annotation.ExcelProperty;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.*;
@@ -172,5 +173,9 @@ public class NormalWorkOrder extends Entity<Long> {
     @TableField(value = "allow_comment", condition = EQUAL)
     private String allowComment;
 
-
+    private String assistStatus;
+    private String municipalHostDeptName;
+    private String municipalAssistDeptName;
+    private LocalDateTime municipalAssignTime;
+    private LocalDateTime municipalDeadline;
 }

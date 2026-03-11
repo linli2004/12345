@@ -29,7 +29,7 @@ public interface NormalWorkOrderService extends SuperService<Long, NormalWorkOrd
     void importNormalWorkOrder(InputStream inputStream, List<String> errorOrderNoList, NormalWorkOrderTaskActionVO actionVO);
 
     IPage<NormalWorkOrderResultVO> findPageResultVO(PageParams<NormalWorkOrderPageQuery> params);
-    void exportTaskZip(@RequestBody List<Long> idList, HttpServletResponse response);
+    void exportTaskZip(List<Long> idList, HttpServletResponse response);
 }
 
 

@@ -2,10 +2,13 @@ package top.tangyh.lamp.base.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.alibaba.excel.EasyExcel;
+import com.alibaba.excel.ExcelWriter;
 import com.alibaba.excel.read.listener.PageReadListener;
+import com.alibaba.excel.write.metadata.WriteSheet;
 import com.alibaba.fastjson2.JSON;
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.deepoove.poi.XWPFTemplate;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -20,6 +23,7 @@ import top.tangyh.basic.base.request.PageParams;
 import top.tangyh.basic.base.service.impl.SuperServiceImpl;
 import top.tangyh.basic.database.mybatis.conditions.Wraps;
 import top.tangyh.basic.database.mybatis.conditions.query.LbQueryWrap;
+import top.tangyh.basic.utils.ArgumentAssert;
 import top.tangyh.lamp.Constant;
 import top.tangyh.lamp.base.entity.NormalWorkOrder;
 import top.tangyh.lamp.base.entity.NormalWorkOrderExcel;
@@ -28,6 +32,7 @@ import top.tangyh.lamp.base.entity.WorkOrderDynamic;
 import top.tangyh.lamp.base.manager.NormalWorkOrderManager;
 import top.tangyh.lamp.base.manager.NormalWorkOrderTaskManager;
 import top.tangyh.lamp.base.manager.WorkOrderDynamicManager;
+import top.tangyh.lamp.base.property.WorkExportFolderProperty;
 import top.tangyh.lamp.base.service.NormalWorkOrderService;
 import top.tangyh.lamp.base.vo.query.NormalWorkOrderPageQuery;
 import top.tangyh.lamp.base.vo.result.NormalWorkOrderResultVO;
@@ -38,6 +43,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.time.DateTimeException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -61,6 +71,7 @@ import java.util.zip.ZipOutputStream;
 public class NormalWorkOrderServiceImpl extends SuperServiceImpl<NormalWorkOrderManager, Long, NormalWorkOrder> implements NormalWorkOrderService {
     private final NormalWorkOrderTaskManager normalWorkOrderTaskManager;
     private final WorkOrderDynamicManager workOrderDynamicManager;
+    private final WorkExportFolderProperty workExportFolderProperty;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -152,30 +163,51 @@ public class NormalWorkOrderServiceImpl extends SuperServiceImpl<NormalWorkOrder
     @Override
     @SneakyThrows
     public void exportTaskZip(@RequestBody List<Long> idList, HttpServletResponse response) {
-        String fileName = URLEncoder.encode("项目资料包.zip", StandardCharsets.UTF_8).replaceAll("\\+", "%20");
+        ArgumentAssert.notBlank(workExportFolderProperty.getWorkFinishExcelPath(), "未配置模板路径");
+        String fileName = URLEncoder.encode("办结文件导出.zip", StandardCharsets.UTF_8).replaceAll("\\+", "%20");
         response.setContentType("application/zip");
         response.setHeader("Content-Disposition", "attachment; filename=" + fileName);
         List<NormalWorkOrder> normalWorkOrders = superManager.listByIds(idList);
         List<NormalWorkOrderExcel> normalWorkOrderExcels = BeanUtil.copyToList(normalWorkOrders, NormalWorkOrderExcel.class);
-        try (ZipOutputStream zos = new ZipOutputStream(response.getOutputStream())) {
 
-            ZipEntry excelEntry = new ZipEntry("工单.xlsx");
+        try (ZipOutputStream zos = new ZipOutputStream(response.getOutputStream());
+                InputStream templateInputStream = Files.newInputStream(Paths.get(workExportFolderProperty.getWorkFinishExcelPath()))) {
+            String rootFolderName = "办结文件导出/";
+            ZipEntry rootDirectoryEntry = new ZipEntry(rootFolderName);
+            zos.putNextEntry(rootDirectoryEntry);
+            zos.closeEntry();
+
+            String exportTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+            ZipEntry excelEntry = new ZipEntry(rootFolderName+"12345统计信息表"+exportTime+".xlsx");
             zos.putNextEntry(excelEntry);
-            EasyExcel.write(zos, NormalWorkOrderExcel.class)
+            ExcelWriter excelWriter = EasyExcel.write(zos)
                     .autoCloseStream(Boolean.FALSE)
-                    .sheet("Sheet1")
-                    .doWrite(normalWorkOrderExcels);
-            zos.closeEntry(); // 完成当前文件的写入
+                    .withTemplate(templateInputStream)
+                    .build();
+            WriteSheet writeSheet = EasyExcel.writerSheet("12345事件工作表(街镇)").build();
+            excelWriter.fill(normalWorkOrderExcels, writeSheet);
+            excelWriter.finish();
+            zos.closeEntry();
 
-            for (NormalWorkOrder normalWorkOrder : normalWorkOrders) {
-                String folderName = normalWorkOrder.getOrderNo() + "/";
+            for (NormalWorkOrderExcel normalWorkOrder : normalWorkOrderExcels) {
+                normalWorkOrder.setExportTime(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+                String folderName = rootFolderName+normalWorkOrder.getOrderNo() + "/";
                 ZipEntry directoryEntry = new ZipEntry(folderName);
                 zos.putNextEntry(directoryEntry);
                 zos.closeEntry();
 
-                ZipEntry wordEntry = new ZipEntry(folderName + "test.docx");
+                ZipEntry wordEntry = new ZipEntry(folderName + normalWorkOrder.getOrderNo() +".docx");
                 zos.putNextEntry(wordEntry);
-                zos.write(new byte[]{});
+
+                try (InputStream is = Files.newInputStream(Paths.get(workExportFolderProperty.getWorkFinishWordPath()))) {
+                    XWPFTemplate template = XWPFTemplate.compile(is).render(normalWorkOrder);
+
+                    template.write(zos);
+
+                    template.close();
+                } catch (Exception e) {
+                    log.error("生成工单 {} 的 Word 失败", normalWorkOrder.getOrderNo(), e);
+                }
                 zos.closeEntry();
             }
 

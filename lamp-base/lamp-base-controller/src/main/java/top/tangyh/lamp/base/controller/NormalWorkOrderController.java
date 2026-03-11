@@ -2,14 +2,21 @@ package top.tangyh.lamp.base.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.compress.utils.Lists;
+import org.springframework.http.MediaType;
 import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import top.tangyh.basic.annotation.log.WebLog;
 import top.tangyh.basic.base.R;
 import top.tangyh.basic.base.controller.SuperController;
@@ -34,6 +41,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+
+import static top.tangyh.lamp.common.constant.SwaggerConstants.DATA_TYPE_MULTIPART_FILE;
 
 /**
  * <p>
@@ -68,14 +77,14 @@ public class NormalWorkOrderController extends SuperController<NormalWorkOrderSe
      * @param actionVO excel工单文件
      */
     @Operation(summary = "普通工单导入", description = "普通工单导入")
-    @PostMapping("/import")
+    @PostMapping(path = "/import" ,consumes = "multipart/form-data")
     @WebLog("普通工单导入")
-    public R importNormalWorkOrder(NormalWorkOrderTaskActionVO actionVO) throws IOException {
-        if (actionVO.getFile().isEmpty()) {
+    public R importNormalWorkOrder(@RequestPart("file") MultipartFile file, NormalWorkOrderTaskActionVO actionVO) throws IOException {
+        if (file.isEmpty()) {
             return R.fail("导入的文件为空");
         }
         List<String> errorOrderNoList = Lists.newArrayList();
-        try (InputStream inputStream = actionVO.getFile().getInputStream()) {
+        try (InputStream inputStream = file.getInputStream()) {
             superService.importNormalWorkOrder(inputStream, errorOrderNoList, actionVO);
         }
         if (CollectionUtils.isEmpty(errorOrderNoList)) {
