@@ -206,4 +206,28 @@
         ORDER BY
         finishRanking;
     </select>
+
+    <select id="selectListResultVO" resultMap="ResultVOResultMap">
+        select
+        <include refid="Base_Column_List2"/>
+        FROM
+        normal_work_order t3
+        RIGHT JOIN (
+        SELECT
+        DISTINCT t2.order_no as task_order_no
+        FROM
+        normal_work_order_task t2
+        WHERE
+            t2.current_node_code IN ( SELECT t1.node_code FROM role_status_mapping t1 WHERE t1.display_status = #{model.displayStatus} AND t1.role_code = '1' )
+            and t2.valid = '1'  and t2.level = '0'
+        ) t4 ON t3.order_no = t4.task_order_no
+        <where>
+            <if test="model.orderNoList != null and model.orderNoList.size() > 0">
+                t3.order_no in
+                <foreach close=")" collection="model.orderNoList" item="orderNo" open="(" separator=",">
+                    #{orderNo}
+                </foreach>
+            </if>
+        </where>
+    </select>
 </mapper>

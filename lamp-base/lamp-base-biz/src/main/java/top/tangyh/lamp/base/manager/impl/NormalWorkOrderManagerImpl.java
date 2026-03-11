@@ -37,6 +37,11 @@ public class NormalWorkOrderManagerImpl extends SuperManagerImpl<NormalWorkOrder
     }
 
     @Override
+    public List<NormalWorkOrderResultVO> selectListResultVO(NormalWorkOrderPageQuery model) {
+        return baseMapper.selectListResultVO(model);
+    }
+
+    @Override
     public Long getWorkOrderCount(String displayStatus, String roleCode, String leadUnitId) {
         return baseMapper.getWorkOrderCount(displayStatus, roleCode, leadUnitId);
     }

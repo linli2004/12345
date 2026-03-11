@@ -7,6 +7,7 @@ import lombok.experimental.Accessors;
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.List;
 
 
 /**
@@ -193,4 +194,6 @@ public class NormalWorkOrderPageQuery implements Serializable {
 
     @Schema(description = "co或cc的id")
     private Long coOrccId;
+
+    private List<String> orderNoList;
 }

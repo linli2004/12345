@@ -31,6 +31,8 @@ public interface NormalWorkOrderMapper extends SuperMapper<NormalWorkOrder> {
                                                       @Param(Constants.WRAPPER) Wrapper<NormalWorkOrder> wrapper,
                                                       @Param("model") NormalWorkOrderPageQuery model);
 
+    List<NormalWorkOrderResultVO> selectListResultVO(@Param("model") NormalWorkOrderPageQuery model);
+
     Long getWorkOrderCount(@Param("displayStatus") String displayStatus, @Param("roleCode") String roleCode, @Param("leadUnitId") String leadUnitId);
 
     List<SignCategoryIsNullNormalWorkOrderResultVO> groupByCategoryWorkOrderCount(@Param("roleCode") String roleCode, @Param("leadUnitId") String leadUnitId);

@@ -152,6 +152,31 @@ public class NormalWorkOrderServiceImpl extends SuperServiceImpl<NormalWorkOrder
     }
 
     @Override
+    public List<NormalWorkOrderResultVO> selectListResultVO(NormalWorkOrderPageQuery model) {
+        List<NormalWorkOrderResultVO> workOrderResultList = superManager.selectListResultVO(model);
+        if ("办结" .equals(model.getDisplayStatus()) || "退回" .equals(model.getDisplayStatus())) {
+            setContentJson(workOrderResultList, model.getDisplayStatus(), model.getOrderNoList());
+            return workOrderResultList;
+        }
+        return workOrderResultList;
+    }
+
+    void setContentJson(List<NormalWorkOrderResultVO> workOrderResultList, String displayStatus, List<String> orderNoList) {
+        List<WorkOrderDynamic> dynamicList = workOrderDynamicManager.list(Wraps.<WorkOrderDynamic>lbQ().eq(WorkOrderDynamic::getProcessType, displayStatus).in(WorkOrderDynamic::getOrderNo, orderNoList));
+        Map<String, List<WorkOrderDynamic>> dynamicMap = dynamicList.stream()
+                .collect(Collectors.groupingBy(
+                        WorkOrderDynamic::getOrderNo,
+                        java.util.LinkedHashMap::new,
+                        Collectors.toList()
+                ));
+        workOrderResultList.forEach(t -> {
+            List<WorkOrderDynamic> tempList = dynamicMap.get(t.getOrderNo());
+            if (!CollectionUtils.isEmpty(tempList)) t.setFinishOrBackContentJson(tempList.get(0).getContentJson());
+        });
+    }
+
+
+    @Override
     @SneakyThrows
     public void exportTaskZip(@RequestBody List<Long> idList, HttpServletResponse response) {
         String fileName = URLEncoder.encode("项目资料包.zip", StandardCharsets.UTF_8).replaceAll("\\+", "%20");

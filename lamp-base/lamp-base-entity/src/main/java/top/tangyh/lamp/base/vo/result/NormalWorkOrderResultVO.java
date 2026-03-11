@@ -177,4 +177,5 @@ public class NormalWorkOrderResultVO extends Entity<Long> implements Serializabl
 
     private List<NormalWorkOrderTaskResultVO> workOrderTaskList;
 
+    private String finishOrBackContentJson;
 }

@@ -32,6 +32,8 @@ public interface NormalWorkOrderService extends SuperService<Long, NormalWorkOrd
 
     IPage<NormalWorkOrderResultVO> findPageResultVO(PageParams<NormalWorkOrderPageQuery> params);
 
+    List<NormalWorkOrderResultVO> selectListResultVO(NormalWorkOrderPageQuery model);
+
     void exportTaskZip(@RequestBody List<Long> idList, HttpServletResponse response);
 
     Long getWorkOrderCount(String displayStatus, String roleCode, String leadUnitId);
