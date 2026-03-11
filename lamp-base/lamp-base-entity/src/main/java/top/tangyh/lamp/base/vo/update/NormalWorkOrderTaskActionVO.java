@@ -133,4 +133,18 @@ public class NormalWorkOrderTaskActionVO implements Serializable {
      */
     @Schema(description = "是否允许批示:1-允许;2-不允许")
     private String allowComment;
+
+    //负责人，领导 审批-----------------------------------------------------------------
+    /**
+     * 审批结果
+     */
+    @Schema(description = "审批结果")
+    Boolean auditResult;
+    /**
+     * 审批事项:1-结案;2-退回
+     */
+    @Schema(description = "审批事项:1-结案;2-退回")
+    String auditType;
+
+
 }

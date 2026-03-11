@@ -14,6 +14,8 @@ import top.tangyh.lamp.base.vo.query.user.BaseEmployeePageQuery;
 import top.tangyh.lamp.base.vo.result.user.BaseEmployeeResultVO;
 import top.tangyh.lamp.common.cache.base.user.EmployeeCacheKeyBuilder;
 
+import java.util.List;
+
 /**
  * <p>
  * 通用业务实现类
@@ -37,5 +39,10 @@ public class BaseEmployeeManagerImpl extends SuperCacheManagerImpl<BaseEmployeeM
     @Override
     public IPage<BaseEmployeeResultVO> selectPageResultVO(IPage<BaseEmployee> page, Wrapper<BaseEmployee> wrapper, BaseEmployeePageQuery model) {
         return baseMapper.selectPageResultVO(page, wrapper, model);
+    }
+
+    @Override
+    public List<BaseEmployeeResultVO> getEmployeeIdByRoleCodeAndOrgId(String roleCode, Long orgId) {
+        return baseMapper.getEmployeeIdByRoleCodeAndOrgId(roleCode, orgId);
     }
 }

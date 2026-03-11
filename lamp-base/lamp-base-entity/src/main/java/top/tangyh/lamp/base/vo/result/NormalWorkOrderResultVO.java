@@ -6,7 +6,6 @@ import lombok.*;
 import lombok.experimental.Accessors;
 import top.tangyh.basic.base.entity.Entity;
 import top.tangyh.basic.interfaces.echo.EchoVO;
-import top.tangyh.lamp.base.entity.NormalWorkOrderTask;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -176,6 +175,6 @@ public class NormalWorkOrderResultVO extends Entity<Long> implements Serializabl
     @Schema(description = "是否允许批示:1-允许;2-不允许")
     private String allowComment;
 
-    private List<NormalWorkOrderTask> workOrderTaskList;
+    private List<NormalWorkOrderTaskResultVO> workOrderTaskList;
 
 }

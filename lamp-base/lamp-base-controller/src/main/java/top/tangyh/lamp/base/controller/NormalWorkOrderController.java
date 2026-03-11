@@ -1,5 +1,6 @@
 package top.tangyh.lamp.base.controller;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -28,8 +29,11 @@ import top.tangyh.lamp.base.entity.NormalWorkOrder;
 import top.tangyh.lamp.base.entity.NormalWorkOrderTask;
 import top.tangyh.lamp.base.service.NormalWorkOrderService;
 import top.tangyh.lamp.base.service.NormalWorkOrderTaskService;
+import top.tangyh.lamp.base.service.user.BaseEmployeeService;
 import top.tangyh.lamp.base.vo.query.NormalWorkOrderPageQuery;
 import top.tangyh.lamp.base.vo.result.NormalWorkOrderResultVO;
+import top.tangyh.lamp.base.vo.result.NormalWorkOrderTaskResultVO;
+import top.tangyh.lamp.base.vo.result.user.BaseEmployeeResultVO;
 import top.tangyh.lamp.base.vo.save.NormalWorkOrderSaveVO;
 import top.tangyh.lamp.base.vo.update.NormalWorkOrderTaskActionVO;
 import top.tangyh.lamp.base.vo.update.NormalWorkOrderUpdateVO;
@@ -70,6 +74,7 @@ public class NormalWorkOrderController extends SuperController<NormalWorkOrderSe
     }
 
     private final NormalWorkOrderTaskService normalWorkOrderTaskService;
+    private final BaseEmployeeService baseEmployeeService;
 
     /**
      * 普通工单导入
@@ -101,6 +106,7 @@ public class NormalWorkOrderController extends SuperController<NormalWorkOrderSe
     @WebLog(value = "'分页列表查询:第' + #params?.current + '页, 显示' + #params?.size + '行'", response = false)
     public R<IPage<NormalWorkOrderResultVO>> page(@RequestBody @Validated PageParams<NormalWorkOrderPageQuery> params) {
         IPage<NormalWorkOrderResultVO> page = superService.findPageResultVO(params);
+        if (null != params.getModel().getCoOrccType()) return R.success(page);
         List<String> orderNoList = page.getRecords().stream().map(NormalWorkOrderResultVO::getOrderNo).toList();
         List<NormalWorkOrderTask> workOrderTaskList = null;
         if (Constant.ROLE_CODE_TOWN_SPECIALIST.equals(params.getModel().getRoleCode())) {
@@ -108,9 +114,23 @@ public class NormalWorkOrderController extends SuperController<NormalWorkOrderSe
         } else {
             workOrderTaskList = normalWorkOrderTaskService.list(Wraps.<NormalWorkOrderTask>lbQ().eq(NormalWorkOrderTask::getLeadUnitId, params.getModel().getLeadUnitId()).eq(NormalWorkOrderTask::getValid, Constant.TASK_VALID).in(NormalWorkOrderTask::getOrderNo, orderNoList));
         }
-        Map<String, List<NormalWorkOrderTask>> taskMap = workOrderTaskList.stream()
+        if (CollectionUtils.isEmpty(workOrderTaskList)) return R.success(page);
+        List<NormalWorkOrderTaskResultVO> taskResultVOList = BeanUtil.copyToList(workOrderTaskList, NormalWorkOrderTaskResultVO.class);
+        if (echoService != null) {
+            echoService.action(taskResultVOList);
+        }
+        if (!Constant.ROLE_CODE_TOWN_SPECIALIST.equals(params.getModel().getRoleCode())) {
+            List<BaseEmployeeResultVO> leader = baseEmployeeService.getEmployeeIdByRoleCodeAndOrgId(Constant.ROLE_CODE_DEPT_LEADER, Long.valueOf(params.getModel().getLeadUnitId()));
+            List<BaseEmployeeResultVO> director = baseEmployeeService.getEmployeeIdByRoleCodeAndOrgId(Constant.ROLE_CODE_DEPT_DIRECTOR, Long.valueOf(params.getModel().getLeadUnitId()));
+            if (!CollectionUtils.isEmpty(leader))
+                taskResultVOList.forEach(t -> t.setDeptLeader(leader.get(0).getRealName()));
+            if (!CollectionUtils.isEmpty(director))
+                taskResultVOList.forEach(t -> t.setDeptDirector(director.get(0).getRealName()));
+        }
+        taskResultVOList.forEach(t -> t.setCurrentNodeName(Constant.SUB_WORK_ORDER_TYPE_MAP.get(t.getCurrentNodeCode())));
+        Map<String, List<NormalWorkOrderTaskResultVO>> taskMap = taskResultVOList.stream()
                 .collect(Collectors.groupingBy(
-                        NormalWorkOrderTask::getOrderNo,
+                        NormalWorkOrderTaskResultVO::getOrderNo,
                         java.util.LinkedHashMap::new,
                         Collectors.toList()
                 ));
