@@ -5,8 +5,10 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import io.seata.spring.annotation.GlobalTransactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,10 +19,15 @@ import top.tangyh.basic.database.mybatis.conditions.Wraps;
 import top.tangyh.basic.exception.BizException;
 import top.tangyh.basic.utils.ArgumentAssert;
 import top.tangyh.basic.utils.CollHelper;
+import top.tangyh.lamp.base.entity.system.BaseRole;
 import top.tangyh.lamp.base.entity.user.BaseEmployee;
+import top.tangyh.lamp.base.entity.user.BaseEmployeeRoleRel;
+import top.tangyh.lamp.base.entity.user.BaseOrg;
+import top.tangyh.lamp.base.service.system.BaseRoleService;
 import top.tangyh.lamp.base.service.user.BaseEmployeeOrgRelService;
 import top.tangyh.lamp.base.service.user.BaseEmployeeRoleRelService;
 import top.tangyh.lamp.base.service.user.BaseEmployeeService;
+import top.tangyh.lamp.base.service.user.BaseOrgService;
 import top.tangyh.lamp.base.vo.query.user.BaseEmployeePageQuery;
 import top.tangyh.lamp.base.vo.result.user.BaseEmployeeResultVO;
 import top.tangyh.lamp.base.vo.save.user.BaseEmployeeSaveVO;
@@ -40,6 +47,7 @@ import top.tangyh.lamp.system.vo.save.tenant.DefUserSaveVO;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 员工大业务层
@@ -57,6 +65,8 @@ public class BaseEmployeeBiz {
     private final DefUserService defUserService;
     private final DefUserTenantRelService defUserTenantRelService;
     private final DefTenantService defTenantService;
+    private final BaseOrgService baseOrgService;
+    private final BaseRoleService baseRoleService;
 
     /**
      * 根据员工ID 查询员工、用户和他所在的机构 信息
@@ -90,6 +100,29 @@ public class BaseEmployeeBiz {
         resultVO.setDefUser(BeanUtil.toBean(defUser, SysUser.class));
 
         return resultVO;
+    }
+
+    public Map<String, String> getCurrentUserMap() {
+        Long operatorId = ContextUtil.getEmployeeId();
+        ArgumentAssert.notNull(operatorId, "请先登录");
+        Map<String, String> responseMap = Maps.newLinkedHashMap();
+        responseMap.put("operatorId", operatorId.toString());
+        String operatorName = baseEmployeeService.getById(operatorId).getRealName();
+        responseMap.put("operatorName", operatorName);
+        DefUser defUser = defUserService.getById(ContextUtil.getUserId());
+        if (null != defUser) responseMap.put("operatorPhone", defUser.getMobile());
+        List<BaseOrg> orgList = baseOrgService.findOrgByEmployeeId(operatorId);
+        if (CollectionUtils.isNotEmpty(orgList)) {
+            BaseOrg baseOrg = orgList.get(0);
+            responseMap.put("deptId", baseOrg.getId().toString());
+            responseMap.put("deptName", baseOrg.getName());
+        }
+        List<BaseEmployeeRoleRel> employeeRoleRelList = baseEmployeeRoleRelService.list(Wraps.<BaseEmployeeRoleRel>lbQ().eq(BaseEmployeeRoleRel::getEmployeeId, operatorId));
+        if (CollectionUtils.isNotEmpty(employeeRoleRelList)) {
+            BaseRole baseRole = baseRoleService.getById(employeeRoleRelList.get(0).getRoleId());
+            responseMap.put("roleCode", baseRole.getCode());
+        }
+        return responseMap;
     }
 
     /**

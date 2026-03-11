@@ -35,11 +35,12 @@ import top.tangyh.lamp.base.manager.WorkOrderDynamicManager;
 import top.tangyh.lamp.base.property.WorkExportFolderProperty;
 import top.tangyh.lamp.base.service.NormalWorkOrderService;
 import top.tangyh.lamp.base.vo.query.NormalWorkOrderPageQuery;
+import top.tangyh.lamp.base.vo.result.NormalWorkOrderRankingResultVO;
 import top.tangyh.lamp.base.vo.result.NormalWorkOrderResultVO;
+import top.tangyh.lamp.base.vo.result.SignCategoryIsNullNormalWorkOrderResultVO;
 import top.tangyh.lamp.base.vo.update.NormalWorkOrderTaskActionVO;
 import top.tangyh.lamp.common.constant.DsConstant;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -162,6 +163,31 @@ public class NormalWorkOrderServiceImpl extends SuperServiceImpl<NormalWorkOrder
     }
 
     @Override
+    public List<NormalWorkOrderResultVO> selectListResultVO(NormalWorkOrderPageQuery model) {
+        List<NormalWorkOrderResultVO> workOrderResultList = superManager.selectListResultVO(model);
+        if ("办结" .equals(model.getDisplayStatus()) || "退回" .equals(model.getDisplayStatus())) {
+            setContentJson(workOrderResultList, model.getDisplayStatus(), model.getOrderNoList());
+            return workOrderResultList;
+        }
+        return workOrderResultList;
+    }
+
+    void setContentJson(List<NormalWorkOrderResultVO> workOrderResultList, String displayStatus, List<String> orderNoList) {
+        List<WorkOrderDynamic> dynamicList = workOrderDynamicManager.list(Wraps.<WorkOrderDynamic>lbQ().eq(WorkOrderDynamic::getProcessType, displayStatus).in(WorkOrderDynamic::getOrderNo, orderNoList));
+        Map<String, List<WorkOrderDynamic>> dynamicMap = dynamicList.stream()
+                .collect(Collectors.groupingBy(
+                        WorkOrderDynamic::getOrderNo,
+                        java.util.LinkedHashMap::new,
+                        Collectors.toList()
+                ));
+        workOrderResultList.forEach(t -> {
+            List<WorkOrderDynamic> tempList = dynamicMap.get(t.getOrderNo());
+            if (!CollectionUtils.isEmpty(tempList)) t.setFinishOrBackContentJson(tempList.get(0).getContentJson());
+        });
+    }
+
+
+    @Override
     @SneakyThrows
     public void exportTaskZip(@RequestBody List<Long> idList, HttpServletResponse response) {
         ArgumentAssert.notBlank(workExportFolderProperty.getWorkFinishExcelPath(), "未配置模板路径");
@@ -214,6 +240,26 @@ public class NormalWorkOrderServiceImpl extends SuperServiceImpl<NormalWorkOrder
 
             zos.finish();
         }
+    }
+
+    @Override
+    public Long getWorkOrderCount(String displayStatus, String roleCode, String leadUnitId) {
+        return superManager.getWorkOrderCount(displayStatus, roleCode, leadUnitId);
+    }
+
+    @Override
+    public List<SignCategoryIsNullNormalWorkOrderResultVO> groupByCategoryWorkOrderCount(String roleCode, String leadUnitId) {
+        return superManager.groupByCategoryWorkOrderCount(roleCode, leadUnitId);
+    }
+
+    @Override
+    public Long signCategoryIsNull() {
+        return superManager.signCategoryIsNull();
+    }
+
+    @Override
+    public List<NormalWorkOrderRankingResultVO> getRanking() {
+        return superManager.getRanking();
     }
 }
 

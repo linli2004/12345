@@ -18,6 +18,10 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import top.tangyh.basic.annotation.log.WebLog;
 import top.tangyh.basic.base.R;
 import top.tangyh.basic.base.controller.SuperController;
@@ -43,8 +47,6 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 import static top.tangyh.lamp.common.constant.SwaggerConstants.DATA_TYPE_MULTIPART_FILE;
 
@@ -141,8 +143,14 @@ public class NormalWorkOrderController extends SuperController<NormalWorkOrderSe
 
     @PostMapping("/exportTaskZip")
     @Operation(summary = "普通工单导出压缩包", description = "普通工单导出压缩包")
-    public void exportTaskZip(@RequestBody List<Long> idList, HttpServletResponse response){
+    public void exportTaskZip(@RequestBody List<Long> idList, HttpServletResponse response) {
         superService.exportTaskZip(idList, response);
+    }
+
+    @PostMapping("/testList")
+    @Operation(summary = "测试list", description = "测试list")
+    public R<List<NormalWorkOrderResultVO>> testLIst(@RequestBody NormalWorkOrderPageQuery model) {
+        return R.success(superService.selectListResultVO(model));
     }
 }
 

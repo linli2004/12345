@@ -34,7 +34,7 @@ public enum AuditNodeCodeEnum {
 
     public static String getNodeCode(String auditType, Boolean auditResult, String roleCode) {
         for (AuditNodeCodeEnum node : values()) {
-            if (Objects.equals(node.getAuditType(), auditType) && auditResult && Objects.equals(node.getRoleCode(), roleCode)) {
+            if (Objects.equals(node.getAuditType(), auditType) && auditResult == node.getAuditResult() && Objects.equals(node.getRoleCode(), roleCode)) {
                 return node.getNodeCode();
             }
         }

@@ -7,7 +7,9 @@ import top.tangyh.basic.base.request.PageParams;
 import top.tangyh.basic.base.service.SuperService;
 import top.tangyh.lamp.base.entity.NormalWorkOrder;
 import top.tangyh.lamp.base.vo.query.NormalWorkOrderPageQuery;
+import top.tangyh.lamp.base.vo.result.NormalWorkOrderRankingResultVO;
 import top.tangyh.lamp.base.vo.result.NormalWorkOrderResultVO;
+import top.tangyh.lamp.base.vo.result.SignCategoryIsNullNormalWorkOrderResultVO;
 import top.tangyh.lamp.base.vo.update.NormalWorkOrderTaskActionVO;
 
 import java.io.InputStream;
@@ -29,7 +31,18 @@ public interface NormalWorkOrderService extends SuperService<Long, NormalWorkOrd
     void importNormalWorkOrder(InputStream inputStream, List<String> errorOrderNoList, NormalWorkOrderTaskActionVO actionVO);
 
     IPage<NormalWorkOrderResultVO> findPageResultVO(PageParams<NormalWorkOrderPageQuery> params);
+
+    List<NormalWorkOrderResultVO> selectListResultVO(NormalWorkOrderPageQuery model);
+
+    Long getWorkOrderCount(String displayStatus, String roleCode, String leadUnitId);
+
+    List<SignCategoryIsNullNormalWorkOrderResultVO> groupByCategoryWorkOrderCount(String roleCode, String leadUnitId);
+
+    Long signCategoryIsNull();
+
+    List<NormalWorkOrderRankingResultVO> getRanking();
     void exportTaskZip(List<Long> idList, HttpServletResponse response);
+
 }
 
 

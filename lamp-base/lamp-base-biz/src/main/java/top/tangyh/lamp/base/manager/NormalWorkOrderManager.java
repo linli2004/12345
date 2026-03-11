@@ -5,7 +5,11 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import top.tangyh.basic.base.manager.SuperManager;
 import top.tangyh.lamp.base.entity.NormalWorkOrder;
 import top.tangyh.lamp.base.vo.query.NormalWorkOrderPageQuery;
+import top.tangyh.lamp.base.vo.result.NormalWorkOrderRankingResultVO;
 import top.tangyh.lamp.base.vo.result.NormalWorkOrderResultVO;
+import top.tangyh.lamp.base.vo.result.SignCategoryIsNullNormalWorkOrderResultVO;
+
+import java.util.List;
 
 /**
  * <p>
@@ -20,6 +24,16 @@ import top.tangyh.lamp.base.vo.result.NormalWorkOrderResultVO;
 public interface NormalWorkOrderManager extends SuperManager<NormalWorkOrder> {
 
     IPage<NormalWorkOrderResultVO> selectPageResultVO(IPage<NormalWorkOrder> page, Wrapper<NormalWorkOrder> wrapper, NormalWorkOrderPageQuery model);
+
+    List<NormalWorkOrderResultVO> selectListResultVO(NormalWorkOrderPageQuery model);
+
+    Long getWorkOrderCount(String displayStatus, String roleCode, String leadUnitId);
+
+    List<SignCategoryIsNullNormalWorkOrderResultVO> groupByCategoryWorkOrderCount(String roleCode, String leadUnitId);
+
+    Long signCategoryIsNull();
+
+    List<NormalWorkOrderRankingResultVO> getRanking();
 }
 
 

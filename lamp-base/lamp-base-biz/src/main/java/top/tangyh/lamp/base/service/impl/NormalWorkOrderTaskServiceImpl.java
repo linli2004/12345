@@ -402,7 +402,7 @@ public class NormalWorkOrderTaskServiceImpl extends SuperServiceImpl<NormalWorkO
         list.add("1"); //unit_id=1的(全部结案的主task)
         ArgumentAssert.notEmpty(leadUnitIdArray, "主办单位不可为空");
         //将需要重新交办的task valid置0  包含unit_id=1的(全部结案的主task)
-        superManager.update(Wrappers.<NormalWorkOrderTask>lambdaUpdate().set(NormalWorkOrderTask::getValid, Constant.TASK_INVALID).in(NormalWorkOrderTask::getLeadUnitId, list));
+        superManager.update(Wrappers.<NormalWorkOrderTask>lambdaUpdate().set(NormalWorkOrderTask::getValid, Constant.TASK_INVALID).eq(NormalWorkOrderTask::getOrderNo, processingVO.getOrderNo()).in(NormalWorkOrderTask::getLeadUnitId, list));
         for (String leadUnitId : leadUnitIdArray) {//新增task
             NormalWorkOrderTask taskTemp = BeanUtil.copyProperties(processingVO, NormalWorkOrderTask.class, "id");
             taskTemp.setLeadUnitId(Long.valueOf(leadUnitId));
