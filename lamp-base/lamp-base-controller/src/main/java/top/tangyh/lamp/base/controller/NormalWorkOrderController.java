@@ -127,6 +127,8 @@ public class NormalWorkOrderController extends SuperController<NormalWorkOrderSe
                         Collectors.toList()
                 ));
         page.getRecords().forEach(t -> t.setWorkOrderTaskList(taskMap.get(t.getOrderNo())));
+        params.getModel().setOrderNoList(orderNoList);
+        superService.getFinishOrBackContentJson(page.getRecords(), params.getModel());
         return R.success(page);
     }
 

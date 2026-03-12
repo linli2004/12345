@@ -74,7 +74,7 @@ public class NormalWorkOrderServiceImpl extends SuperServiceImpl<NormalWorkOrder
                 try {
                     log.info("读取到一条数据{}", JSON.toJSONString(cell));
                     NormalWorkOrder normalWorkOrder = BeanUtil.toBean(cell, NormalWorkOrder.class);
-                    normalWorkOrder.setIsDifficult(!"普通" .equals(cell.getIsDifficult()));
+                    normalWorkOrder.setIsDifficult(!"普通".equals(cell.getIsDifficult()));
                     //查询是否存在此工单编号；如果是重复的工单编号 就更新
                     List<NormalWorkOrder> orderTempList = superManager.list(Wraps.<NormalWorkOrder>lbQ().eq(NormalWorkOrder::getOrderNo, normalWorkOrder.getOrderNo()));
                     if (!CollectionUtils.isEmpty(orderTempList)) normalWorkOrder.setId(orderTempList.get(0).getId());
@@ -154,15 +154,22 @@ public class NormalWorkOrderServiceImpl extends SuperServiceImpl<NormalWorkOrder
     @Override
     public List<NormalWorkOrderResultVO> selectListResultVO(NormalWorkOrderPageQuery model) {
         List<NormalWorkOrderResultVO> workOrderResultList = superManager.selectListResultVO(model);
-        if ("办结" .equals(model.getDisplayStatus()) || "退回" .equals(model.getDisplayStatus())) {
+        if ("办结".equals(model.getDisplayStatus()) || "已退回".equals(model.getDisplayStatus())) {
             setContentJson(workOrderResultList, model.getDisplayStatus(), model.getOrderNoList());
             return workOrderResultList;
         }
         return workOrderResultList;
     }
 
+    @Override
+    public void getFinishOrBackContentJson(List<NormalWorkOrderResultVO> resultVOList, NormalWorkOrderPageQuery model) {
+        if ("办结".equals(model.getDisplayStatus()) || "已退回".equals(model.getDisplayStatus())) {
+            setContentJson(resultVOList, model.getDisplayStatus(), model.getOrderNoList());
+        }
+    }
+
     void setContentJson(List<NormalWorkOrderResultVO> workOrderResultList, String displayStatus, List<String> orderNoList) {
-        List<WorkOrderDynamic> dynamicList = workOrderDynamicManager.list(Wraps.<WorkOrderDynamic>lbQ().eq(WorkOrderDynamic::getProcessType, displayStatus).in(WorkOrderDynamic::getOrderNo, orderNoList));
+        List<WorkOrderDynamic> dynamicList = workOrderDynamicManager.list(Wraps.<WorkOrderDynamic>lbQ().eq(WorkOrderDynamic::getProcessType, displayStatus.replaceAll("已", "")).in(WorkOrderDynamic::getOrderNo, orderNoList));
         Map<String, List<WorkOrderDynamic>> dynamicMap = dynamicList.stream()
                 .collect(Collectors.groupingBy(
                         WorkOrderDynamic::getOrderNo,
@@ -174,7 +181,6 @@ public class NormalWorkOrderServiceImpl extends SuperServiceImpl<NormalWorkOrder
             if (!CollectionUtils.isEmpty(tempList)) t.setFinishOrBackContentJson(tempList.get(0).getContentJson());
         });
     }
-
 
     @Override
     @SneakyThrows
