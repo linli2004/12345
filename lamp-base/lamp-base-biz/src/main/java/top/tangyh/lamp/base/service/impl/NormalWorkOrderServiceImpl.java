@@ -190,7 +190,7 @@ public class NormalWorkOrderServiceImpl extends SuperServiceImpl<NormalWorkOrder
                 ));
         workOrderResultList.forEach(t -> {
             List<WorkOrderDynamic> tempList = dynamicMap.get(t.getOrderNo());
-            if (!CollectionUtils.isEmpty(tempList)) t.setFinishOrBackContentJson(tempList.get(0).getContentJson());
+            if (!CollectionUtils.isEmpty(tempList)) t.setFinishOrBackDynamic(tempList.get(0));
         });
     }
 

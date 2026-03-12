@@ -37,8 +37,6 @@ public interface NormalWorkOrderService extends SuperService<Long, NormalWorkOrd
 
     void getFinishOrBackContentJson(List<NormalWorkOrderResultVO> resultVOList, NormalWorkOrderPageQuery model);
 
-    void exportTaskZip(@RequestBody List<Long> idList, HttpServletResponse response);
-
     Long getWorkOrderCount(String displayStatus, String roleCode, String leadUnitId);
 
     List<SignCategoryIsNullNormalWorkOrderResultVO> groupByCategoryWorkOrderCount(String roleCode, String leadUnitId);

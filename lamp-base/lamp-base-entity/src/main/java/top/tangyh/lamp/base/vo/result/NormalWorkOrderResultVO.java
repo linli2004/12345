@@ -1,21 +1,18 @@
 package top.tangyh.lamp.base.vo.result;
 
 import cn.hutool.core.map.MapUtil;
-import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
 import top.tangyh.basic.base.entity.Entity;
 import top.tangyh.basic.interfaces.echo.EchoVO;
+import top.tangyh.lamp.base.entity.WorkOrderDynamic;
 
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-
-import static com.baomidou.mybatisplus.annotation.SqlCondition.EQUAL;
-import static top.tangyh.lamp.model.constant.Condition.LIKE;
 
 /**
  * <p>
@@ -181,7 +178,7 @@ public class NormalWorkOrderResultVO extends Entity<Long> implements Serializabl
 
     private List<NormalWorkOrderTaskResultVO> workOrderTaskList;
 
-    private String finishOrBackContentJson;
+    private WorkOrderDynamic finishOrBackDynamic;
 
     private String exportTime;
 
