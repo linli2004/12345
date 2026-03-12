@@ -141,10 +141,19 @@ public class NormalWorkOrderController extends SuperController<NormalWorkOrderSe
     }
 
 
+    /**
+     * 普通工单导出压缩包
+     * <p>
+     * 导出包含工单Excel清单和每个工单详情Word文档的压缩包
+     *
+     * @param idList   工单ID列表
+     * @param status   工单状态
+     * @param response HTTP响应对象，用于写入ZIP流
+     */
     @PostMapping("/exportTaskZip")
     @Operation(summary = "普通工单导出压缩包", description = "普通工单导出压缩包")
-    public void exportTaskZip(@RequestBody List<Long> idList, HttpServletResponse response) {
-        superService.exportTaskZip(idList, response);
+    public void exportTaskZip(@RequestBody List<String> orderNoList, String status, HttpServletResponse response) {
+        superService.exportTaskZip(orderNoList, response, status);
     }
 
     @PostMapping("/testList")

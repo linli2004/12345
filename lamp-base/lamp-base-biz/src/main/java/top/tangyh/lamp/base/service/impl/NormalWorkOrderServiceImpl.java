@@ -35,6 +35,7 @@ import top.tangyh.lamp.base.manager.WorkOrderDynamicManager;
 import top.tangyh.lamp.base.property.WorkExportFolderProperty;
 import top.tangyh.lamp.base.service.NormalWorkOrderService;
 import top.tangyh.lamp.base.vo.query.NormalWorkOrderPageQuery;
+import top.tangyh.lamp.base.vo.result.NormalWorkOrderExport;
 import top.tangyh.lamp.base.vo.result.NormalWorkOrderRankingResultVO;
 import top.tangyh.lamp.base.vo.result.NormalWorkOrderResultVO;
 import top.tangyh.lamp.base.vo.result.SignCategoryIsNullNormalWorkOrderResultVO;
@@ -189,13 +190,16 @@ public class NormalWorkOrderServiceImpl extends SuperServiceImpl<NormalWorkOrder
 
     @Override
     @SneakyThrows
-    public void exportTaskZip(@RequestBody List<Long> idList, HttpServletResponse response) {
+    public void exportTaskZip(List<String> orderNoList, HttpServletResponse response, String status) {
         ArgumentAssert.notBlank(workExportFolderProperty.getWorkFinishExcelPath(), "未配置模板路径");
+        NormalWorkOrderPageQuery normalWorkOrderPageQuery = new NormalWorkOrderPageQuery();
+        normalWorkOrderPageQuery.setOrderNoList(orderNoList);
+        normalWorkOrderPageQuery.setDisplayStatus(status);
+        List<NormalWorkOrderResultVO> normalWorkOrderResultVOS = this.selectListResultVO(normalWorkOrderPageQuery);
+        List<NormalWorkOrderExport> normalWorkOrderExports = BeanUtil.copyToList(normalWorkOrderResultVOS, NormalWorkOrderExport.class);
         String fileName = URLEncoder.encode("办结文件导出.zip", StandardCharsets.UTF_8).replaceAll("\\+", "%20");
         response.setContentType("application/zip");
         response.setHeader("Content-Disposition", "attachment; filename=" + fileName);
-        List<NormalWorkOrder> normalWorkOrders = superManager.listByIds(idList);
-        List<NormalWorkOrderExcel> normalWorkOrderExcels = BeanUtil.copyToList(normalWorkOrders, NormalWorkOrderExcel.class);
 
         try (ZipOutputStream zos = new ZipOutputStream(response.getOutputStream());
                 InputStream templateInputStream = Files.newInputStream(Paths.get(workExportFolderProperty.getWorkFinishExcelPath()))) {
@@ -212,11 +216,11 @@ public class NormalWorkOrderServiceImpl extends SuperServiceImpl<NormalWorkOrder
                     .withTemplate(templateInputStream)
                     .build();
             WriteSheet writeSheet = EasyExcel.writerSheet("12345事件工作表(街镇)").build();
-            excelWriter.fill(normalWorkOrderExcels, writeSheet);
+            excelWriter.fill(normalWorkOrderExports, writeSheet);
             excelWriter.finish();
             zos.closeEntry();
 
-            for (NormalWorkOrderExcel normalWorkOrder : normalWorkOrderExcels) {
+            for (NormalWorkOrderExport normalWorkOrder : normalWorkOrderExports) {
                 normalWorkOrder.setExportTime(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
                 String folderName = rootFolderName+normalWorkOrder.getOrderNo() + "/";
                 ZipEntry directoryEntry = new ZipEntry(folderName);
