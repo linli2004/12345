@@ -3,13 +3,21 @@ package top.tangyh.lamp.base.controller;
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.compress.utils.Lists;
+import org.springframework.http.MediaType;
 import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -39,6 +47,8 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static top.tangyh.lamp.common.constant.SwaggerConstants.DATA_TYPE_MULTIPART_FILE;
 
 /**
  * <p>
@@ -74,14 +84,14 @@ public class NormalWorkOrderController extends SuperController<NormalWorkOrderSe
      * @param actionVO excel工单文件
      */
     @Operation(summary = "普通工单导入", description = "普通工单导入")
-    @PostMapping("/import")
+    @PostMapping(path = "/import" ,consumes = "multipart/form-data")
     @WebLog("普通工单导入")
-    public R importNormalWorkOrder(NormalWorkOrderTaskActionVO actionVO) throws IOException {
-        if (actionVO.getFile().isEmpty()) {
+    public R importNormalWorkOrder(@RequestPart("file") MultipartFile file, NormalWorkOrderTaskActionVO actionVO) throws IOException {
+        if (file.isEmpty()) {
             return R.fail("导入的文件为空");
         }
         List<String> errorOrderNoList = Lists.newArrayList();
-        try (InputStream inputStream = actionVO.getFile().getInputStream()) {
+        try (InputStream inputStream = file.getInputStream()) {
             superService.importNormalWorkOrder(inputStream, errorOrderNoList, actionVO);
         }
         if (CollectionUtils.isEmpty(errorOrderNoList)) {
@@ -133,10 +143,19 @@ public class NormalWorkOrderController extends SuperController<NormalWorkOrderSe
     }
 
 
+    /**
+     * 普通工单导出压缩包
+     * <p>
+     * 导出包含工单Excel清单和每个工单详情Word文档的压缩包
+     *
+     * @param idList   工单ID列表
+     * @param status   工单状态
+     * @param response HTTP响应对象，用于写入ZIP流
+     */
     @PostMapping("/exportTaskZip")
     @Operation(summary = "普通工单导出压缩包", description = "普通工单导出压缩包")
-    public void exportTaskZip(@RequestBody List<Long> idList, HttpServletResponse response) {
-        superService.exportTaskZip(idList, response);
+    public void exportTaskZip(@RequestBody List<String> orderNoList, String status, HttpServletResponse response) {
+        superService.exportTaskZip(orderNoList, response, status);
     }
 
     @PostMapping("/testList")

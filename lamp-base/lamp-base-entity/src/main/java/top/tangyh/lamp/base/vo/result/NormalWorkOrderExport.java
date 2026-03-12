@@ -1,47 +1,14 @@
 package top.tangyh.lamp.base.vo.result;
 
-import cn.hutool.core.map.MapUtil;
-import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
-import lombok.experimental.Accessors;
-import top.tangyh.basic.base.entity.Entity;
-import top.tangyh.basic.interfaces.echo.EchoVO;
+import lombok.Data;
 
-import java.io.Serial;
-import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
-import static com.baomidou.mybatisplus.annotation.SqlCondition.EQUAL;
-import static top.tangyh.lamp.model.constant.Condition.LIKE;
-
-/**
- * <p>
- * 表单查询方法返回值VO
- * 普通工单
- * </p>
- *
- * @author lunar
- * @date 2026-03-03 11:47:40
- */
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-@ToString(callSuper = true)
-@Accessors(chain = true)
-@EqualsAndHashCode(callSuper = true)
-@Builder
-@Schema(description = "普通工单")
-public class NormalWorkOrderResultVO extends Entity<Long> implements Serializable, EchoVO {
-    @Serial
-    private static final long serialVersionUID = 1L;
-    @Builder.Default
-    private final Map<String, Object> echoMap = MapUtil.newHashMap();
+public class NormalWorkOrderExport {
 
-    @Schema(description = "ID")
-    private Long id;
 
     /**
      * 工单编号

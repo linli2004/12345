@@ -1,5 +1,7 @@
 package top.tangyh.lamp.base.entity;
 
+import com.alibaba.excel.annotation.ExcelProperty;
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.*;
@@ -172,5 +174,29 @@ public class NormalWorkOrder extends Entity<Long> {
     @TableField(value = "allow_comment", condition = EQUAL)
     private String allowComment;
 
-
+    /**
+     * 是否协办
+     */
+    @TableField(value = "assist_status", condition = LIKE)
+    private String assistStatus;
+    /**
+     * 市交办主办单位
+     */
+    @TableField(value = "municipal_host_dept_name", condition = LIKE)
+    private String municipalHostDeptName;
+    /**
+     * 市交办协办单位
+     */
+    @TableField(value = "municipal_assist_dept_name", condition = LIKE)
+    private String municipalAssistDeptName;
+    /**
+     * 市交办时间
+     */
+    @TableField(value = "municipal_assign_time", condition = EQUAL)
+    private LocalDateTime municipalAssignTime;
+    /**
+     * 市交办办结期限
+     */
+    @TableField(value = "municipal_deadline", condition = EQUAL)
+    private LocalDateTime municipalDeadline;
 }

@@ -229,5 +229,11 @@
             <groupId>io.seata</groupId>
             <artifactId>seata-all</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>com.deepoove</groupId>
+            <artifactId>poi-tl</artifactId>
+            <version>1.12.1</version>
+        </dependency>
     </dependencies>
 </project>

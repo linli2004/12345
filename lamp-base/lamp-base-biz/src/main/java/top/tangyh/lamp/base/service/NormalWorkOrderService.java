@@ -31,6 +31,7 @@ public interface NormalWorkOrderService extends SuperService<Long, NormalWorkOrd
     void importNormalWorkOrder(InputStream inputStream, List<String> errorOrderNoList, NormalWorkOrderTaskActionVO actionVO);
 
     IPage<NormalWorkOrderResultVO> findPageResultVO(PageParams<NormalWorkOrderPageQuery> params);
+    void exportTaskZip(List<String> orderNoList, HttpServletResponse response, String status);
 
     List<NormalWorkOrderResultVO> selectListResultVO(NormalWorkOrderPageQuery model);
 
@@ -45,6 +46,7 @@ public interface NormalWorkOrderService extends SuperService<Long, NormalWorkOrd
     Long signCategoryIsNull();
 
     List<NormalWorkOrderRankingResultVO> getRanking();
+
 }
 
 

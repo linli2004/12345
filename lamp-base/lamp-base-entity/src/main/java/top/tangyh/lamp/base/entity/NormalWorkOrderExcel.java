@@ -38,20 +38,22 @@ public class NormalWorkOrderExcel {
     @ExcelProperty("区交办办结期限")
     private String regionDeadline;
     /**
-     * 紧急程度
+     * 诉求渠道
      */
-    @ExcelProperty("紧急程度")
-    private String urgency;
+    @ExcelProperty(value = "诉求渠道")
+    private String channel;
     /**
      * 诉求归口
      */
-    @ExcelProperty("诉求归口")
+    @ExcelProperty(value = "诉求归口")
     private String sourceDeptName;
     /**
-     * 诉求渠道
+     * 紧急程度
      */
-    @ExcelProperty("诉求渠道")
-    private String channel;
+    @ExcelProperty(value = "紧急程度")
+    private String urgency;
+    @ExcelProperty(value = "工单状态")
+    private String orderStatus;
     /**
      * 求助人员
      */
@@ -82,4 +84,15 @@ public class NormalWorkOrderExcel {
      */
     @ExcelProperty("是否疑难")
     private String isDifficult;
+    @ExcelProperty("是否协办")
+    private String assistStatus;
+    @ExcelProperty("市交办主办单位")
+    private String municipalHostDeptName;
+    @ExcelProperty("市交办协办单位")
+    private String municipalAssistDeptName;
+    @ExcelProperty("市交办时间")
+    private String municipalAssignTime;
+    @ExcelProperty("市交办办结期限")
+    private String municipalDeadline;
+    private String exportTime;
 }

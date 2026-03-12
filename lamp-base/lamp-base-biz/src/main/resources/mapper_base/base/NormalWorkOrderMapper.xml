@@ -55,7 +55,8 @@
         order_category_name, t3.region_assign_time, t3.region_deadline, t3.urgency, t3.source_dept_name, t3.channel, t3.
         helper_name, t3.contact_phone, t3.gender, t3.incident_location, t3.address, t3.is_difficult, t3.
         difficult_content, t3.host_dept_name, t3.assist_dept_name, t3.cc_dept_name, t3.settle_condition, t3.last_operate_time, t3.
-        created_by, t3.created_time, t3.updated_by, t3.updated_time, t3.created_org_id, t3.allow_back, t3.allow_back_time, t3.allow_comment
+        created_by, t3.created_time, t3.updated_by, t3.updated_time, t3.created_org_id, t3.allow_back, t3.allow_back_time, t3.allow_comment,
+        t3.assist_status, t3.municipal_host_dept_name, t3.municipal_assist_dept_name, t3.municipal_assign_time, t3.municipal_deadline
     </sql>
     <resultMap id="ResultVOResultMap" type="top.tangyh.lamp.base.vo.result.NormalWorkOrderResultVO"
                extends="top.tangyh.lamp.base.mapper.NormalWorkOrderMapper.BaseResultMap">
