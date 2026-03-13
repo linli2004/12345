@@ -207,8 +207,6 @@ public class NormalWorkOrderServiceImpl extends SuperServiceImpl<NormalWorkOrder
     @Override
     @SneakyThrows
     public void exportTaskZip(List<String> orderNoList, HttpServletResponse response, String status) {
-        ArgumentAssert.notBlank(workExportFolderProperty.getWorkFinishExcelPath(), "未配置 Excel 模板路径");
-        ArgumentAssert.notBlank(workExportFolderProperty.getWorkFinishWordPath(), "未配置 Word 模板路径");
 
         // 1. 查询数据
         NormalWorkOrderPageQuery normalWorkOrderPageQuery = new NormalWorkOrderPageQuery();
@@ -222,12 +220,16 @@ public class NormalWorkOrderServiceImpl extends SuperServiceImpl<NormalWorkOrder
         Path execlPath = null;
         String fileNamePrefix = "导出文件";
         if (Objects.equals(status, "办结")) {
+            ArgumentAssert.notBlank(workExportFolderProperty.getWorkFinishExcelPath(), "未配置 Excel 模板路径");
+            ArgumentAssert.notBlank(workExportFolderProperty.getWorkFinishWordPath(), "未配置 Word 模板路径");
             wordPath = Paths.get(workExportFolderProperty.getWorkFinishWordPath());
             execlPath = Paths.get(workExportFolderProperty.getWorkFinishExcelPath());
             fileNamePrefix = "办结文件导出";
             fillExportData(normalWorkOrderExports, status);
         }
         if (Objects.equals(status, "已退回")) {
+            ArgumentAssert.notBlank(workExportFolderProperty.getWorkBackExcelPath(), "未配置 Excel 模板路径");
+            ArgumentAssert.notBlank(workExportFolderProperty.getWorkBackWordPath(), "未配置 Word 模板路径");
             wordPath = Paths.get(workExportFolderProperty.getWorkBackWordPath());
             execlPath = Paths.get(workExportFolderProperty.getWorkBackExcelPath());
             fileNamePrefix = "退回文件导出";
@@ -265,7 +267,10 @@ public class NormalWorkOrderServiceImpl extends SuperServiceImpl<NormalWorkOrder
             // 4.3 生成每个工单的Word文档
             for (NormalWorkOrderExport normalWorkOrder : normalWorkOrderExports) {
                 try {
-                    normalWorkOrder.setExportTime(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+                    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                    normalWorkOrder.setExportTime(LocalDateTime.now().format(dateTimeFormatter));
+                    normalWorkOrder.setRegionAssignTimeStr(normalWorkOrder.getRegionAssignTime().format(dateTimeFormatter));
+                    normalWorkOrder.setRegionDeadlineStr(normalWorkOrder.getRegionDeadline().format(dateTimeFormatter));
                     String folderName = rootFolderName + normalWorkOrder.getOrderNo() + "/";
                     
                     // 创建工单文件夹

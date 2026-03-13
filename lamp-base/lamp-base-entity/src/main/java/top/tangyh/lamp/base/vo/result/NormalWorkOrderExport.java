@@ -48,11 +48,13 @@ public class NormalWorkOrderExport {
      */
     @Schema(description = "区交办时间")
     private LocalDateTime regionAssignTime;
+    private String regionAssignTimeStr;
     /**
      * 区交办办结期限
      */
     @Schema(description = "区交办办结期限")
     private LocalDateTime regionDeadline;
+    private String regionDeadlineStr;
     /**
      * 紧急程度
      */
