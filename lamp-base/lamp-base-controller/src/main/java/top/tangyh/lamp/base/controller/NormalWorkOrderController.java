@@ -3,25 +3,15 @@ package top.tangyh.lamp.base.controller;
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.Parameters;
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.compress.utils.Lists;
-import org.springframework.http.MediaType;
 import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 import top.tangyh.basic.annotation.log.WebLog;
 import top.tangyh.basic.base.R;
 import top.tangyh.basic.base.controller.SuperController;
@@ -47,8 +37,6 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import static top.tangyh.lamp.common.constant.SwaggerConstants.DATA_TYPE_MULTIPART_FILE;
 
 /**
  * <p>
@@ -84,7 +72,7 @@ public class NormalWorkOrderController extends SuperController<NormalWorkOrderSe
      * @param actionVO excel工单文件
      */
     @Operation(summary = "普通工单导入", description = "普通工单导入")
-    @PostMapping(path = "/import" ,consumes = "multipart/form-data")
+    @PostMapping(path = "/import", consumes = "multipart/form-data")
     @WebLog("普通工单导入")
     public R importNormalWorkOrder(@RequestPart("file") MultipartFile file, NormalWorkOrderTaskActionVO actionVO) throws IOException {
         if (file.isEmpty()) {
@@ -122,8 +110,8 @@ public class NormalWorkOrderController extends SuperController<NormalWorkOrderSe
             echoService.action(taskResultVOList);
         }
         if (!Constant.ROLE_CODE_TOWN_SPECIALIST.equals(params.getModel().getRoleCode())) {
-            List<BaseEmployeeResultVO> leader = baseEmployeeService.getEmployeeIdByRoleCodeAndOrgId(Constant.ROLE_CODE_DEPT_LEADER, Long.valueOf(params.getModel().getLeadUnitId()));
-            List<BaseEmployeeResultVO> director = baseEmployeeService.getEmployeeIdByRoleCodeAndOrgId(Constant.ROLE_CODE_DEPT_DIRECTOR, Long.valueOf(params.getModel().getLeadUnitId()));
+            List<BaseEmployeeResultVO> leader = baseEmployeeService.getEmployeeIdByRoleCodeAndOrgId(List.of(Constant.ROLE_CODE_DEPT_LEADER), List.of(Long.valueOf(params.getModel().getLeadUnitId())));
+            List<BaseEmployeeResultVO> director = baseEmployeeService.getEmployeeIdByRoleCodeAndOrgId(List.of(Constant.ROLE_CODE_DEPT_DIRECTOR), List.of(Long.valueOf(params.getModel().getLeadUnitId())));
             if (!CollectionUtils.isEmpty(leader))
                 taskResultVOList.forEach(t -> t.setDeptLeader(leader.get(0).getRealName()));
             if (!CollectionUtils.isEmpty(director))

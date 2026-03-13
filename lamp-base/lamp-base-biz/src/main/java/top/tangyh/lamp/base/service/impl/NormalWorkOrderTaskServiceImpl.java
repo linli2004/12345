@@ -353,6 +353,20 @@ public class NormalWorkOrderTaskServiceImpl extends SuperServiceImpl<NormalWorkO
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean revokeNormalWorkOrder(NormalWorkOrderTaskActionVO revokeVO) {
+        List<NormalWorkOrderTask> taskTempList = superManager.list(Wraps.<NormalWorkOrderTask>lbQ().eq(NormalWorkOrderTask::getValid, Constant.TASK_VALID).eq(NormalWorkOrderTask::getOrderNo, revokeVO.getOrderNo()));
+        ArgumentAssert.notEmpty(taskTempList, "工单编号有误");
+        List<String> employeeIdList = Lists.newArrayList();
+        String titleTemplate = "工单【%s】已撤回";
+        List<BaseEmployeeResultVO> employeeList = baseEmployeeService.getEmployeeIdByRoleCodeAndOrgId(Arrays.asList(Constant.ROLE_CODE_DEPT_LEADER, Constant.ROLE_CODE_DEPT_DIRECTOR, Constant.ROLE_CODE_DEPT_SPECIALIST), taskTempList.stream().map(NormalWorkOrderTask::getLeadUnitId).collect(Collectors.toList()));
+        if (!CollectionUtils.isEmpty(employeeList))
+            employeeIdList.addAll(employeeList.stream().map(e -> String.valueOf(e.getId())).toList());
+        NormalWorkOrder workOrderTemp = normalWorkOrderManager.getOne(Wraps.<NormalWorkOrder>lbQ().eq(NormalWorkOrder::getOrderNo, revokeVO.getOrderNo()));
+        ExtendMsgPublishVO data = new ExtendMsgPublishVO();
+        data.setTitle(String.format(titleTemplate, workOrderTemp.getOrderTitle()));
+        data.setContent(String.format(titleTemplate, workOrderTemp.getOrderTitle()));
+        data.setRemindMode("03");
+        data.setRecipientList(employeeIdList);
+        msgBiz.publish(data, new SysUser());
         superManager.update(Wrappers.<NormalWorkOrderTask>lambdaUpdate()
                 .set(NormalWorkOrderTask::getValid, Constant.TASK_INVALID)
                 .eq(NormalWorkOrderTask::getOrderNo, revokeVO.getOrderNo()));
@@ -374,30 +388,36 @@ public class NormalWorkOrderTaskServiceImpl extends SuperServiceImpl<NormalWorkO
         NormalWorkOrder workOrderTemp = normalWorkOrderManager.getOne(Wraps.<NormalWorkOrder>lbQ().eq(NormalWorkOrder::getOrderNo, urgeVO.getOrderNo()));
         List<NormalWorkOrderTask> taskTempList = superManager.list(Wraps.<NormalWorkOrderTask>lbQ().eq(NormalWorkOrderTask::getValid, Constant.TASK_VALID).eq(NormalWorkOrderTask::getOrderNo, urgeVO.getOrderNo()));
         ArgumentAssert.notEmpty(taskTempList, "工单编号有误");
-        List<String> employeeId = Lists.newArrayList();
+        List<String> employeeIdList = Lists.newArrayList();
         String titleTemplate = "请及时处理工单【%s】";
         taskTempList.forEach(taskTemp -> {
             String roleCode = NoticeNodeCodeEnum.getRoleCode(taskTemp.getCurrentNodeCode());
             if (StringUtils.isNotBlank(roleCode)) {
-                List<BaseEmployeeResultVO> employeeList = baseEmployeeService.getEmployeeIdByRoleCodeAndOrgId(roleCode, taskTemp.getLeadUnitId());
+                List<BaseEmployeeResultVO> employeeList = baseEmployeeService.getEmployeeIdByRoleCodeAndOrgId(List.of(roleCode), List.of(taskTemp.getLeadUnitId()));
                 if (!CollectionUtils.isEmpty(employeeList)) {
-                    employeeId.addAll(employeeList.stream().map(e -> String.valueOf(e.getId())).toList());
+                    employeeIdList.addAll(employeeList.stream().map(e -> String.valueOf(e.getId())).toList());
                 }
             }
         });
         ExtendMsgPublishVO data = new ExtendMsgPublishVO();
         data.setTitle(String.format(titleTemplate, workOrderTemp.getOrderTitle()));
         data.setContent(String.format(titleTemplate, workOrderTemp.getOrderTitle()));
-        data.setRemindMode("03");
-        data.setRecipientList(employeeId);
+        data.setRemindMode("01");
+        data.setRecipientList(employeeIdList);
         return msgBiz.publish(data, new SysUser());
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean againProcessingNormalWorkOrder(NormalWorkOrderTaskActionVO processingVO) {
-        List<NormalWorkOrderTask> normalWorkOrderTaskList = Lists.newArrayList();
+        List<NormalWorkOrderTask> taskTempList = superManager.list(Wraps.<NormalWorkOrderTask>lbQ().eq(NormalWorkOrderTask::getValid, Constant.TASK_VALID).eq(NormalWorkOrderTask::getOrderNo, processingVO.getOrderNo()));
+        ArgumentAssert.notNull(taskTempList, "工单编号有误");
+        Set<String> leadUnitIdSet = taskTempList.stream().map(NormalWorkOrderTask::getLeadUnitId).map(String::valueOf).collect(Collectors.toSet());
         String[] leadUnitIdArray = processingVO.getLeadUnitIds().split(",");
+        List<NormalWorkOrderTask> existBackTask = taskTempList.stream().filter(a -> !Arrays.stream(leadUnitIdArray).collect(Collectors.toSet()).contains(a.getLeadUnitId().toString()) && Constant.NODE_CODE_BASIC_BACK_LEADER_APPROVE.equals(a.getCurrentNodeCode())).toList();
+        List<NormalWorkOrderTask> otherTask = taskTempList.stream().filter(a -> !Arrays.stream(leadUnitIdArray).collect(Collectors.toSet()).contains(a.getLeadUnitId().toString())).toList();
+        leadUnitIdSet.addAll(Arrays.stream(leadUnitIdArray).collect(Collectors.toSet()));
+        List<NormalWorkOrderTask> normalWorkOrderTaskList = Lists.newArrayList();
         List<String> list = new ArrayList<>(Arrays.stream(leadUnitIdArray).toList());
         list.add("1"); //unit_id=1的(全部结案的主task)
         ArgumentAssert.notEmpty(leadUnitIdArray, "主办单位不可为空");
@@ -407,15 +427,35 @@ public class NormalWorkOrderTaskServiceImpl extends SuperServiceImpl<NormalWorkO
             NormalWorkOrderTask taskTemp = BeanUtil.copyProperties(processingVO, NormalWorkOrderTask.class, "id");
             taskTemp.setLeadUnitId(Long.valueOf(leadUnitId));
             taskTemp.setCurrentNodeCode(Constant.NODE_CODE_TOWN_AGAIN_PROCESSING);
+            taskTemp.setLevel(leadUnitIdSet.size() > 1 ? Constant.TASK_LEVEL_1 : Constant.TASK_LEVEL_0);
             normalWorkOrderTaskList.add(taskTemp);
         }
-        if (leadUnitIdArray.length > 1 && Constant.SETTLE_CONDITION_ALL.equals(processingVO.getSettleCondition())) {
+        if (Constant.SETTLE_CONDITION_ALL.equals(processingVO.getSettleCondition())) {
             normalWorkOrderTaskList.forEach(t -> t.setLevel(Constant.TASK_LEVEL_1));
+            //将其他task的level置1
+            if (CollectionUtils.isNotEmpty(otherTask)) {
+                superManager.update(Wrappers.<NormalWorkOrderTask>lambdaUpdate().set(NormalWorkOrderTask::getLevel, Constant.TASK_LEVEL_1)
+                        .in(NormalWorkOrderTask::getId, otherTask.stream().map(NormalWorkOrderTask::getId).collect(Collectors.toList())));
+            }
             NormalWorkOrderTask taskTemp = BeanUtil.copyProperties(processingVO, NormalWorkOrderTask.class, "id");
-            taskTemp.setCurrentNodeCode(Constant.NODE_CODE_TOWN_AGAIN_PROCESSING);
+            taskTemp.setCurrentNodeCode(CollectionUtils.isEmpty(existBackTask) ? Constant.NODE_CODE_TOWN_AGAIN_PROCESSING : Constant.NODE_CODE_BASIC_BACK_LEADER_APPROVE);
             taskTemp.setLeadUnitId(1L);
             taskTemp.setLevel(Constant.TASK_LEVEL_0);
             normalWorkOrderTaskList.add(taskTemp);
+        } else {
+            normalWorkOrderTaskList.forEach(t -> t.setLevel(Constant.TASK_LEVEL_0));
+            //如果存在没动的task是15.1的 15.1的task level置0
+            if (CollectionUtils.isNotEmpty(existBackTask)) {
+                superManager.update(Wrappers.<NormalWorkOrderTask>lambdaUpdate().set(NormalWorkOrderTask::getLevel, Constant.TASK_LEVEL_0)
+                        .in(NormalWorkOrderTask::getId, existBackTask.stream().map(NormalWorkOrderTask::getId).collect(Collectors.toList()))
+                        .eq(NormalWorkOrderTask::getCurrentNodeCode, Constant.NODE_CODE_BASIC_BACK_LEADER_APPROVE));
+            } else {//如果不存在没动的task是15.1的 12.1的task level置0
+                if (CollectionUtils.isNotEmpty(otherTask)) {
+                    superManager.update(Wrappers.<NormalWorkOrderTask>lambdaUpdate().set(NormalWorkOrderTask::getLevel, Constant.TASK_LEVEL_0)
+                            .in(NormalWorkOrderTask::getId, otherTask.stream().map(NormalWorkOrderTask::getId).collect(Collectors.toList()))
+                            .eq(NormalWorkOrderTask::getCurrentNodeCode, Constant.NODE_CODE_BASIC_FINAL_LEADER_APPROVE));
+                }
+            }
         }
         //新增 交办的办理动态
         WorkOrderDynamic dynamicTemp = BeanUtil.copyProperties(processingVO, WorkOrderDynamic.class, "id");

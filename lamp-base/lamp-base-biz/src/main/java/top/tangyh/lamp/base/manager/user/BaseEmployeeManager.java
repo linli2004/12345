@@ -29,5 +29,5 @@ public interface BaseEmployeeManager extends SuperCacheManager<BaseEmployee> {
      */
     IPage<BaseEmployeeResultVO> selectPageResultVO(IPage<BaseEmployee> page, Wrapper<BaseEmployee> wrapper, BaseEmployeePageQuery model);
 
-    List<BaseEmployeeResultVO> getEmployeeIdByRoleCodeAndOrgId(String roleCode, Long orgId);
+    List<BaseEmployeeResultVO> getEmployeeIdByRoleCodeAndOrgId(List<String> roleCodeList, List<Long> orgIdList);
 }

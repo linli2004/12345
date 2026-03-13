@@ -42,7 +42,7 @@ public class BaseEmployeeManagerImpl extends SuperCacheManagerImpl<BaseEmployeeM
     }
 
     @Override
-    public List<BaseEmployeeResultVO> getEmployeeIdByRoleCodeAndOrgId(String roleCode, Long orgId) {
-        return baseMapper.getEmployeeIdByRoleCodeAndOrgId(roleCode, orgId);
+    public List<BaseEmployeeResultVO> getEmployeeIdByRoleCodeAndOrgId(List<String> roleCodeList, List<Long> orgIdList) {
+        return baseMapper.getEmployeeIdByRoleCodeAndOrgId(roleCodeList, orgIdList);
     }
 }

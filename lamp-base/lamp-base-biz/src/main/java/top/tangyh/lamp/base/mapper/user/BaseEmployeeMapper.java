@@ -28,12 +28,12 @@ public interface BaseEmployeeMapper extends SuperMapper<BaseEmployee> {
      *
      * @param page    分页对象
      * @param wrapper 查询条件
-     * @param model  条件
+     * @param model   条件
      * @return 分页用户数据
      */
     IPage<BaseEmployeeResultVO> selectPageResultVO(IPage<BaseEmployee> page,
                                                    @Param(Constants.WRAPPER) Wrapper<BaseEmployee> wrapper,
                                                    @Param("model") BaseEmployeePageQuery model);
 
-    List<BaseEmployeeResultVO> getEmployeeIdByRoleCodeAndOrgId(@Param("roleCode") String roleCode, @Param("orgId") Long orgId);
+    List<BaseEmployeeResultVO> getEmployeeIdByRoleCodeAndOrgId(@Param("roleCodeList") List<String> roleCodeList, @Param("orgIdList") List<Long> orgIdList);
 }

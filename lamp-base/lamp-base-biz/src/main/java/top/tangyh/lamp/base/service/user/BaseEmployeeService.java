@@ -95,6 +95,6 @@ public interface BaseEmployeeService extends SuperCacheService<Long, BaseEmploye
      */
     void updateOrgInfo(Long id, Long lastCompanyId, Long lastDeptId);
 
-    List<BaseEmployeeResultVO> getEmployeeIdByRoleCodeAndOrgId(String roleCode, Long orgId);
+    List<BaseEmployeeResultVO> getEmployeeIdByRoleCodeAndOrgId(List<String> roleCodeList, List<Long> orgIdList);
 
 }
