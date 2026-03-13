@@ -6,6 +6,7 @@ import com.alibaba.excel.ExcelWriter;
 import com.alibaba.excel.read.listener.PageReadListener;
 import com.alibaba.excel.write.metadata.WriteSheet;
 import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.deepoove.poi.XWPFTemplate;
@@ -42,7 +43,11 @@ import top.tangyh.lamp.base.vo.result.SignCategoryIsNullNormalWorkOrderResultVO;
 import top.tangyh.lamp.base.vo.update.NormalWorkOrderTaskActionVO;
 import top.tangyh.lamp.common.constant.DsConstant;
 
+import top.tangyh.lamp.file.service.FileService;
+
+import java.io.BufferedInputStream;
 import java.io.InputStream;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -52,6 +57,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -74,6 +80,7 @@ public class NormalWorkOrderServiceImpl extends SuperServiceImpl<NormalWorkOrder
     private final NormalWorkOrderTaskManager normalWorkOrderTaskManager;
     private final WorkOrderDynamicManager workOrderDynamicManager;
     private final WorkExportFolderProperty workExportFolderProperty;
+    private final FileService fileService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -197,59 +204,143 @@ public class NormalWorkOrderServiceImpl extends SuperServiceImpl<NormalWorkOrder
     @Override
     @SneakyThrows
     public void exportTaskZip(List<String> orderNoList, HttpServletResponse response, String status) {
-        ArgumentAssert.notBlank(workExportFolderProperty.getWorkFinishExcelPath(), "未配置模板路径");
+        ArgumentAssert.notBlank(workExportFolderProperty.getWorkFinishExcelPath(), "未配置 Excel 模板路径");
+        ArgumentAssert.notBlank(workExportFolderProperty.getWorkFinishWordPath(), "未配置 Word 模板路径");
+
+        // 1. 查询数据
         NormalWorkOrderPageQuery normalWorkOrderPageQuery = new NormalWorkOrderPageQuery();
         normalWorkOrderPageQuery.setOrderNoList(orderNoList);
         normalWorkOrderPageQuery.setDisplayStatus(status);
         List<NormalWorkOrderResultVO> normalWorkOrderResultVOS = this.selectListResultVO(normalWorkOrderPageQuery);
         List<NormalWorkOrderExport> normalWorkOrderExports = BeanUtil.copyToList(normalWorkOrderResultVOS, NormalWorkOrderExport.class);
-        String fileName = URLEncoder.encode("办结文件导出.zip", StandardCharsets.UTF_8).replaceAll("\\+", "%20");
+
+        // 2. 准备文件名和填充数据
+        String fileNamePrefix = "导出文件";
+        if (Objects.equals(status, "办结")) {
+            fileNamePrefix = "办结文件导出";
+            fillExportData(normalWorkOrderExports);
+        }
+        if (Objects.equals(status, "已退回")) {
+            fileNamePrefix = "退回文件导出";
+            fillExportData(normalWorkOrderExports);
+        }
+        String fileName = URLEncoder.encode(fileNamePrefix + ".zip", StandardCharsets.UTF_8).replaceAll("\\+", "%20");
         response.setContentType("application/zip");
         response.setHeader("Content-Disposition", "attachment; filename=" + fileName);
 
+        // 3. 预读取Word模板到内存，避免循环IO
+        byte[] wordTemplateBytes = Files.readAllBytes(Paths.get(workExportFolderProperty.getWorkFinishWordPath()));
+
+        // 4. 生成ZIP
         try (ZipOutputStream zos = new ZipOutputStream(response.getOutputStream());
-                InputStream templateInputStream = Files.newInputStream(Paths.get(workExportFolderProperty.getWorkFinishExcelPath()))) {
-            String rootFolderName = "办结文件导出/";
-            ZipEntry rootDirectoryEntry = new ZipEntry(rootFolderName);
-            zos.putNextEntry(rootDirectoryEntry);
+             InputStream excelTemplateInputStream = Files.newInputStream(Paths.get(workExportFolderProperty.getWorkFinishExcelPath()))) {
+            
+            // 4.1 创建根目录
+            String rootFolderName = fileNamePrefix + "/";
+            zos.putNextEntry(new ZipEntry(rootFolderName));
             zos.closeEntry();
 
+            // 4.2 生成Excel汇总表
             String exportTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
-            ZipEntry excelEntry = new ZipEntry(rootFolderName+"12345统计信息表"+exportTime+".xlsx");
-            zos.putNextEntry(excelEntry);
+            zos.putNextEntry(new ZipEntry(rootFolderName + "12345统计信息表" + exportTime + ".xlsx"));
             ExcelWriter excelWriter = EasyExcel.write(zos)
                     .autoCloseStream(Boolean.FALSE)
-                    .withTemplate(templateInputStream)
+                    .withTemplate(excelTemplateInputStream)
                     .build();
             WriteSheet writeSheet = EasyExcel.writerSheet("12345事件工作表(街镇)").build();
             excelWriter.fill(normalWorkOrderExports, writeSheet);
             excelWriter.finish();
             zos.closeEntry();
 
+            // 4.3 生成每个工单的Word文档
             for (NormalWorkOrderExport normalWorkOrder : normalWorkOrderExports) {
-                normalWorkOrder.setExportTime(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-                String folderName = rootFolderName+normalWorkOrder.getOrderNo() + "/";
-                ZipEntry directoryEntry = new ZipEntry(folderName);
-                zos.putNextEntry(directoryEntry);
-                zos.closeEntry();
+                try {
+                    normalWorkOrder.setExportTime(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+                    String folderName = rootFolderName + normalWorkOrder.getOrderNo() + "/";
+                    
+                    // 创建工单文件夹
+                    zos.putNextEntry(new ZipEntry(folderName));
+                    zos.closeEntry();
 
-                ZipEntry wordEntry = new ZipEntry(folderName + normalWorkOrder.getOrderNo() +".docx");
-                zos.putNextEntry(wordEntry);
-
-                try (InputStream is = Files.newInputStream(Paths.get(workExportFolderProperty.getWorkFinishWordPath()))) {
-                    XWPFTemplate template = XWPFTemplate.compile(is).render(normalWorkOrder);
-
-                    template.write(zos);
-
-                    template.close();
+                    // 创建Word文件条目
+                    zos.putNextEntry(new ZipEntry(folderName + normalWorkOrder.getOrderNo() + ".docx"));
+                    
+                    // 使用内存中的模板数据渲染
+                    try (InputStream is = new java.io.ByteArrayInputStream(wordTemplateBytes)) {
+                        XWPFTemplate template = XWPFTemplate.compile(is).render(normalWorkOrder);
+                        template.write(zos);
+                        template.close();
+                    }
+                    zos.closeEntry();
                 } catch (Exception e) {
                     log.error("生成工单 {} 的 Word 失败", normalWorkOrder.getOrderNo(), e);
                 }
-                zos.closeEntry();
+                List<Long> fileIds = extractFileIds(normalWorkOrder);
+                if (!CollectionUtils.isEmpty(fileIds)) {
+                    Map<Long, String> urlMap = fileService.findUrlById(fileIds);
+                    for (Long fid : fileIds) {
+                        String fUrl = urlMap.get(fid);
+                        if (StringUtils.isBlank(fUrl)) {
+                            continue;
+                        }
+                        String folderName = rootFolderName + normalWorkOrder.getOrderNo() + "/";
+                        JSONObject obj = JSON.parseObject(normalWorkOrder.getFinishOrBackDynamic().getContentJson());
+                        String entryName = folderName + obj.getString("attachmentsFileName");
+                        zos.putNextEntry(new ZipEntry(entryName));
+                        try (BufferedInputStream bis = new BufferedInputStream(new URL(fUrl).openStream())) {
+                            bis.transferTo(zos);
+                        } catch (Exception e) {
+                            log.warn("下载附件失败, id={}, url={}", fid, fUrl, e);
+                        }
+                        zos.closeEntry();
+                    }
+                }
             }
-
             zos.finish();
         }
+    }
+
+    /**
+     * 填充导出数据中的扩展字段（特别是JSON解析部分）
+     */
+    private void fillExportData(List<NormalWorkOrderExport> exports) {
+        exports.forEach(exp -> {
+            if (exp.getFinishOrBackDynamic() != null) {
+                exp.setDeptName(exp.getFinishOrBackDynamic().getDeptName());
+                exp.setOperatorName(exp.getFinishOrBackDynamic().getOperatorName());
+                exp.setFinishTime(exp.getFinishOrBackDynamic().getCreatedTime());
+                exp.setIsDifficultStr(Boolean.TRUE.equals(exp.getIsDifficult()) ? "是" : "否");
+                
+                // 判断是否超期
+                if (exp.getFinishOrBackDynamic().getCreatedTime() != null && exp.getMunicipalDeadline() != null) {
+                    exp.setIsExpire(exp.getFinishOrBackDynamic().getCreatedTime().isAfter(exp.getMunicipalDeadline()) ? "是" : "否");
+                } else {
+                    exp.setIsExpire("否");
+                }
+
+                String json = exp.getFinishOrBackDynamic().getContentJson();
+                if (StringUtils.isNotBlank(json)) {
+                    try {
+                        JSONObject obj = JSON.parseObject(json);
+                        exp.setClosingUnit(obj.getString("closingUnit"));
+                        exp.setPublicReplyContent(obj.getString("publicReplyContent"));
+                        exp.setCitizenReplyContent(obj.getString("citizenReplyContent"));
+                        exp.setReplyResult(obj.getString("replyResult"));
+                        exp.setContactCitizenFirst(obj.getInteger("contactCitizenFirst") != null && obj.getInteger("contactCitizenFirst") == 1 ? "是" : "否");
+                        exp.setReplyTime(obj.getString("replyTime"));
+                        exp.setIsOnSite(obj.getInteger("isOnSite") != null && obj.getInteger("isOnSite") == 1 ? "是" : "否");
+                        exp.setReplier(obj.getString("replier"));
+                        exp.setIsFinalReply(obj.getInteger("isFinalReply"));
+                        exp.setPublicReplyType(obj.getString("publicReplyType"));
+                        exp.setInternalReplyType(obj.getString("internalReplyType"));
+                        exp.setNotifyCitizenFirst(obj.getInteger("notifyCitizenFirst"));
+                        exp.setInternalReplyContent(obj.getString("internalReplyContent"));
+                    } catch (Exception e) {
+                        log.warn("解析finishOrBackContentJson失败, orderNo={}", exp.getOrderNo(), e);
+                    }
+                }
+            }
+        });
     }
 
     @Override
@@ -271,6 +362,22 @@ public class NormalWorkOrderServiceImpl extends SuperServiceImpl<NormalWorkOrder
     public List<NormalWorkOrderRankingResultVO> getRanking() {
         return superManager.getRanking();
     }
-}
 
+    private List<Long> extractFileIds(NormalWorkOrderExport export) {
+        List<Long> fileIds = Lists.newArrayList();
+        if (export.getFinishOrBackDynamic() != null && StringUtils.isNotBlank(export.getFinishOrBackDynamic().getContentJson())) {
+            try {
+                JSONObject jsonObject = JSON.parseObject(export.getFinishOrBackDynamic().getContentJson());
+                // 尝试获取 attachments 字段
+                String attachments = jsonObject.getString("attachments");
+                if (StringUtils.isNotBlank(attachments)) {
+                    fileIds.add(Long.parseLong(attachments));
+                }
+            } catch (Exception e) {
+                log.warn("解析附件ID失败 orderNo={}", export.getOrderNo(), e);
+            }
+        }
+        return fileIds.stream().distinct().collect(Collectors.toList());
+    }
+}
 

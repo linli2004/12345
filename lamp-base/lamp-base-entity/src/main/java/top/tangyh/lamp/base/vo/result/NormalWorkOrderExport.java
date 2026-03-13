@@ -2,7 +2,10 @@ package top.tangyh.lamp.base.vo.result;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+import org.springframework.cglib.core.Local;
+import top.tangyh.lamp.base.entity.WorkOrderDynamic;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -95,6 +98,7 @@ public class NormalWorkOrderExport {
      */
     @Schema(description = "是否疑难")
     private Boolean isDifficult;
+    private String isDifficultStr;
     /**
      * 疑难内容
      */
@@ -148,7 +152,7 @@ public class NormalWorkOrderExport {
 
     private List<NormalWorkOrderTaskResultVO> workOrderTaskList;
 
-    private String finishOrBackContentJson;
+    private WorkOrderDynamic finishOrBackDynamic;
 
     private String exportTime;
 
@@ -157,4 +161,22 @@ public class NormalWorkOrderExport {
     private String municipalAssistDeptName;
     private LocalDateTime municipalAssignTime;
     private LocalDateTime municipalDeadline;
+
+    private String deptName;
+    private LocalDateTime finishTime;
+    private String operatorName;
+    private String isExpire;
+    private String replier;
+    private String isOnSite;
+    private String replyTime;
+    private String closingUnit;
+    private String replyResult;
+    private Integer isFinalReply;
+    private String publicReplyType;
+    private String internalReplyType;
+    private Integer notifyCitizenFirst;
+    private String publicReplyContent;
+    private String citizenReplyContent;
+    private String contactCitizenFirst;
+    private String internalReplyContent;
 }
