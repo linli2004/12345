@@ -46,15 +46,18 @@ import top.tangyh.lamp.common.constant.DsConstant;
 import top.tangyh.lamp.file.service.FileService;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.DateTimeException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -192,7 +195,7 @@ public class NormalWorkOrderServiceImpl extends SuperServiceImpl<NormalWorkOrder
         Map<String, List<WorkOrderDynamic>> dynamicMap = dynamicList.stream()
                 .collect(Collectors.groupingBy(
                         WorkOrderDynamic::getOrderNo,
-                        java.util.LinkedHashMap::new,
+                        LinkedHashMap::new,
                         Collectors.toList()
                 ));
         workOrderResultList.forEach(t -> {
@@ -215,25 +218,32 @@ public class NormalWorkOrderServiceImpl extends SuperServiceImpl<NormalWorkOrder
         List<NormalWorkOrderExport> normalWorkOrderExports = BeanUtil.copyToList(normalWorkOrderResultVOS, NormalWorkOrderExport.class);
 
         // 2. 准备文件名和填充数据
+        Path wordPath = null;
+        Path execlPath = null;
         String fileNamePrefix = "导出文件";
         if (Objects.equals(status, "办结")) {
+            wordPath = Paths.get(workExportFolderProperty.getWorkFinishWordPath());
+            execlPath = Paths.get(workExportFolderProperty.getWorkFinishExcelPath());
             fileNamePrefix = "办结文件导出";
-            fillExportData(normalWorkOrderExports);
+            fillExportData(normalWorkOrderExports, status);
         }
         if (Objects.equals(status, "已退回")) {
+            wordPath = Paths.get(workExportFolderProperty.getWorkBackWordPath());
+            execlPath = Paths.get(workExportFolderProperty.getWorkBackExcelPath());
             fileNamePrefix = "退回文件导出";
-            fillExportData(normalWorkOrderExports);
+            fillExportData(normalWorkOrderExports, status);
         }
         String fileName = URLEncoder.encode(fileNamePrefix + ".zip", StandardCharsets.UTF_8).replaceAll("\\+", "%20");
         response.setContentType("application/zip");
         response.setHeader("Content-Disposition", "attachment; filename=" + fileName);
 
         // 3. 预读取Word模板到内存，避免循环IO
-        byte[] wordTemplateBytes = Files.readAllBytes(Paths.get(workExportFolderProperty.getWorkFinishWordPath()));
+        assert wordPath != null;
+        byte[] wordTemplateBytes = Files.readAllBytes(wordPath);
 
         // 4. 生成ZIP
         try (ZipOutputStream zos = new ZipOutputStream(response.getOutputStream());
-             InputStream excelTemplateInputStream = Files.newInputStream(Paths.get(workExportFolderProperty.getWorkFinishExcelPath()))) {
+             InputStream excelTemplateInputStream = Files.newInputStream(execlPath)) {
             
             // 4.1 创建根目录
             String rootFolderName = fileNamePrefix + "/";
@@ -266,7 +276,7 @@ public class NormalWorkOrderServiceImpl extends SuperServiceImpl<NormalWorkOrder
                     zos.putNextEntry(new ZipEntry(folderName + normalWorkOrder.getOrderNo() + ".docx"));
                     
                     // 使用内存中的模板数据渲染
-                    try (InputStream is = new java.io.ByteArrayInputStream(wordTemplateBytes)) {
+                    try (InputStream is = new ByteArrayInputStream(wordTemplateBytes)) {
                         XWPFTemplate template = XWPFTemplate.compile(is).render(normalWorkOrder);
                         template.write(zos);
                         template.close();
@@ -303,14 +313,14 @@ public class NormalWorkOrderServiceImpl extends SuperServiceImpl<NormalWorkOrder
     /**
      * 填充导出数据中的扩展字段（特别是JSON解析部分）
      */
-    private void fillExportData(List<NormalWorkOrderExport> exports) {
+    private void fillExportData(List<NormalWorkOrderExport> exports, String status) {
         exports.forEach(exp -> {
+            exp.setOrderStatus(status);
             if (exp.getFinishOrBackDynamic() != null) {
                 exp.setDeptName(exp.getFinishOrBackDynamic().getDeptName());
                 exp.setOperatorName(exp.getFinishOrBackDynamic().getOperatorName());
                 exp.setFinishTime(exp.getFinishOrBackDynamic().getCreatedTime());
                 exp.setIsDifficultStr(Boolean.TRUE.equals(exp.getIsDifficult()) ? "是" : "否");
-                
                 // 判断是否超期
                 if (exp.getFinishOrBackDynamic().getCreatedTime() != null && exp.getMunicipalDeadline() != null) {
                     exp.setIsExpire(exp.getFinishOrBackDynamic().getCreatedTime().isAfter(exp.getMunicipalDeadline()) ? "是" : "否");
@@ -335,6 +345,8 @@ public class NormalWorkOrderServiceImpl extends SuperServiceImpl<NormalWorkOrder
                         exp.setInternalReplyType(obj.getString("internalReplyType"));
                         exp.setNotifyCitizenFirst(obj.getInteger("notifyCitizenFirst"));
                         exp.setInternalReplyContent(obj.getString("internalReplyContent"));
+                        exp.setReturnReason(obj.getString("returnReason"));
+                        exp.setReturnType(obj.getString("returnType"));
                     } catch (Exception e) {
                         log.warn("解析finishOrBackContentJson失败, orderNo={}", exp.getOrderNo(), e);
                     }

@@ -179,4 +179,9 @@ public class NormalWorkOrderExport {
     private String citizenReplyContent;
     private String contactCitizenFirst;
     private String internalReplyContent;
+
+    private String orderStatus;
+
+    private String returnReason;
+    private String returnType;
 }

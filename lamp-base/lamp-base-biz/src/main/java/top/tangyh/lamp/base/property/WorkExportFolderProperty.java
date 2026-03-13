@@ -10,4 +10,6 @@ import org.springframework.context.annotation.Configuration;
 public class WorkExportFolderProperty {
     private String workFinishExcelPath;
     private String workFinishWordPath;
+    private String workBackWordPath;
+    private String workBackExcelPath;
 }
