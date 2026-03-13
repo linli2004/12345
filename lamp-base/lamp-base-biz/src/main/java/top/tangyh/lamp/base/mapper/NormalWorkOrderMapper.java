@@ -40,6 +40,14 @@ public interface NormalWorkOrderMapper extends SuperMapper<NormalWorkOrder> {
     Long signCategoryIsNull();
 
     List<NormalWorkOrderRankingResultVO> getRanking();
+
+    IPage<NormalWorkOrderResultVO> selectNotCommentResultVO(IPage<NormalWorkOrder> page,
+                                                            @Param(Constants.WRAPPER) Wrapper<NormalWorkOrder> wrapper,
+                                                            @Param("model") NormalWorkOrderPageQuery model);
+
+    IPage<NormalWorkOrderResultVO> selectCommentedPageResultVO(IPage<NormalWorkOrder> page,
+                                                               @Param(Constants.WRAPPER) Wrapper<NormalWorkOrder> wrapper,
+                                                               @Param("model") NormalWorkOrderPageQuery model);
 }
 
 

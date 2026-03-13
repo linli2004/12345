@@ -19,7 +19,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.bind.annotation.RequestBody;
 import top.tangyh.basic.base.request.PageParams;
 import top.tangyh.basic.base.service.impl.SuperServiceImpl;
 import top.tangyh.basic.database.mybatis.conditions.Wraps;
@@ -42,7 +41,6 @@ import top.tangyh.lamp.base.vo.result.NormalWorkOrderResultVO;
 import top.tangyh.lamp.base.vo.result.SignCategoryIsNullNormalWorkOrderResultVO;
 import top.tangyh.lamp.base.vo.update.NormalWorkOrderTaskActionVO;
 import top.tangyh.lamp.common.constant.DsConstant;
-
 import top.tangyh.lamp.file.service.FileService;
 
 import java.io.BufferedInputStream;
@@ -54,7 +52,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.DateTimeException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
@@ -244,7 +241,7 @@ public class NormalWorkOrderServiceImpl extends SuperServiceImpl<NormalWorkOrder
         // 4. 生成ZIP
         try (ZipOutputStream zos = new ZipOutputStream(response.getOutputStream());
              InputStream excelTemplateInputStream = Files.newInputStream(execlPath)) {
-            
+
             // 4.1 创建根目录
             String rootFolderName = fileNamePrefix + "/";
             zos.putNextEntry(new ZipEntry(rootFolderName));
@@ -267,14 +264,14 @@ public class NormalWorkOrderServiceImpl extends SuperServiceImpl<NormalWorkOrder
                 try {
                     normalWorkOrder.setExportTime(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
                     String folderName = rootFolderName + normalWorkOrder.getOrderNo() + "/";
-                    
+
                     // 创建工单文件夹
                     zos.putNextEntry(new ZipEntry(folderName));
                     zos.closeEntry();
 
                     // 创建Word文件条目
                     zos.putNextEntry(new ZipEntry(folderName + normalWorkOrder.getOrderNo() + ".docx"));
-                    
+
                     // 使用内存中的模板数据渲染
                     try (InputStream is = new ByteArrayInputStream(wordTemplateBytes)) {
                         XWPFTemplate template = XWPFTemplate.compile(is).render(normalWorkOrder);
@@ -373,6 +370,80 @@ public class NormalWorkOrderServiceImpl extends SuperServiceImpl<NormalWorkOrder
     @Override
     public List<NormalWorkOrderRankingResultVO> getRanking() {
         return superManager.getRanking();
+    }
+
+    @Override
+    public IPage<NormalWorkOrderResultVO> findNotCommentPageResultVO(PageParams<NormalWorkOrderPageQuery> params) {
+        IPage<NormalWorkOrder> page = params.buildPage(NormalWorkOrder.class);
+        NormalWorkOrderPageQuery model = params.getModel();
+        Map<String, Object> extra = params.getExtra();
+        LbQueryWrap<NormalWorkOrder> wrap = Wraps.lbq(null, extra, NormalWorkOrder.class);
+        wrap.like(NormalWorkOrder::getOrderNo, model.getOrderNo())
+                .like(NormalWorkOrder::getOrderTitle, model.getOrderTitle())
+                .like(NormalWorkOrder::getOrderContent, model.getOrderContent())
+                .like(NormalWorkOrder::getAppealType, model.getAppealType())
+                .like(NormalWorkOrder::getUrgency, model.getUrgency())
+                .like(NormalWorkOrder::getSourceDeptName, model.getSourceDeptName())
+                .like(NormalWorkOrder::getChannel, model.getChannel())
+                .like(NormalWorkOrder::getHelperName, model.getHelperName())
+                .like(NormalWorkOrder::getContactPhone, model.getContactPhone())
+                .like(NormalWorkOrder::getGender, model.getGender())
+                .like(NormalWorkOrder::getIncidentLocation, model.getIncidentLocation())
+                .like(NormalWorkOrder::getAddress, model.getAddress())
+                .eq(NormalWorkOrder::getIsDifficult, model.getIsDifficult())
+                .like(NormalWorkOrder::getHostDeptName, model.getHostDeptName())
+                .like(NormalWorkOrder::getAssistDeptName, model.getAssistDeptName())
+                .like(NormalWorkOrder::getCcDeptName, model.getCcDeptName())
+                .eq(NormalWorkOrder::getSettleCondition, model.getSettleCondition())
+                .and(model.getIsJointQuery(), w -> {
+                    if (model.getIsJointQuery() && StringUtils.isNotBlank(model.getKeyword())) {
+                        w.like(NormalWorkOrder::getOrderNo, model.getKeyword())
+                                .or()
+                                .like(NormalWorkOrder::getOrderTitle, model.getKeyword())
+                                .or()
+                                .like(NormalWorkOrder::getOrderContent, model.getKeyword())
+                                .or()
+                                .like(NormalWorkOrder::getAddress, model.getKeyword());
+                    }
+                });
+        return superManager.selectNotCommentResultVO(page, wrap, model);
+    }
+
+    @Override
+    public IPage<NormalWorkOrderResultVO> findCommentedPageResultVO(PageParams<NormalWorkOrderPageQuery> params) {
+        IPage<NormalWorkOrder> page = params.buildPage(NormalWorkOrder.class);
+        NormalWorkOrderPageQuery model = params.getModel();
+        Map<String, Object> extra = params.getExtra();
+        LbQueryWrap<NormalWorkOrder> wrap = Wraps.lbq(null, extra, NormalWorkOrder.class);
+        wrap.like(NormalWorkOrder::getOrderNo, model.getOrderNo())
+                .like(NormalWorkOrder::getOrderTitle, model.getOrderTitle())
+                .like(NormalWorkOrder::getOrderContent, model.getOrderContent())
+                .like(NormalWorkOrder::getAppealType, model.getAppealType())
+                .like(NormalWorkOrder::getUrgency, model.getUrgency())
+                .like(NormalWorkOrder::getSourceDeptName, model.getSourceDeptName())
+                .like(NormalWorkOrder::getChannel, model.getChannel())
+                .like(NormalWorkOrder::getHelperName, model.getHelperName())
+                .like(NormalWorkOrder::getContactPhone, model.getContactPhone())
+                .like(NormalWorkOrder::getGender, model.getGender())
+                .like(NormalWorkOrder::getIncidentLocation, model.getIncidentLocation())
+                .like(NormalWorkOrder::getAddress, model.getAddress())
+                .eq(NormalWorkOrder::getIsDifficult, model.getIsDifficult())
+                .like(NormalWorkOrder::getHostDeptName, model.getHostDeptName())
+                .like(NormalWorkOrder::getAssistDeptName, model.getAssistDeptName())
+                .like(NormalWorkOrder::getCcDeptName, model.getCcDeptName())
+                .eq(NormalWorkOrder::getSettleCondition, model.getSettleCondition())
+                .and(model.getIsJointQuery(), w -> {
+                    if (model.getIsJointQuery() && StringUtils.isNotBlank(model.getKeyword())) {
+                        w.like(NormalWorkOrder::getOrderNo, model.getKeyword())
+                                .or()
+                                .like(NormalWorkOrder::getOrderTitle, model.getKeyword())
+                                .or()
+                                .like(NormalWorkOrder::getOrderContent, model.getKeyword())
+                                .or()
+                                .like(NormalWorkOrder::getAddress, model.getKeyword());
+                    }
+                });
+        return superManager.selectCommentedResultVO(page, wrap, model);
     }
 
     private List<Long> extractFileIds(NormalWorkOrderExport export) {

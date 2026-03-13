@@ -196,4 +196,6 @@ public class NormalWorkOrderPageQuery implements Serializable {
     private Long coOrccId;
 
     private List<String> orderNoList;
+
+    private Long operatorId;
 }

@@ -231,4 +231,24 @@
             </if>
         </where>
     </select>
+
+    <select id="selectNotCommentResultVO" resultMap="ResultVOResultMap">
+    select
+    <include refid="Base_Column_List2"/>
+    FROM
+        normal_work_order t3
+    WHERE
+        t3.allow_comment = '1'
+        AND NOT EXISTS ( SELECT 1 FROM `work_order_dynamic` t2 WHERE t2.order_no = t3.order_no AND t2.operator_id = #{model.operatorId}  AND t2.process_type = '批示' )
+    </select>
+
+    <select id="selectCommentedPageResultVO" resultMap="ResultVOResultMap">
+        select
+        <include refid="Base_Column_List2"/>
+        FROM
+        normal_work_order t3
+        WHERE
+        t3.allow_comment = '1'
+        AND EXISTS ( SELECT 1 FROM `work_order_dynamic` t2 WHERE t2.order_no = t3.order_no AND t2.operator_id = #{model.operatorId}  AND t2.process_type = '批示' )
+    </select>
 </mapper>

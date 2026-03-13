@@ -60,6 +60,16 @@ public class NormalWorkOrderManagerImpl extends SuperManagerImpl<NormalWorkOrder
     public List<NormalWorkOrderRankingResultVO> getRanking() {
         return baseMapper.getRanking();
     }
+
+    @Override
+    public IPage<NormalWorkOrderResultVO> selectNotCommentResultVO(IPage<NormalWorkOrder> page, Wrapper<NormalWorkOrder> wrapper, NormalWorkOrderPageQuery model) {
+        return baseMapper.selectNotCommentResultVO(page, wrapper, model);
+    }
+
+    @Override
+    public IPage<NormalWorkOrderResultVO> selectCommentedResultVO(IPage<NormalWorkOrder> page, Wrapper<NormalWorkOrder> wrapper, NormalWorkOrderPageQuery model) {
+        return baseMapper.selectCommentedPageResultVO(page, wrapper, model);
+    }
 }
 
 

@@ -34,6 +34,10 @@ public interface NormalWorkOrderManager extends SuperManager<NormalWorkOrder> {
     Long signCategoryIsNull();
 
     List<NormalWorkOrderRankingResultVO> getRanking();
+
+    IPage<NormalWorkOrderResultVO> selectNotCommentResultVO(IPage<NormalWorkOrder> page, Wrapper<NormalWorkOrder> wrapper, NormalWorkOrderPageQuery model);
+
+    IPage<NormalWorkOrderResultVO> selectCommentedResultVO(IPage<NormalWorkOrder> page, Wrapper<NormalWorkOrder> wrapper, NormalWorkOrderPageQuery model);
 }
 
 

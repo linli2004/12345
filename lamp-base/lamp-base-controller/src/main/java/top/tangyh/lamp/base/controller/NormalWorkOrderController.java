@@ -151,6 +151,20 @@ public class NormalWorkOrderController extends SuperController<NormalWorkOrderSe
     public R<List<NormalWorkOrderResultVO>> testLIst(@RequestBody NormalWorkOrderPageQuery model) {
         return R.success(superService.selectListResultVO(model));
     }
+
+    @Operation(summary = "普通工单待批示", description = "普通工单待批示")
+    @PostMapping(path = "/notComment")
+    @WebLog("普通工单待批示")
+    public R<IPage<NormalWorkOrderResultVO>> notCommentPage(@RequestBody @Validated PageParams<NormalWorkOrderPageQuery> params) {
+        return R.success(superService.findNotCommentPageResultVO(params));
+    }
+
+    @Operation(summary = "普通工单已批示", description = "普通工单已批示")
+    @PostMapping(path = "/commented")
+    @WebLog("普通工单已批示")
+    public R<IPage<NormalWorkOrderResultVO>> commentedPage(@RequestBody @Validated PageParams<NormalWorkOrderPageQuery> params) {
+        return R.success(superService.findCommentedPageResultVO(params));
+    }
 }
 
 

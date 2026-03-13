@@ -2,7 +2,6 @@ package top.tangyh.lamp.base.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.web.bind.annotation.RequestBody;
 import top.tangyh.basic.base.request.PageParams;
 import top.tangyh.basic.base.service.SuperService;
 import top.tangyh.lamp.base.entity.NormalWorkOrder;
@@ -44,6 +43,10 @@ public interface NormalWorkOrderService extends SuperService<Long, NormalWorkOrd
     Long signCategoryIsNull();
 
     List<NormalWorkOrderRankingResultVO> getRanking();
+
+    IPage<NormalWorkOrderResultVO> findNotCommentPageResultVO(PageParams<NormalWorkOrderPageQuery> params);
+
+    IPage<NormalWorkOrderResultVO> findCommentedPageResultVO(PageParams<NormalWorkOrderPageQuery> params);
 
 }
 
