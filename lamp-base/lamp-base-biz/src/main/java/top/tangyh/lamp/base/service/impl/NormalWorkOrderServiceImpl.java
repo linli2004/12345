@@ -181,7 +181,7 @@ public class NormalWorkOrderServiceImpl extends SuperServiceImpl<NormalWorkOrder
     }
 
     void setContentJson(List<NormalWorkOrderResultVO> workOrderResultList, String displayStatus, List<String> orderNoList) {
-        List<WorkOrderDynamic> dynamicList = workOrderDynamicManager.list(Wraps.<WorkOrderDynamic>lbQ().eq(WorkOrderDynamic::getProcessType, displayStatus.replaceAll("已", "")).in(WorkOrderDynamic::getOrderNo, orderNoList));
+        List<WorkOrderDynamic> dynamicList = workOrderDynamicManager.list(Wraps.<WorkOrderDynamic>lbQ().eq(WorkOrderDynamic::getProcessType, displayStatus.replaceAll("已", "")).in(WorkOrderDynamic::getOrderNo, orderNoList).orderByDesc(WorkOrderDynamic::getCreatedTime));
         Map<String, List<WorkOrderDynamic>> dynamicMap = dynamicList.stream()
                 .collect(Collectors.groupingBy(
                         WorkOrderDynamic::getOrderNo,
