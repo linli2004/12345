@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="top.tangyh.lamp.base.mapper.ChiefWorkOrderDynamicMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="top.tangyh.lamp.base.entity.ChiefWorkOrderDynamic">
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="created_time" jdbcType="TIMESTAMP" property="createdTime"/>
+        <result column="created_by" jdbcType="BIGINT" property="createdBy"/>
+        <result column="updated_time" jdbcType="TIMESTAMP" property="updatedTime"/>
+        <result column="updated_by" jdbcType="BIGINT" property="updatedBy"/>
+        <result column="order_no" jdbcType="VARCHAR" property="orderNo"/>
+        <result column="task_id" jdbcType="BIGINT" property="taskId"/>
+        <result column="node_code" jdbcType="VARCHAR" property="nodeCode"/>
+        <result column="node_name" jdbcType="VARCHAR" property="nodeName"/>
+        <result column="operator_id" jdbcType="BIGINT" property="operatorId"/>
+        <result column="operator_name" jdbcType="VARCHAR" property="operatorName"/>
+        <result column="operator_phone" jdbcType="VARCHAR" property="operatorPhone"/>
+        <result column="dept_id" jdbcType="BIGINT" property="deptId"/>
+        <result column="dept_name" jdbcType="VARCHAR" property="deptName"/>
+        <result column="process_type" jdbcType="VARCHAR" property="processType"/>
+        <result column="content_json" jdbcType="VARCHAR" property="contentJson"/>
+        <result column="created_org_id" jdbcType="BIGINT" property="createdOrgId"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, order_no, task_id, node_code, node_name, operator_id,
+        operator_name, operator_phone, dept_id, dept_name, process_type, content_json,
+        created_by, created_time, updated_by, updated_time, created_org_id
+    </sql>
+
+</mapper>

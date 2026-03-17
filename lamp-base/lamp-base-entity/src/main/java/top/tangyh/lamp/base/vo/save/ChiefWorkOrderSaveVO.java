@@ -8,15 +8,16 @@ import lombok.experimental.Accessors;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 /**
  * <p>
  * 表单保存方法VO
- * 提醒模板
+ * 督办工单
  * </p>
  *
  * @author lunar
- * @date 2026-03-10 08:39:01
+ * @date 2026-03-13 16:00:00
  */
 @Data
 @NoArgsConstructor
@@ -25,11 +26,17 @@ import java.io.Serializable;
 @Accessors(chain = true)
 @EqualsAndHashCode
 @Builder
-@Schema(description = "提醒模板")
-public class RemindTemplateSaveVO implements Serializable {
+@Schema(description = "督办工单")
+public class ChiefWorkOrderSaveVO implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
+    /**
+     * 批次编号
+     */
+    @Schema(description = "批次编号")
+    @Size(max = 255, message = "批次编号长度不能超过{max}")
+    private String batchNo;
     /**
      * 名称
      */
@@ -38,27 +45,16 @@ public class RemindTemplateSaveVO implements Serializable {
     @Size(max = 255, message = "名称长度不能超过{max}")
     private String name;
     /**
-     * 展示内容
+     * 状态
      */
-    @Schema(description = "展示内容")
-    @Size(max = 65535, message = "展示内容长度不能超过{max}")
-    private String displayContent;
+    @Schema(description = "状态")
+    @Size(max = 255, message = "状态长度不能超过{max}")
+    private String status;
     /**
-     * 创建人组织
+     * 导入时间
      */
-    @Schema(description = "创建人组织")
-    private Long createdOrgId;
-    /**
-     * 提醒类型
-     */
-    @Schema(description = "提醒类型")
-    @Size(max = 255, message = "提醒类型长度不能超过{max}")
-    private String type;
-    /**
-     * 附件id
-     */
-    @Schema(description = "附件id")
-    private Long fileId;
+    @Schema(description = "导入时间")
+    private LocalDateTime importTime;
 
 
 }

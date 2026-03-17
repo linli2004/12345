@@ -12,4 +12,5 @@ public class WorkExportFolderProperty {
     private String workFinishWordPath;
     private String workBackWordPath;
     private String workBackExcelPath;
+    private String chiefWorkOrderTemplatePath;
 }

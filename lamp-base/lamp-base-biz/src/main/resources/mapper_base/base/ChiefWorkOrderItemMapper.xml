@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="top.tangyh.lamp.base.mapper.ChiefWorkOrderItemMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="top.tangyh.lamp.base.entity.ChiefWorkOrderItem">
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="created_time" jdbcType="TIMESTAMP" property="createdTime"/>
+        <result column="created_by" jdbcType="BIGINT" property="createdBy"/>
+        <result column="updated_time" jdbcType="TIMESTAMP" property="updatedTime"/>
+        <result column="updated_by" jdbcType="BIGINT" property="updatedBy"/>
+        <result column="batch_no" jdbcType="VARCHAR" property="batchNo"/>
+        <result column="serial_no" jdbcType="INTEGER" property="serialNo"/>
+        <result column="title" jdbcType="VARCHAR" property="title"/>
+        <result column="work_order_no" jdbcType="VARCHAR" property="workOrderNo"/>
+        <result column="contact_phone" jdbcType="VARCHAR" property="contactPhone"/>
+        <result column="appeal_phone" jdbcType="VARCHAR" property="appealPhone"/>
+        <result column="appeal_content" jdbcType="VARCHAR" property="appealContent"/>
+        <result column="reply_content" jdbcType="VARCHAR" property="replyContent"/>
+        <result column="appeal_type" jdbcType="VARCHAR" property="appealType"/>
+        <result column="satisfaction" jdbcType="VARCHAR" property="satisfaction"/>
+        <result column="unsatisfied_reason" jdbcType="VARCHAR" property="unsatisfiedReason"/>
+        <result column="online_supervision_no" jdbcType="VARCHAR" property="onlineSupervisionNo"/>
+        <result column="supervision_return_time" jdbcType="TIMESTAMP" property="supervisionReturnTime"/>
+        <result column="supervision_finish_time" jdbcType="TIMESTAMP" property="supervisionFinishTime"/>
+        <result column="supervision_reply_content" jdbcType="VARCHAR" property="supervisionReplyContent"/>
+        <result column="supervision_sms_satisfaction" jdbcType="VARCHAR" property="supervisionSmsSatisfaction"/>
+        <result column="supervision_return_content" jdbcType="VARCHAR" property="supervisionReturnContent"/>
+        <result column="judgment_level1" jdbcType="VARCHAR" property="judgmentLevel1"/>
+        <result column="judgment_level2" jdbcType="VARCHAR" property="judgmentLevel2"/>
+        <result column="process_result" jdbcType="VARCHAR" property="processResult"/>
+        <result column="is_final" jdbcType="VARCHAR" property="isFinal"/>
+        <result column="plan_finish_time" jdbcType="TIMESTAMP" property="planFinishTime"/>
+        <result column="category_adjust" jdbcType="VARCHAR" property="categoryAdjust"/>
+        <result column="undertaker_unit" jdbcType="VARCHAR" property="undertakerUnit"/>
+        <result column="final_result" jdbcType="VARCHAR" property="finalResult"/>
+        <result column="created_org_id" jdbcType="BIGINT" property="createdOrgId"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, created_time, created_by, updated_time, updated_by, 
+        batch_no, serial_no, title, work_order_no, contact_phone, appeal_phone, appeal_content, reply_content, appeal_type, satisfaction, unsatisfied_reason, online_supervision_no, supervision_return_time, supervision_finish_time, supervision_reply_content, supervision_sms_satisfaction, supervision_return_content, judgment_level1, judgment_level2, process_result, is_final, plan_finish_time, category_adjust, undertaker_unit, final_result, created_org_id
+    </sql>
+
+    <sql id="Base_Column_List2">
+        t3.id, t3.created_time, t3.created_by, t3.updated_time, t3.updated_by,
+        t3.batch_no, t3.title, t3.work_order_no, t3.contact_phone, t3.appeal_phone, t3.appeal_content, t3.reply_content, t3.appeal_type, t3.satisfaction, t3.unsatisfied_reason, t3.online_supervision_no, t3.supervision_return_time, t3.supervision_finish_time, t3.supervision_reply_content, t3.supervision_sms_satisfaction, t3.supervision_return_content, t3.judgment_level1, t3.judgment_level2, t3.process_result, t3.is_final, t3.plan_finish_time, t3.category_adjust, t3.undertaker_unit, t3.final_result, t3.created_org_id, t3.order_category_id, t3.order_category_name, t3.allow_back, t3.allow_back_time, t3.allow_comment, t3.settle_condition
+    </sql>
+
+    <resultMap id="ResultVOResultMap" type="top.tangyh.lamp.base.vo.result.ChiefWorkOrderItemResultVO"
+               extends="top.tangyh.lamp.base.mapper.ChiefWorkOrderItemMapper.BaseResultMap">
+    </resultMap>
+
+    <select id="selectPageResultVO" resultMap="ResultVOResultMap">
+        select
+        <include refid="Base_Column_List2"/>
+        FROM
+        chief_work_order_item t3
+        where t3.id in (
+        SELECT
+        DISTINCT t2.order_no as task_order_no
+        FROM
+        normal_work_order_task t2
+        WHERE
+        <choose>
+            <when test='model.coOrccType != null and model.coOrccType!= ""'>
+                t2.current_node_code IN ( SELECT t1.node_code FROM role_status_mapping t1 WHERE t1.display_status = #{model.displayStatus} AND t1.role_code = '1' )
+                and t2.valid = '1' and t2.level = '0'
+                <if test="model.coOrccId != null and model.coOrccType eq '1'.toString()">
+                    AND FIND_IN_SET(#{model.coOrccId}, t2.co_unit_ids)
+                </if>
+                <if test="model.coOrccId != null and model.coOrccType eq '2'.toString()">
+                    AND FIND_IN_SET(#{model.coOrccId}, t2.cc_unit_ids)
+                </if>
+            </when>
+            <otherwise>
+                t2.current_node_code IN ( SELECT t1.node_code FROM role_status_mapping t1 WHERE t1.display_status = #{model.displayStatus} AND t1.role_code = #{model.roleCode} )
+                <if test='model.roleCode != null and (model.roleCode != "1" and model.roleCode != "0")'>AND t2.lead_unit_id = #{model.leadUnitId} </if>
+                and t2.valid = '1' <if test="model.roleCode != null and (model.roleCode eq '1'.toString() or model.roleCode eq '0'.toString())"> and t2.level = '0'</if>
+            </otherwise>
+        </choose>
+        )
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+
+    <select id="selectListResultVO" resultMap="ResultVOResultMap">
+        SELECT
+        <include refid="Base_Column_List2"/>
+        FROM chief_work_order_item t3
+        RIGHT JOIN (
+        SELECT
+        DISTINCT t2.order_no as task_order_no
+        FROM
+        normal_work_order_task t2
+        WHERE
+        t2.current_node_code IN ( SELECT t1.node_code FROM role_status_mapping t1 WHERE t1.display_status = #{model.displayStatus} AND t1.role_code = '1' )
+        and t2.valid = '1'  and t2.level = '0'
+        ) t4 ON t3.work_order_no = t4.task_order_no
+        <where>
+            <if test="model.orderNoList != null and model.orderNoList.size() > 0">
+                AND t3.work_order_no IN
+                <foreach collection="model.orderNoList" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="selectCommentedResultVO" resultMap="ResultVOResultMap">
+        select
+        <include refid="Base_Column_List2"/>
+        FROM
+        chief_work_order_item t3
+        WHERE
+        t3.allow_comment = '1'
+        AND EXISTS ( SELECT 1 FROM `chief_work_order_dynamic` t2 WHERE t2.order_no = t3.work_order_no AND t2.operator_id = #{model.operatorId}  AND t2.process_type = '批示' )
+    </select>
+
+</mapper>
