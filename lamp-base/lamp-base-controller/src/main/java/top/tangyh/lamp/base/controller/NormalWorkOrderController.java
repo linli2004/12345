@@ -156,14 +156,44 @@ public class NormalWorkOrderController extends SuperController<NormalWorkOrderSe
     @PostMapping(path = "/notComment")
     @WebLog("普通工单待批示")
     public R<IPage<NormalWorkOrderResultVO>> notCommentPage(@RequestBody @Validated PageParams<NormalWorkOrderPageQuery> params) {
-        return R.success(superService.findNotCommentPageResultVO(params));
+        IPage<NormalWorkOrderResultVO> notCommentPageResultVO = superService.findNotCommentPageResultVO(params);
+        List<String> orderNoList = notCommentPageResultVO.getRecords().stream().map(NormalWorkOrderResultVO::getOrderNo).toList();
+        List<NormalWorkOrderTask> workOrderTaskList = normalWorkOrderTaskService.list(Wraps.<NormalWorkOrderTask>lbQ().eq(NormalWorkOrderTask::getValid, Constant.TASK_VALID).in(NormalWorkOrderTask::getOrderNo, orderNoList));
+        if (CollectionUtils.isEmpty(workOrderTaskList)) return R.success(notCommentPageResultVO);
+        List<NormalWorkOrderTaskResultVO> taskResultVOList = BeanUtil.copyToList(workOrderTaskList, NormalWorkOrderTaskResultVO.class);
+        if (echoService != null) {
+            echoService.action(taskResultVOList);
+        }
+        Map<String, List<NormalWorkOrderTaskResultVO>> taskMap = taskResultVOList.stream()
+                .collect(Collectors.groupingBy(
+                        NormalWorkOrderTaskResultVO::getOrderNo,
+                        java.util.LinkedHashMap::new,
+                        Collectors.toList()
+                ));
+        notCommentPageResultVO.getRecords().forEach(t -> t.setWorkOrderTaskList(taskMap.get(t.getOrderNo())));
+        return R.success(notCommentPageResultVO);
     }
 
     @Operation(summary = "普通工单已批示", description = "普通工单已批示")
     @PostMapping(path = "/commented")
     @WebLog("普通工单已批示")
     public R<IPage<NormalWorkOrderResultVO>> commentedPage(@RequestBody @Validated PageParams<NormalWorkOrderPageQuery> params) {
-        return R.success(superService.findCommentedPageResultVO(params));
+        IPage<NormalWorkOrderResultVO> commentedPageResultVO = superService.findCommentedPageResultVO(params);
+        List<String> orderNoList = commentedPageResultVO.getRecords().stream().map(NormalWorkOrderResultVO::getOrderNo).toList();
+        List<NormalWorkOrderTask> workOrderTaskList = normalWorkOrderTaskService.list(Wraps.<NormalWorkOrderTask>lbQ().eq(NormalWorkOrderTask::getValid, Constant.TASK_VALID).in(NormalWorkOrderTask::getOrderNo, orderNoList));
+        if (CollectionUtils.isEmpty(workOrderTaskList)) return R.success(commentedPageResultVO);
+        List<NormalWorkOrderTaskResultVO> taskResultVOList = BeanUtil.copyToList(workOrderTaskList, NormalWorkOrderTaskResultVO.class);
+        if (echoService != null) {
+            echoService.action(taskResultVOList);
+        }
+        Map<String, List<NormalWorkOrderTaskResultVO>> taskMap = taskResultVOList.stream()
+                .collect(Collectors.groupingBy(
+                        NormalWorkOrderTaskResultVO::getOrderNo,
+                        java.util.LinkedHashMap::new,
+                        Collectors.toList()
+                ));
+        commentedPageResultVO.getRecords().forEach(t -> t.setWorkOrderTaskList(taskMap.get(t.getOrderNo())));
+        return R.success(commentedPageResultVO);
     }
 }
 
