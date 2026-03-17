@@ -67,7 +67,7 @@
         <include refid="Base_Column_List2"/>
         FROM
             normal_work_order t3
-        RIGHT JOIN (
+        INNER JOIN (
             SELECT
                 DISTINCT t2.order_no as task_order_no
             FROM
@@ -104,7 +104,7 @@
         COUNT(*) AS total
         FROM
         normal_work_order t3
-        RIGHT JOIN (
+        INNER JOIN (
         SELECT
         DISTINCT t2.order_no as task_order_no
         FROM
@@ -122,7 +122,7 @@
         COUNT(1) AS total
         FROM
         normal_work_order t3
-        RIGHT JOIN (
+        INNER JOIN (
         SELECT
         DISTINCT t2.order_no as task_order_no
         FROM
@@ -141,7 +141,7 @@
         COUNT(*) AS total
         FROM
         normal_work_order t3
-        RIGHT JOIN (
+        INNER JOIN (
         SELECT
         DISTINCT t2.order_no as task_order_no
         FROM
@@ -213,7 +213,7 @@
         <include refid="Base_Column_List2"/>
         FROM
         normal_work_order t3
-        RIGHT JOIN (
+        INNER JOIN (
         SELECT
         DISTINCT t2.order_no as task_order_no
         FROM
