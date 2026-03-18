@@ -18,6 +18,12 @@ public interface Constant {
     String TASK_LEVEL_1 = "1";
 
     /**
+     * 是否允许退回:0-不允许;1-允许;2-限6小时允许',
+     */
+    String ALLOW_BACK_0 = "0";
+    String ALLOW_BACK_2 = "2";
+
+    /**
      * 工单子任务审批事项:1-结案;2-退回
      */
     String AUDIT_TYPE_FINISH = "1";
