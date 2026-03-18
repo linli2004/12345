@@ -186,27 +186,10 @@
     <select id="getRanking" resultType="top.tangyh.lamp.base.vo.result.NormalWorkOrderRankingResultVO">
         SELECT
         t1.`name`,
-        IFNULL(sign_stat.signCount, 0) AS signCount,
         IFNULL(finish_stat.finishCount, 0) AS finishCount,
-        DENSE_RANK() OVER (ORDER BY IFNULL(sign_stat.signCount, 0) DESC) AS signRanking,
         DENSE_RANK() OVER (ORDER BY IFNULL(finish_stat.finishCount, 0) DESC) AS finishRanking
         FROM
         `base_org` t1
-        LEFT JOIN (
-        SELECT
-        t1.id,
-        t1.name,
-        COUNT(t2.id) AS signCount
-        FROM
-        `base_org` t1
-        LEFT JOIN work_order_dynamic t2 ON t1.id = t2.dept_id
-        AND t2.process_type = '签收'
-        AND DATE_FORMAT(t2.created_time, '%Y-%m') = DATE_FORMAT(NOW(), '%Y-%m')
-        WHERE
-        t1.parent_id &lt;> 0
-        GROUP BY
-        t1.id, t1.name
-        ) sign_stat ON t1.id = sign_stat.id
         LEFT JOIN (
         SELECT
         t1.id,

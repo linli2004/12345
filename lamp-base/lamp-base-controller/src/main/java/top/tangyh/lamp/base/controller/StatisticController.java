@@ -64,7 +64,6 @@ public class StatisticController {
     public R<Map<String, Object>> getChiefWorkOrderStatistic(@RequestParam String roleCode, @RequestParam String leadUnitId) {
         Map<String, Object> responseMap = Maps.newLinkedHashMap();
         Map<String, Object> chiefCountMap = Maps.newLinkedHashMap();
-        chiefCountMap.put("已导入", chiefWorkOrderItemService.getWorkOrderCount("处办中", roleCode, leadUnitId));
         chiefCountMap.put("处办中", chiefWorkOrderItemService.getWorkOrderCount("处办中", roleCode, leadUnitId));
         chiefCountMap.put("下级已退回", chiefWorkOrderItemService.getWorkOrderCount("下级已退回", roleCode, leadUnitId));
         chiefCountMap.put("下派跟踪", chiefWorkOrderItemService.getWorkOrderCount("下派跟踪", roleCode, leadUnitId));
@@ -77,7 +76,7 @@ public class StatisticController {
                 SignCategoryIsNullNormalWorkOrderResultVO::getCategoryName,
                 SignCategoryIsNullNormalWorkOrderResultVO::getTotal));
         Boolean flag = Constant.ROLE_CODE_TOWN_LEADER.equals(roleCode) || Constant.ROLE_CODE_TOWN_SPECIALIST.equals(roleCode);
-        groupCategoryMap.put("签收未分类", flag ? chiefWorkOrderItemService.signCategoryIsNull() : 0L);
+        groupCategoryMap.put("导入未分类", flag ? chiefWorkOrderItemService.signCategoryIsNull() : 0L);
         responseMap.put("督办工单概览", groupCategoryMap);
         if (!flag) return R.success(responseMap);
         List<NormalWorkOrderRankingResultVO> rankingList = chiefWorkOrderItemService.getRanking();

@@ -16,10 +16,7 @@ import top.tangyh.basic.utils.ArgumentAssert;
 import top.tangyh.lamp.AuditNodeCodeEnum;
 import top.tangyh.lamp.Constant;
 import top.tangyh.lamp.NoticeNodeCodeEnum;
-import top.tangyh.lamp.base.entity.ChiefWorkOrder;
-import top.tangyh.lamp.base.entity.ChiefWorkOrderDynamic;
-import top.tangyh.lamp.base.entity.ChiefWorkOrderItem;
-import top.tangyh.lamp.base.entity.ChiefWorkOrderTask;
+import top.tangyh.lamp.base.entity.*;
 import top.tangyh.lamp.base.manager.ChiefWorkOrderDynamicManager;
 import top.tangyh.lamp.base.manager.ChiefWorkOrderItemManager;
 import top.tangyh.lamp.base.manager.ChiefWorkOrderManager;
@@ -33,6 +30,7 @@ import top.tangyh.lamp.model.entity.system.SysUser;
 import top.tangyh.lamp.msg.biz.MsgBiz;
 import top.tangyh.lamp.msg.vo.update.ExtendMsgPublishVO;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -211,6 +209,9 @@ public class ChiefWorkOrderTaskServiceImpl extends SuperServiceImpl<ChiefWorkOrd
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean basicBackChiefWorkOrder(NormalWorkOrderTaskActionVO backVO) {
+        //判断是否可以退回
+        ChiefWorkOrderItem workOrderTemp = chiefWorkOrderItemManager.getOne(Wraps.<ChiefWorkOrderItem>lbQ().eq(ChiefWorkOrderItem::getId, backVO.getOrderNo()));
+        ArgumentAssert.isFalse(Constant.ALLOW_BACK_0.equals(workOrderTemp.getAllowBack()) || (Constant.ALLOW_BACK_2.equals(workOrderTemp.getAllowBack()) && LocalDateTime.now().isAfter(workOrderTemp.getAllowBackTime())), "此工单已不允许退回");
         //新增 基层退回的办理动态
         ChiefWorkOrderDynamic dynamicTemp = BeanUtil.copyProperties(backVO, ChiefWorkOrderDynamic.class, "id");
         dynamicTemp.setOrderNo(backVO.getOrderNo());
