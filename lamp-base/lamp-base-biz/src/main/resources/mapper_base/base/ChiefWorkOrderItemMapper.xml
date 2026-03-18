@@ -116,7 +116,117 @@
         chief_work_order_item t3
         WHERE
         t3.allow_comment = '1'
-        AND EXISTS ( SELECT 1 FROM `chief_work_order_dynamic` t2 WHERE t2.order_no = t3.work_order_no AND t2.operator_id = #{model.operatorId}  AND t2.process_type = '批示' )
+        AND EXISTS ( SELECT 1 FROM `work_order_dynamic` t2 WHERE t2.order_no = t3.work_order_no AND t2.operator_id = #{model.operatorId}  AND t2.process_type = '批示' )
+    </select>
+
+    <select id="selectNotCommentResultVO" resultMap="ResultVOResultMap">
+        select
+        <include refid="Base_Column_List2"/>
+        FROM
+        chief_work_order_item t3
+        WHERE
+        t3.allow_comment = '1'
+        AND NOT EXISTS ( SELECT 1 FROM `work_order_dynamic` t2 WHERE t2.order_no = t3.work_order_no AND t2.operator_id = #{model.operatorId}  AND t2.process_type = '批示' )
+    </select>
+
+    <select id="getWorkOrderCount" resultType="java.lang.Long">
+        SELECT
+        COUNT(*) AS total
+        FROM
+        chief_work_order_item t3
+        where t3.id in (
+        SELECT
+        DISTINCT t2.order_no as task_order_no
+        FROM
+        normal_work_order_task t2
+        WHERE
+        t2.current_node_code IN ( SELECT t1.node_code FROM role_status_mapping t1 WHERE t1.display_status = #{displayStatus} AND t1.role_code = #{roleCode} )
+        <if test='roleCode != null and (roleCode != "1" and roleCode != "0")'>AND t2.lead_unit_id = #{leadUnitId} </if>
+        and t2.valid = '1' <if test="roleCode != null and (roleCode eq '1'.toString() or roleCode eq '0'.toString())"> and t2.level = '0'</if>
+        )
+    </select>
+
+    <select id="groupByCategoryWorkOrderCount" resultType="top.tangyh.lamp.base.vo.result.SignCategoryIsNullNormalWorkOrderResultVO">
+        SELECT
+        subString_index(t3.order_category_name, '-', 1 ) AS categoryName,
+        COUNT(1) AS total
+        FROM
+        chief_work_order_item t3
+        RIGHT JOIN (
+        SELECT
+        DISTINCT t2.order_no as task_order_no
+        FROM
+        normal_work_order_task t2
+        WHERE 1 = 1
+        <if test='roleCode != null and (roleCode != "1" and roleCode != "0")'>AND t2.lead_unit_id = #{leadUnitId} </if>
+        and t2.valid = '1' <if test="roleCode != null and (roleCode eq '1'.toString() or roleCode eq '0'.toString())"> and t2.level = '0'</if>
+        ) t4 ON t3.work_order_no = t4.task_order_no
+        where t3.order_category_name is not null
+        GROUP BY
+        subString_index(t3.order_category_name, '-', 1)
+    </select>
+
+    <select id="signCategoryIsNull" resultType="java.lang.Long">
+        SELECT
+        COUNT(*) AS total
+        FROM
+        chief_work_order_item t3
+        where t3.id in(
+        SELECT
+        DISTINCT t2.order_no as task_order_no
+        FROM
+        normal_work_order_task t2
+        WHERE
+        t2.current_node_code IN ( SELECT t1.node_code FROM role_status_mapping t1 WHERE t1.display_status = '处办中' AND t1.role_code = '1' )
+        and t2.valid = '1' and t2.level = '0'
+        )
+        and t3.order_category_name is null
+    </select>
+
+    <select id="getRanking" resultType="top.tangyh.lamp.base.vo.result.NormalWorkOrderRankingResultVO">
+        SELECT
+        t1.`name`,
+        IFNULL(sign_stat.signCount, 0) AS signCount,
+        IFNULL(finish_stat.finishCount, 0) AS finishCount,
+        DENSE_RANK() OVER (ORDER BY IFNULL(sign_stat.signCount, 0) DESC) AS signRanking,
+        DENSE_RANK() OVER (ORDER BY IFNULL(finish_stat.finishCount, 0) DESC) AS finishRanking
+        FROM
+        `base_org` t1
+        LEFT JOIN (
+        SELECT
+        t1.id,
+        t1.name,
+        COUNT(t2.id) AS signCount
+        FROM
+        `base_org` t1
+        LEFT JOIN work_order_dynamic t2 ON t1.id = t2.dept_id
+        AND t2.process_type = '签收'
+        AND DATE_FORMAT(t2.created_time, '%Y-%m') = DATE_FORMAT(NOW(), '%Y-%m')
+        WHERE
+        t1.parent_id &lt;> 0
+        GROUP BY
+        t1.id, t1.name
+        ) sign_stat ON t1.id = sign_stat.id
+        LEFT JOIN (
+        SELECT
+        t1.id,
+        t1.name,
+        COUNT(t2.id) AS finishCount
+        FROM
+        `base_org` t1
+        LEFT JOIN normal_work_order_task t2 ON t1.id = t2.lead_unit_id
+        AND t2.current_node_code = '13.1'
+        AND t2.valid = '1'
+        AND DATE_FORMAT(t2.created_time, '%Y-%m') = DATE_FORMAT(NOW(), '%Y-%m')
+        WHERE
+        t1.parent_id &lt;> 0
+        GROUP BY
+        t1.id, t1.name
+        ) finish_stat ON t1.id = finish_stat.id
+        WHERE
+        t1.parent_id &lt;> 0
+        ORDER BY
+        finishRanking;
     </select>
 
 </mapper>

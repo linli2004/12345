@@ -9,6 +9,8 @@ import top.tangyh.basic.base.mapper.SuperMapper;
 import top.tangyh.lamp.base.entity.ChiefWorkOrderItem;
 import top.tangyh.lamp.base.vo.query.ChiefWorkOrderItemPageQuery;
 import top.tangyh.lamp.base.vo.result.ChiefWorkOrderItemResultVO;
+import top.tangyh.lamp.base.vo.result.NormalWorkOrderRankingResultVO;
+import top.tangyh.lamp.base.vo.result.SignCategoryIsNullNormalWorkOrderResultVO;
 
 import java.util.List;
 
@@ -51,4 +53,22 @@ public interface ChiefWorkOrderItemMapper extends SuperMapper<ChiefWorkOrderItem
      * @return 分页结果
      */
     IPage<ChiefWorkOrderItemResultVO> selectCommentedResultVO(IPage<ChiefWorkOrderItem> page, @Param(Constants.WRAPPER) Wrapper<ChiefWorkOrderItem> query, @Param("model") ChiefWorkOrderItemPageQuery model);
+
+    /**
+     * 分页查询(未评论)
+     *
+     * @param page  分页参数
+     * @param query 查询条件
+     * @param model 查询模型
+     * @return 分页结果
+     */
+    IPage<ChiefWorkOrderItemResultVO> selectNotCommentResultVO(IPage<ChiefWorkOrderItem> page, @Param(Constants.WRAPPER) Wrapper<ChiefWorkOrderItem> query, @Param("model") ChiefWorkOrderItemPageQuery model);
+
+    Long getWorkOrderCount(@Param("displayStatus") String displayStatus, @Param("roleCode") String roleCode, @Param("leadUnitId") String leadUnitId);
+
+    List<SignCategoryIsNullNormalWorkOrderResultVO> groupByCategoryWorkOrderCount(@Param("roleCode") String roleCode, @Param("leadUnitId") String leadUnitId);
+
+    Long signCategoryIsNull();
+
+    List<NormalWorkOrderRankingResultVO> getRanking();
 }

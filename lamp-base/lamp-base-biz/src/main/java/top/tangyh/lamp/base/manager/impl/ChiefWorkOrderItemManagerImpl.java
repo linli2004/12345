@@ -12,6 +12,9 @@ import top.tangyh.lamp.base.mapper.ChiefWorkOrderItemMapper;
 import top.tangyh.lamp.base.vo.query.ChiefWorkOrderItemPageQuery;
 import top.tangyh.lamp.base.vo.result.ChiefWorkOrderItemResultVO;
 
+import top.tangyh.lamp.base.vo.result.NormalWorkOrderRankingResultVO;
+import top.tangyh.lamp.base.vo.result.SignCategoryIsNullNormalWorkOrderResultVO;
+
 import java.util.List;
 
 /**
@@ -41,5 +44,30 @@ public class ChiefWorkOrderItemManagerImpl extends SuperManagerImpl<ChiefWorkOrd
     @Override
     public IPage<ChiefWorkOrderItemResultVO> selectCommentedResultVO(IPage<ChiefWorkOrderItem> page, Wrapper<ChiefWorkOrderItem> wrapper, ChiefWorkOrderItemPageQuery model) {
         return baseMapper.selectCommentedResultVO(page, wrapper, model);
+    }
+
+    @Override
+    public IPage<ChiefWorkOrderItemResultVO> selectNotCommentResultVO(IPage<ChiefWorkOrderItem> page, Wrapper<ChiefWorkOrderItem> wrapper, ChiefWorkOrderItemPageQuery model) {
+        return baseMapper.selectNotCommentResultVO(page, wrapper, model);
+    }
+
+    @Override
+    public Long getWorkOrderCount(String displayStatus, String roleCode, String leadUnitId) {
+        return baseMapper.getWorkOrderCount(displayStatus, roleCode, leadUnitId);
+    }
+
+    @Override
+    public List<SignCategoryIsNullNormalWorkOrderResultVO> groupByCategoryWorkOrderCount(String roleCode, String leadUnitId) {
+        return baseMapper.groupByCategoryWorkOrderCount(roleCode, leadUnitId);
+    }
+
+    @Override
+    public Long signCategoryIsNull() {
+        return baseMapper.signCategoryIsNull();
+    }
+
+    @Override
+    public List<NormalWorkOrderRankingResultVO> getRanking() {
+        return baseMapper.getRanking();
     }
 }

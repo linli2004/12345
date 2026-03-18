@@ -6,6 +6,8 @@ import top.tangyh.basic.base.service.SuperService;
 import top.tangyh.lamp.base.entity.ChiefWorkOrderItem;
 import top.tangyh.lamp.base.vo.query.ChiefWorkOrderItemPageQuery;
 import top.tangyh.lamp.base.vo.result.ChiefWorkOrderItemResultVO;
+import top.tangyh.lamp.base.vo.result.NormalWorkOrderRankingResultVO;
+import top.tangyh.lamp.base.vo.result.SignCategoryIsNullNormalWorkOrderResultVO;
 
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
@@ -45,4 +47,27 @@ public interface ChiefWorkOrderItemService extends SuperService<Long, ChiefWorkO
      * @param status      状态
      */
     void exportTaskZip(List<String> orderNoList, HttpServletResponse response, String status);
+
+    Long getWorkOrderCount(String displayStatus, String roleCode, String leadUnitId);
+
+    List<SignCategoryIsNullNormalWorkOrderResultVO> groupByCategoryWorkOrderCount(String roleCode, String leadUnitId);
+
+    Long signCategoryIsNull();
+
+    List<NormalWorkOrderRankingResultVO> getRanking();
+    /**
+     * 分页查询(带评论)
+     *
+     * @param params 分页参数
+     * @return 分页结果
+     */
+    IPage<ChiefWorkOrderItemResultVO> findCommentedPageResultVO(PageParams<ChiefWorkOrderItemPageQuery> params);
+
+    /**
+     * 分页查询(未评论)
+     *
+     * @param params 分页参数
+     * @return 分页结果
+     */
+    IPage<ChiefWorkOrderItemResultVO> findNotCommentPageResultVO(PageParams<ChiefWorkOrderItemPageQuery> params);
 }

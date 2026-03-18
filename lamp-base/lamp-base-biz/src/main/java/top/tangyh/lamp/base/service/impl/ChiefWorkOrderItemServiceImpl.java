@@ -320,4 +320,90 @@ public class ChiefWorkOrderItemServiceImpl extends SuperServiceImpl<ChiefWorkOrd
         }
         return fileName;
     }
+
+    @Override
+    public IPage<ChiefWorkOrderItemResultVO> findCommentedPageResultVO(PageParams<ChiefWorkOrderItemPageQuery> params) {
+        IPage<ChiefWorkOrderItem> page = params.buildPage(ChiefWorkOrderItem.class);
+        ChiefWorkOrderItemPageQuery model = params.getModel();
+        Map<String, Object> extra = params.getExtra();
+        LbQueryWrap<ChiefWorkOrderItem> wrap = Wraps.lbq(null, extra, ChiefWorkOrderItem.class);
+        wrap.like(ChiefWorkOrderItem::getWorkOrderNo, model.getWorkOrderNo())
+                .like(ChiefWorkOrderItem::getTitle, model.getTitle())
+                .like(ChiefWorkOrderItem::getAppealContent, model.getAppealContent())
+                .like(ChiefWorkOrderItem::getAppealType, model.getAppealType())
+                .like(ChiefWorkOrderItem::getContactPhone, model.getContactPhone())
+                .like(ChiefWorkOrderItem::getSettleCondition, model.getSettleCondition())
+                .like(ChiefWorkOrderItem::getBatchNo, model.getBatchNo())
+                .and(model.getIsJointQuery(), w -> {
+                    if (model.getIsJointQuery() && StringUtils.isNotBlank(model.getKeyword())) {
+                        w.like(ChiefWorkOrderItem::getWorkOrderNo, model.getKeyword())
+                                .or()
+                                .like(ChiefWorkOrderItem::getTitle, model.getKeyword())
+                                .or()
+                                .like(ChiefWorkOrderItem::getAppealContent, model.getKeyword());
+                    }
+                });
+
+        IPage<ChiefWorkOrderItemResultVO> resultVOPage = superManager.selectCommentedResultVO(page, wrap, model);
+        
+        if (!CollectionUtils.isEmpty(resultVOPage.getRecords())) {
+            List<String> orderNoList = resultVOPage.getRecords().stream().map(ChiefWorkOrderItemResultVO::getWorkOrderNo).collect(Collectors.toList());
+            setContentJson(resultVOPage.getRecords(), model.getDisplayStatus(), orderNoList);
+        }
+        
+        return resultVOPage;
+    }
+
+    @Override
+    public IPage<ChiefWorkOrderItemResultVO> findNotCommentPageResultVO(PageParams<ChiefWorkOrderItemPageQuery> params) {
+        IPage<ChiefWorkOrderItem> page = params.buildPage(ChiefWorkOrderItem.class);
+        ChiefWorkOrderItemPageQuery model = params.getModel();
+        Map<String, Object> extra = params.getExtra();
+        LbQueryWrap<ChiefWorkOrderItem> wrap = Wraps.lbq(null, extra, ChiefWorkOrderItem.class);
+        wrap.like(ChiefWorkOrderItem::getWorkOrderNo, model.getWorkOrderNo())
+                .like(ChiefWorkOrderItem::getTitle, model.getTitle())
+                .like(ChiefWorkOrderItem::getAppealContent, model.getAppealContent())
+                .like(ChiefWorkOrderItem::getAppealType, model.getAppealType())
+                .like(ChiefWorkOrderItem::getContactPhone, model.getContactPhone())
+                .like(ChiefWorkOrderItem::getSettleCondition, model.getSettleCondition())
+                .like(ChiefWorkOrderItem::getBatchNo, model.getBatchNo())
+                .and(model.getIsJointQuery(), w -> {
+                    if (model.getIsJointQuery() && StringUtils.isNotBlank(model.getKeyword())) {
+                        w.like(ChiefWorkOrderItem::getWorkOrderNo, model.getKeyword())
+                                .or()
+                                .like(ChiefWorkOrderItem::getTitle, model.getKeyword())
+                                .or()
+                                .like(ChiefWorkOrderItem::getAppealContent, model.getKeyword());
+                    }
+                });
+
+        IPage<ChiefWorkOrderItemResultVO> resultVOPage = superManager.selectNotCommentResultVO(page, wrap, model);
+        
+        if (!CollectionUtils.isEmpty(resultVOPage.getRecords())) {
+            List<String> orderNoList = resultVOPage.getRecords().stream().map(ChiefWorkOrderItemResultVO::getWorkOrderNo).collect(Collectors.toList());
+            setContentJson(resultVOPage.getRecords(), model.getDisplayStatus(), orderNoList);
+        }
+        
+        return resultVOPage;
+    }
+
+    @Override
+    public Long getWorkOrderCount(String displayStatus, String roleCode, String leadUnitId) {
+        return superManager.getWorkOrderCount(displayStatus, roleCode, leadUnitId);
+    }
+
+    @Override
+    public List<SignCategoryIsNullNormalWorkOrderResultVO> groupByCategoryWorkOrderCount(String roleCode, String leadUnitId) {
+        return superManager.groupByCategoryWorkOrderCount(roleCode, leadUnitId);
+    }
+
+    @Override
+    public Long signCategoryIsNull() {
+        return superManager.signCategoryIsNull();
+    }
+
+    @Override
+    public List<NormalWorkOrderRankingResultVO> getRanking() {
+        return superManager.getRanking();
+    }
 }

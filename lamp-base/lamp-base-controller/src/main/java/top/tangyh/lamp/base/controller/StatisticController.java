@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import top.tangyh.basic.base.R;
 import top.tangyh.lamp.Constant;
+import top.tangyh.lamp.base.service.ChiefWorkOrderItemService;
 import top.tangyh.lamp.base.service.NormalWorkOrderService;
 import top.tangyh.lamp.base.vo.result.NormalWorkOrderRankingResultVO;
 import top.tangyh.lamp.base.vo.result.SignCategoryIsNullNormalWorkOrderResultVO;
@@ -29,6 +30,7 @@ import java.util.stream.Collectors;
 public class StatisticController {
 
     private final NormalWorkOrderService normalWorkOrderService;
+    private final ChiefWorkOrderItemService chiefWorkOrderItemService;
 
     @GetMapping("/getWorkOrderStatistic")
     @Operation(summary = "统计数据", description = "统计数据")
@@ -54,6 +56,33 @@ public class StatisticController {
         List<NormalWorkOrderRankingResultVO> rankingList = normalWorkOrderService.getRanking();
         responseMap.put("常规工单前10排名", rankingList.stream().limit(10).collect(Collectors.toList()));
         responseMap.put("常规工单全部排名", rankingList);
+        return R.success(responseMap);
+    }
+
+    @GetMapping("/getChiefWorkOrderStatistic")
+    @Operation(summary = "督办工单统计数据", description = "督办工单统计数据")
+    public R<Map<String, Object>> getChiefWorkOrderStatistic(@RequestParam String roleCode, @RequestParam String leadUnitId) {
+        Map<String, Object> responseMap = Maps.newLinkedHashMap();
+        Map<String, Object> chiefCountMap = Maps.newLinkedHashMap();
+        chiefCountMap.put("已导入", chiefWorkOrderItemService.getWorkOrderCount("处办中", roleCode, leadUnitId));
+        chiefCountMap.put("处办中", chiefWorkOrderItemService.getWorkOrderCount("处办中", roleCode, leadUnitId));
+        chiefCountMap.put("下级已退回", chiefWorkOrderItemService.getWorkOrderCount("下级已退回", roleCode, leadUnitId));
+        chiefCountMap.put("下派跟踪", chiefWorkOrderItemService.getWorkOrderCount("下派跟踪", roleCode, leadUnitId));
+        chiefCountMap.put("结案待审", chiefWorkOrderItemService.getWorkOrderCount("结案待审", roleCode, leadUnitId));
+        chiefCountMap.put("办结", chiefWorkOrderItemService.getWorkOrderCount("办结", roleCode, leadUnitId));
+        chiefCountMap.put("已退回", chiefWorkOrderItemService.getWorkOrderCount("已退回", roleCode, leadUnitId));
+        responseMap.put("督办工单数量", chiefCountMap);
+        List<SignCategoryIsNullNormalWorkOrderResultVO> groupCategoryList = chiefWorkOrderItemService.groupByCategoryWorkOrderCount(roleCode, leadUnitId);
+        Map<String, Long> groupCategoryMap = groupCategoryList.stream().collect(Collectors.toMap(
+                SignCategoryIsNullNormalWorkOrderResultVO::getCategoryName,
+                SignCategoryIsNullNormalWorkOrderResultVO::getTotal));
+        Boolean flag = Constant.ROLE_CODE_TOWN_LEADER.equals(roleCode) || Constant.ROLE_CODE_TOWN_SPECIALIST.equals(roleCode);
+        groupCategoryMap.put("签收未分类", flag ? chiefWorkOrderItemService.signCategoryIsNull() : 0L);
+        responseMap.put("督办工单概览", groupCategoryMap);
+        if (!flag) return R.success(responseMap);
+        List<NormalWorkOrderRankingResultVO> rankingList = chiefWorkOrderItemService.getRanking();
+        responseMap.put("督办工单前10排名", rankingList.stream().limit(10).collect(Collectors.toList()));
+        responseMap.put("督办工单全部排名", rankingList);
         return R.success(responseMap);
     }
 }

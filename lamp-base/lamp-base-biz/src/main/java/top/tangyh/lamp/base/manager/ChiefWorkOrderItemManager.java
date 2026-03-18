@@ -6,6 +6,8 @@ import top.tangyh.basic.base.manager.SuperManager;
 import top.tangyh.lamp.base.entity.ChiefWorkOrderItem;
 import top.tangyh.lamp.base.vo.query.ChiefWorkOrderItemPageQuery;
 import top.tangyh.lamp.base.vo.result.ChiefWorkOrderItemResultVO;
+import top.tangyh.lamp.base.vo.result.NormalWorkOrderRankingResultVO;
+import top.tangyh.lamp.base.vo.result.SignCategoryIsNullNormalWorkOrderResultVO;
 
 import java.util.List;
 
@@ -25,4 +27,14 @@ public interface ChiefWorkOrderItemManager extends SuperManager<ChiefWorkOrderIt
     List<ChiefWorkOrderItemResultVO> selectListResultVO(ChiefWorkOrderItemPageQuery model);
 
     IPage<ChiefWorkOrderItemResultVO> selectCommentedResultVO(IPage<ChiefWorkOrderItem> page, Wrapper<ChiefWorkOrderItem> wrapper, ChiefWorkOrderItemPageQuery model);
+
+    IPage<ChiefWorkOrderItemResultVO> selectNotCommentResultVO(IPage<ChiefWorkOrderItem> page, Wrapper<ChiefWorkOrderItem> wrapper, ChiefWorkOrderItemPageQuery model);
+
+    Long getWorkOrderCount(String displayStatus, String roleCode, String leadUnitId);
+
+    List<SignCategoryIsNullNormalWorkOrderResultVO> groupByCategoryWorkOrderCount(String roleCode, String leadUnitId);
+
+    Long signCategoryIsNull();
+
+    List<NormalWorkOrderRankingResultVO> getRanking();
 }

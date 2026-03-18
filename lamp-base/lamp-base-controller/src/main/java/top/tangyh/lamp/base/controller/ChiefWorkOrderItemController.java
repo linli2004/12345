@@ -3,6 +3,7 @@ package top.tangyh.lamp.base.controller;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.NumberUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import top.tangyh.basic.annotation.log.WebLog;
 import top.tangyh.basic.base.controller.SuperController;
 import top.tangyh.basic.interfaces.echo.EchoService;
 import top.tangyh.lamp.base.entity.ChiefWorkOrderItem;
@@ -69,5 +71,19 @@ public class ChiefWorkOrderItemController extends SuperController<ChiefWorkOrder
     @PostMapping("/export")
     public void export(@RequestBody List<String> orderNoList, HttpServletResponse response, String status) {
         superService.exportTaskZip(orderNoList, response, status);
+    }
+
+    @Operation(summary = "督办工单待批示", description = "督办工单待批示")
+    @PostMapping(path = "/notComment")
+    @WebLog("督办工单待批示")
+    public R<IPage<ChiefWorkOrderItemResultVO>> notCommentPage(@RequestBody @Validated PageParams<ChiefWorkOrderItemPageQuery> params) {
+        return R.success(superService.findNotCommentPageResultVO(params));
+    }
+
+    @Operation(summary = "督办工单已批示", description = "督办工单已批示")
+    @PostMapping(path = "/commented")
+    @WebLog("督办工单已批示")
+    public R<IPage<ChiefWorkOrderItemResultVO>> commentedPage(@RequestBody @Validated PageParams<ChiefWorkOrderItemPageQuery> params) {
+        return R.success(superService.findCommentedPageResultVO(params));
     }
 }
