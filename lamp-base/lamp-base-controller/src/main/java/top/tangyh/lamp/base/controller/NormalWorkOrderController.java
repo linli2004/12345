@@ -195,6 +195,35 @@ public class NormalWorkOrderController extends SuperController<NormalWorkOrderSe
         commentedPageResultVO.getRecords().forEach(t -> t.setWorkOrderTaskList(taskMap.get(t.getOrderNo())));
         return R.success(commentedPageResultVO);
     }
+
+    /**
+     * 查询统计 普通工单
+     */
+    @Operation(summary = "查询统计 普通工单", description = "查询统计 普通工单")
+    @PostMapping(path = "/pageNormalStatistic")
+    @WebLog("查询统计 普通工单")
+    public R<IPage<NormalWorkOrderResultVO>> pageStatistic(@RequestBody @Validated PageParams<NormalWorkOrderPageQuery> params) {
+        IPage<NormalWorkOrderResultVO> page = superService.selectOrderAllConditions(params);
+        List<String> orderNoList = page.getRecords().stream().filter(item -> "办结".equals(item.getStatus())).map(NormalWorkOrderResultVO::getOrderNo).toList();
+        List<NormalWorkOrderTask> workOrderTaskList = normalWorkOrderTaskService.list(Wraps.<NormalWorkOrderTask>lbQ().eq(NormalWorkOrderTask::getValid, Constant.TASK_VALID).in(NormalWorkOrderTask::getOrderNo, orderNoList));
+        if (CollectionUtils.isEmpty(workOrderTaskList)) return R.success(page);
+        List<NormalWorkOrderTaskResultVO> taskResultVOList = BeanUtil.copyToList(workOrderTaskList, NormalWorkOrderTaskResultVO.class);
+        if (echoService != null) {
+            echoService.action(taskResultVOList);
+        }
+        Map<String, List<NormalWorkOrderTaskResultVO>> taskMap = taskResultVOList.stream()
+                .collect(Collectors.groupingBy(
+                        NormalWorkOrderTaskResultVO::getOrderNo,
+                        java.util.LinkedHashMap::new,
+                        Collectors.toList()
+                ));
+        page.getRecords().forEach(t -> t.setWorkOrderTaskList(taskMap.get(t.getOrderNo())));
+        params.getModel().setOrderNoList(orderNoList);
+        params.getModel().setDisplayStatus("办结");
+        if (!CollectionUtils.isEmpty(orderNoList))
+            superService.getFinishOrBackContentJson(page.getRecords(), params.getModel());
+        return R.success(page);
+    }
 }
 
 

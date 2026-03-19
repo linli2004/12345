@@ -288,7 +288,7 @@ public class NormalWorkOrderTaskServiceImpl extends SuperServiceImpl<NormalWorkO
         List<NormalWorkOrderTask> taskTempList = superManager.list(Wraps.<NormalWorkOrderTask>lbQ().eq(NormalWorkOrderTask::getValid, Constant.TASK_VALID).eq(NormalWorkOrderTask::getOrderNo, auditVO.getOrderNo()));
         ArgumentAssert.notEmpty(taskTempList, "工单编号有误");
         if (Constant.SETTLE_CONDITION_ALL.equals(workOrderTemp.getSettleCondition())) {
-            //除lead_unit_id=1外的task node都为15.1  将lead_unit_id=1的task 置15.1
+            //除lead_unit_id=1外的task node存在15.1  将lead_unit_id=1的task 置15.1
             //除lead_unit_id=1外的task node都为12.1  将lead_unit_id=1的task 置12.1
             if (Constant.NODE_CODE_BASIC_BACK_LEADER_APPROVE.equals(nodeCode) || Constant.NODE_CODE_BASIC_FINAL_LEADER_APPROVE.equals(nodeCode)) {
                 updateTownTaskNodeCode(taskTempList, nodeCode);
@@ -367,7 +367,7 @@ public class NormalWorkOrderTaskServiceImpl extends SuperServiceImpl<NormalWorkO
         NormalWorkOrder workOrderTemp = normalWorkOrderManager.getOne(Wraps.<NormalWorkOrder>lbQ().eq(NormalWorkOrder::getOrderNo, revokeVO.getOrderNo()));
         ExtendMsgPublishVO data = new ExtendMsgPublishVO();
         data.setTitle(String.format(titleTemplate, workOrderTemp.getOrderTitle()));
-        data.setContent(String.format(titleTemplate, workOrderTemp.getOrderTitle()));
+        data.setContent(workOrderTemp.getOrderNo());
         data.setRemindMode("03");
         data.setRecipientList(employeeIdList);
         msgBiz.publish(data, new SysUser());
@@ -405,7 +405,7 @@ public class NormalWorkOrderTaskServiceImpl extends SuperServiceImpl<NormalWorkO
         });
         ExtendMsgPublishVO data = new ExtendMsgPublishVO();
         data.setTitle(String.format(titleTemplate, workOrderTemp.getOrderTitle()));
-        data.setContent(String.format(titleTemplate, workOrderTemp.getOrderTitle()));
+        data.setContent(workOrderTemp.getOrderNo());
         data.setRemindMode("01");
         data.setRecipientList(employeeIdList);
         return msgBiz.publish(data, new SysUser());
@@ -453,11 +453,13 @@ public class NormalWorkOrderTaskServiceImpl extends SuperServiceImpl<NormalWorkO
                 superManager.update(Wrappers.<NormalWorkOrderTask>lambdaUpdate().set(NormalWorkOrderTask::getLevel, Constant.TASK_LEVEL_0)
                         .in(NormalWorkOrderTask::getId, existBackTask.stream().map(NormalWorkOrderTask::getId).collect(Collectors.toList()))
                         .eq(NormalWorkOrderTask::getCurrentNodeCode, Constant.NODE_CODE_BASIC_BACK_LEADER_APPROVE));
+                normalWorkOrderTaskList.forEach(t -> t.setLevel(Constant.TASK_LEVEL_1));
             } else {//如果不存在没动的task是15.1的 12.1的task level置0
                 if (CollectionUtils.isNotEmpty(otherTask)) {
                     superManager.update(Wrappers.<NormalWorkOrderTask>lambdaUpdate().set(NormalWorkOrderTask::getLevel, Constant.TASK_LEVEL_0)
                             .in(NormalWorkOrderTask::getId, otherTask.stream().map(NormalWorkOrderTask::getId).collect(Collectors.toList()))
                             .eq(NormalWorkOrderTask::getCurrentNodeCode, Constant.NODE_CODE_BASIC_FINAL_LEADER_APPROVE));
+                    normalWorkOrderTaskList.forEach(t -> t.setLevel(Constant.TASK_LEVEL_1));
                 }
             }
         }

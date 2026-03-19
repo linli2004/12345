@@ -187,4 +187,6 @@ public class NormalWorkOrderResultVO extends Entity<Long> implements Serializabl
     private String municipalAssistDeptName;
     private LocalDateTime municipalAssignTime;
     private LocalDateTime municipalDeadline;
+
+    private String status;
 }

@@ -451,6 +451,14 @@ public class NormalWorkOrderServiceImpl extends SuperServiceImpl<NormalWorkOrder
         return superManager.selectCommentedResultVO(page, wrap, model);
     }
 
+    @Override
+    public IPage<NormalWorkOrderResultVO> selectOrderAllConditions(PageParams<NormalWorkOrderPageQuery> params) {
+        IPage<NormalWorkOrder> page = params.buildPage(NormalWorkOrder.class);
+        NormalWorkOrderPageQuery model = params.getModel();
+        LbQueryWrap<NormalWorkOrder> wrap = Wraps.lbq(null, params.getExtra(), NormalWorkOrder.class);
+        return superManager.selectOrderAllConditions(page, wrap, model);
+    }
+
     private List<Long> extractFileIds(NormalWorkOrderExport export) {
         List<Long> fileIds = Lists.newArrayList();
         if (export.getFinishOrBackDynamic() != null && StringUtils.isNotBlank(export.getFinishOrBackDynamic().getContentJson())) {

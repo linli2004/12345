@@ -38,6 +38,9 @@ public interface NormalWorkOrderManager extends SuperManager<NormalWorkOrder> {
     IPage<NormalWorkOrderResultVO> selectNotCommentResultVO(IPage<NormalWorkOrder> page, Wrapper<NormalWorkOrder> wrapper, NormalWorkOrderPageQuery model);
 
     IPage<NormalWorkOrderResultVO> selectCommentedResultVO(IPage<NormalWorkOrder> page, Wrapper<NormalWorkOrder> wrapper, NormalWorkOrderPageQuery model);
+
+    IPage<NormalWorkOrderResultVO> selectOrderAllConditions(IPage<NormalWorkOrder> page, Wrapper<NormalWorkOrder> wrapper, NormalWorkOrderPageQuery model);
+
 }
 
 
