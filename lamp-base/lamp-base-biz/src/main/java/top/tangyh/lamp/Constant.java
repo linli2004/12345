@@ -110,4 +110,5 @@ public interface Constant {
             .put(NODE_CODE_TOWN_AGAIN_PROCESSING, "待签收(基层部门12345专员)")
             .build();
 
+    String CHIEF_ORDER_FINISH = "已完成";
 }

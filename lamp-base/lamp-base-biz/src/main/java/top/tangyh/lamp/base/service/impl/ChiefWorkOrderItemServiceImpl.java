@@ -184,28 +184,8 @@ public class ChiefWorkOrderItemServiceImpl extends SuperServiceImpl<ChiefWorkOrd
             zos.closeEntry();
 
             // 4.3 生成每个工单的Word文档
-            for (NormalWorkOrderExport normalWorkOrder : normalWorkOrderExports) {
-                try {
-                    normalWorkOrder.setExportTime(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-                    String folderName = rootFolderName + normalWorkOrder.getOrderNo() + "/";
-
-                    // 创建工单文件夹
-                    zos.putNextEntry(new ZipEntry(folderName));
-                    zos.closeEntry();
-
-                    // 创建Word文件条目
-                    zos.putNextEntry(new ZipEntry(folderName + normalWorkOrder.getOrderNo() + ".docx"));
-
-                    // 使用内存中的模板数据渲染
-                    try (InputStream is = new ByteArrayInputStream(wordTemplateBytes)) {
-                        XWPFTemplate template = XWPFTemplate.compile(is).render(normalWorkOrder);
-                        template.write(zos);
-                        template.close();
-                    }
-                    zos.closeEntry();
-                } catch (Exception e) {
-                    log.error("生成工单 {} 的 Word 失败", normalWorkOrder.getOrderNo(), e);
-                }
+            for (int i = 0; i < normalWorkOrderExports.size(); i++) {
+                NormalWorkOrderExport normalWorkOrder = normalWorkOrderExports.get(i);
                 List<Long> fileIds = extractFileIds(normalWorkOrder);
                 if (!CollectionUtils.isEmpty(fileIds)) {
                     Map<Long, String> urlMap = fileService.findUrlById(fileIds);
@@ -223,7 +203,7 @@ public class ChiefWorkOrderItemServiceImpl extends SuperServiceImpl<ChiefWorkOrd
                                 // ignore
                             }
                         }
-                        String entryName = rootFolderName + normalWorkOrder.getOrderNo() + "/" + deriveFileName(fid, fUrl, attachmentsFileName);
+                        String entryName = rootFolderName + i+1 + "/" + deriveFileName(fid, fUrl, attachmentsFileName);
                         zos.putNextEntry(new ZipEntry(entryName));
                         try (BufferedInputStream bis = new BufferedInputStream(new URL(fUrl).openStream())) {
                             bis.transferTo(zos);

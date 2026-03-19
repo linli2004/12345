@@ -109,6 +109,29 @@
         </where>
     </select>
 
+    <select id="selectCountResultVO" resultType="java.lang.Integer">
+        SELECT
+        count(*)
+        FROM chief_work_order_item t3
+        <where>
+            t3.id in(
+            SELECT
+            DISTINCT t2.order_no as task_order_no
+            FROM
+            normal_work_order_task t2
+            WHERE
+            t2.current_node_code IN ( SELECT t1.node_code FROM role_status_mapping t1 WHERE t1.display_status in ('办结', '已退回') AND t1.role_code = '1' )
+            and t2.valid = '1'  and t2.level = '0'
+            )
+            <if test="model.orderNoList != null and model.orderNoList.size() > 0">
+                AND t3.id IN
+                <foreach collection="model.orderNoList" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
     <select id="selectCommentedResultVO" resultMap="ResultVOResultMap">
         select
         <include refid="Base_Column_List2"/>

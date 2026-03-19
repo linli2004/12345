@@ -25,6 +25,7 @@ public interface ChiefWorkOrderItemManager extends SuperManager<ChiefWorkOrderIt
     IPage<ChiefWorkOrderItemResultVO> selectPageResultVO(IPage<ChiefWorkOrderItem> page, Wrapper<ChiefWorkOrderItem> wrapper, ChiefWorkOrderItemPageQuery model);
 
     List<ChiefWorkOrderItemResultVO> selectListResultVO(ChiefWorkOrderItemPageQuery model);
+    Integer selectCountResultVO(ChiefWorkOrderItemPageQuery model);
 
     IPage<ChiefWorkOrderItemResultVO> selectCommentedResultVO(IPage<ChiefWorkOrderItem> page, Wrapper<ChiefWorkOrderItem> wrapper, ChiefWorkOrderItemPageQuery model);
 

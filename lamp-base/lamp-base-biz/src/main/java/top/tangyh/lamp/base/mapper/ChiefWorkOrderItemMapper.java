@@ -43,6 +43,7 @@ public interface ChiefWorkOrderItemMapper extends SuperMapper<ChiefWorkOrderItem
      * @return 列表结果
      */
     List<ChiefWorkOrderItemResultVO> selectListResultVO(@Param("model") ChiefWorkOrderItemPageQuery model);
+    Integer selectCountResultVO(@Param("model") ChiefWorkOrderItemPageQuery model);
 
     /**
      * 分页查询(带评论)

@@ -42,6 +42,11 @@ public class ChiefWorkOrderItemManagerImpl extends SuperManagerImpl<ChiefWorkOrd
     }
 
     @Override
+    public Integer selectCountResultVO(ChiefWorkOrderItemPageQuery model) {
+        return baseMapper.selectCountResultVO(model);
+    }
+
+    @Override
     public IPage<ChiefWorkOrderItemResultVO> selectCommentedResultVO(IPage<ChiefWorkOrderItem> page, Wrapper<ChiefWorkOrderItem> wrapper, ChiefWorkOrderItemPageQuery model) {
         return baseMapper.selectCommentedResultVO(page, wrapper, model);
     }

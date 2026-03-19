@@ -23,6 +23,7 @@ import top.tangyh.lamp.base.manager.ChiefWorkOrderManager;
 import top.tangyh.lamp.base.manager.ChiefWorkOrderTaskManager;
 import top.tangyh.lamp.base.service.ChiefWorkOrderTaskService;
 import top.tangyh.lamp.base.service.user.BaseEmployeeService;
+import top.tangyh.lamp.base.vo.query.ChiefWorkOrderItemPageQuery;
 import top.tangyh.lamp.base.vo.result.user.BaseEmployeeResultVO;
 import top.tangyh.lamp.base.vo.update.NormalWorkOrderTaskActionVO;
 import top.tangyh.lamp.common.constant.DsConstant;
@@ -155,6 +156,7 @@ public class ChiefWorkOrderTaskServiceImpl extends SuperServiceImpl<ChiefWorkOrd
             dynamicTemp.setNodeCode(Constant.NODE_CODE_TOWN_BACK);
             dynamicTemp.setProcessType(Constant.PROCESS_TYPE_MAP.get(Constant.NODE_CODE_TOWN_BACK));
             workOrderDynamicList.add(dynamicTemp);
+            updateChiefWorkOrderStatus(backVO.getOrderNo());
         });
         chiefWorkOrderDynamicManager.saveBatch(workOrderDynamicList);
         return superManager.updateBatchById(normalWorkOrderTaskList);
@@ -186,6 +188,7 @@ public class ChiefWorkOrderTaskServiceImpl extends SuperServiceImpl<ChiefWorkOrd
         workOrderDynamicList.add(dynamicTemp);
         superManager.updateBatchById(normalWorkOrderTaskList);
         chiefWorkOrderDynamicManager.saveBatch(workOrderDynamicList);
+        updateChiefWorkOrderStatus(finishVO.getOrderNo());
         return chiefWorkOrderItemManager.updateBatchById(workOrderList);
     }
 
@@ -321,6 +324,7 @@ public class ChiefWorkOrderTaskServiceImpl extends SuperServiceImpl<ChiefWorkOrd
         dynamicTemp.setNodeCode(Constant.NODE_CODE_TOWN_BASIC_BACK);
         dynamicTemp.setProcessType(Constant.PROCESS_TYPE_MAP.get(Constant.NODE_CODE_TOWN_BASIC_BACK));
         chiefWorkOrderDynamicManager.save(dynamicTemp);
+        updateChiefWorkOrderStatus(backVO.getOrderNo());
         return superManager.update(Wrappers.<ChiefWorkOrderTask>lambdaUpdate()
                 .set(ChiefWorkOrderTask::getCurrentNodeCode, Constant.NODE_CODE_TOWN_BASIC_BACK)
                 .set(ChiefWorkOrderTask::getLevel, Constant.TASK_LEVEL_0)
@@ -339,6 +343,7 @@ public class ChiefWorkOrderTaskServiceImpl extends SuperServiceImpl<ChiefWorkOrd
         dynamicTemp.setNodeCode(Constant.NODE_CODE_TOWN_BASIC_FINAL);
         dynamicTemp.setProcessType(Constant.PROCESS_TYPE_MAP.get(Constant.NODE_CODE_TOWN_BASIC_FINAL));
         chiefWorkOrderDynamicManager.save(dynamicTemp);
+        updateChiefWorkOrderStatus(finishVO.getOrderNo());
         return superManager.update(Wrappers.<ChiefWorkOrderTask>lambdaUpdate()
                 .set(ChiefWorkOrderTask::getCurrentNodeCode, Constant.NODE_CODE_TOWN_BASIC_FINAL)
                 .set(ChiefWorkOrderTask::getLevel, Constant.TASK_LEVEL_0)
@@ -483,5 +488,21 @@ public class ChiefWorkOrderTaskServiceImpl extends SuperServiceImpl<ChiefWorkOrd
                 superManager.updateBatchById(townTaskList);
             }
         }
+    }
+
+    private void updateChiefWorkOrderStatus(String orderNo) {
+        ChiefWorkOrderItem chiefWorkOrderItem = chiefWorkOrderItemManager.getById(Long.valueOf(orderNo));
+        String batchNo = chiefWorkOrderItem.getBatchNo();
+        List<String> orderNoList = chiefWorkOrderItemManager.list(Wraps.<ChiefWorkOrderItem>lbQ()
+                .eq(ChiefWorkOrderItem::getBatchNo, batchNo)).stream().map(item -> String.valueOf(item.getId())).toList();
+        ChiefWorkOrderItemPageQuery chiefWorkOrderItemPageQuery = new ChiefWorkOrderItemPageQuery();
+        chiefWorkOrderItemPageQuery.setOrderNoList(orderNoList);
+        Integer count = chiefWorkOrderItemManager.selectCountResultVO(chiefWorkOrderItemPageQuery);
+        if (count == orderNoList.size()) {
+            chiefWorkOrderManager.update(Wrappers.<ChiefWorkOrder>lambdaUpdate()
+                    .eq(ChiefWorkOrder::getBatchNo, batchNo)
+                    .set(ChiefWorkOrder::getStatus, Constant.CHIEF_ORDER_FINISH));
+        }
+
     }
 }
