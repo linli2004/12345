@@ -70,6 +70,11 @@ public class NormalWorkOrderManagerImpl extends SuperManagerImpl<NormalWorkOrder
     public IPage<NormalWorkOrderResultVO> selectCommentedResultVO(IPage<NormalWorkOrder> page, Wrapper<NormalWorkOrder> wrapper, NormalWorkOrderPageQuery model) {
         return baseMapper.selectCommentedPageResultVO(page, wrapper, model);
     }
+
+    @Override
+    public IPage<NormalWorkOrderResultVO> selectOrderAllConditions(IPage<NormalWorkOrder> page, Wrapper<NormalWorkOrder> wrapper, NormalWorkOrderPageQuery model) {
+        return baseMapper.selectOrderAllConditions(page, wrapper, model);
+    }
 }
 
 

@@ -251,4 +251,228 @@
         t3.allow_comment = '1'
         AND EXISTS ( SELECT 1 FROM `work_order_dynamic` t2 WHERE t2.order_no = t3.order_no AND t2.operator_id = #{model.operatorId}  AND t2.process_type = '批示' )
     </select>
+
+    <select id="selectOrderAllConditions" resultMap="ResultVOResultMap">
+        SELECT t5.* from
+            (SELECT
+            t3.*,
+            "已退回" as status
+            FROM
+            normal_work_order t3
+            INNER JOIN (
+            SELECT
+            DISTINCT t2.order_no AS task_order_no
+            FROM
+            normal_work_order_task t2
+            WHERE
+            t2.valid = '1'
+            <if test="model.leadUnitIdList != null and model.leadUnitIdList.size() > 0">
+                AND t2.lead_unit_id IN
+                <foreach collection="model.leadUnitIdList" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+            AND EXISTS (
+            SELECT 1
+            FROM normal_work_order_task sub_t2
+            WHERE sub_t2.order_no = t2.order_no
+            AND sub_t2.valid = '1'
+            AND sub_t2.LEVEL = '0'
+            AND sub_t2.current_node_code IN (SELECT t1.node_code FROM role_status_mapping t1 WHERE t1.display_status = '已退回' AND t1.role_code = '1')
+            )
+            ) t4 ON t3.order_no = t4.task_order_no
+
+            union all
+            SELECT
+            t3.*,
+            "办结" as status
+            FROM
+            normal_work_order t3
+            INNER JOIN (
+            SELECT
+            DISTINCT t2.order_no AS task_order_no
+            FROM
+            normal_work_order_task t2
+            WHERE
+            t2.valid = '1'
+            <if test="model.leadUnitIdList != null and model.leadUnitIdList.size() > 0">
+                AND t2.lead_unit_id IN
+                <foreach collection="model.leadUnitIdList" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+            AND EXISTS (
+            SELECT 1
+            FROM normal_work_order_task sub_t2
+            WHERE sub_t2.order_no = t2.order_no
+            AND sub_t2.valid = '1'
+            AND sub_t2.LEVEL = '0'
+            AND sub_t2.current_node_code IN (SELECT t1.node_code FROM role_status_mapping t1 WHERE t1.display_status = '办结' AND t1.role_code = '1')
+            )
+            ) t4 ON t3.order_no = t4.task_order_no
+
+            union all
+            SELECT
+            t3.*,
+            "结案待审" as status
+            FROM
+            normal_work_order t3
+            INNER JOIN (
+            SELECT
+            DISTINCT t2.order_no AS task_order_no
+            FROM
+            normal_work_order_task t2
+            WHERE
+            t2.valid = '1'
+            <if test="model.leadUnitIdList != null and model.leadUnitIdList.size() > 0">
+                AND t2.lead_unit_id IN
+                <foreach collection="model.leadUnitIdList" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+            AND EXISTS (
+            SELECT 1
+            FROM normal_work_order_task sub_t2
+            WHERE sub_t2.order_no = t2.order_no
+            AND sub_t2.valid = '1'
+            AND sub_t2.LEVEL = '0'
+            AND sub_t2.current_node_code IN (SELECT t1.node_code FROM role_status_mapping t1 WHERE t1.display_status = '结案待审' AND t1.role_code = '1')
+            )
+            ) t4 ON t3.order_no = t4.task_order_no
+
+            union all
+            SELECT
+            t3.*,
+            "下派跟踪" as status
+            FROM
+            normal_work_order t3
+            INNER JOIN (
+            SELECT
+            DISTINCT t2.order_no AS task_order_no
+            FROM
+            normal_work_order_task t2
+            WHERE
+            t2.valid = '1'
+            <if test="model.leadUnitIdList != null and model.leadUnitIdList.size() > 0">
+                AND t2.lead_unit_id IN
+                <foreach collection="model.leadUnitIdList" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+            AND EXISTS (
+            SELECT 1
+            FROM normal_work_order_task sub_t2
+            WHERE sub_t2.order_no = t2.order_no
+            AND sub_t2.valid = '1'
+            AND sub_t2.LEVEL = '0'
+            AND sub_t2.current_node_code IN (SELECT t1.node_code FROM role_status_mapping t1 WHERE t1.display_status = '下派跟踪' AND t1.role_code = '1')
+            )
+            ) t4 ON t3.order_no = t4.task_order_no
+
+            union all
+            SELECT
+            t3.*,
+            "下级已退回" as status
+            FROM
+            normal_work_order t3
+            INNER JOIN (
+            SELECT
+            DISTINCT t2.order_no AS task_order_no
+            FROM
+            normal_work_order_task t2
+            WHERE
+            t2.valid = '1'
+            <if test="model.leadUnitIdList != null and model.leadUnitIdList.size() > 0">
+                AND t2.lead_unit_id IN
+                <foreach collection="model.leadUnitIdList" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+            AND EXISTS (
+            SELECT 1
+            FROM normal_work_order_task sub_t2
+            WHERE sub_t2.order_no = t2.order_no
+            AND sub_t2.valid = '1'
+            AND sub_t2.LEVEL = '0'
+            AND sub_t2.current_node_code IN (SELECT t1.node_code FROM role_status_mapping t1 WHERE t1.display_status = '下级已退回' AND t1.role_code = '1')
+            )
+            ) t4 ON t3.order_no = t4.task_order_no
+
+            union all
+            SELECT
+            t3.*,
+            "处办中" as status
+            FROM
+            normal_work_order t3
+            INNER JOIN (
+            SELECT
+            DISTINCT t2.order_no AS task_order_no
+            FROM
+            normal_work_order_task t2
+            WHERE
+            t2.valid = '1'
+            <if test="model.leadUnitIdList != null and model.leadUnitIdList.size() > 0">
+                AND t2.lead_unit_id IN
+                <foreach collection="model.leadUnitIdList" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+            AND EXISTS (
+            SELECT 1
+            FROM normal_work_order_task sub_t2
+            WHERE sub_t2.order_no = t2.order_no
+            AND sub_t2.valid = '1'
+            AND sub_t2.LEVEL = '0'
+            AND sub_t2.current_node_code IN (SELECT t1.node_code FROM role_status_mapping t1 WHERE t1.display_status = '处办中' AND t1.role_code = '1')
+            )
+            ) t4 ON t3.order_no = t4.task_order_no
+
+            union all
+            SELECT
+            t3.*,
+            "待签收" as status
+            FROM
+            normal_work_order t3
+            INNER JOIN (
+            SELECT
+            DISTINCT t2.order_no AS task_order_no
+            FROM
+            normal_work_order_task t2
+            WHERE
+            t2.valid = '1'
+            <if test="model.leadUnitIdList != null and model.leadUnitIdList.size() > 0">
+                AND t2.lead_unit_id IN
+                <foreach collection="model.leadUnitIdList" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+            AND EXISTS (
+            SELECT 1
+            FROM normal_work_order_task sub_t2
+            WHERE sub_t2.order_no = t2.order_no
+            AND sub_t2.valid = '1'
+            AND sub_t2.LEVEL = '0'
+            AND sub_t2.current_node_code IN (SELECT t1.node_code FROM role_status_mapping t1 WHERE t1.display_status = '待签收' AND t1.role_code = '1')
+            )
+            ) t4 ON t3.order_no = t4.task_order_no) t5
+        <where>
+            ${ew.sqlSegment}
+            <if test="model.prefixList != null and model.prefixList.size() > 0">
+                AND (
+                <foreach collection="model.prefixList" item="prefix" separator=" OR ">
+                    t5.order_no LIKE CONCAT(#{prefix}, '%')
+                </foreach>
+                )
+            </if>
+            <if test="model.orderCategoryId != null">
+                AND t5.order_category_id = #{model.orderCategoryId}
+            </if>
+            <if test="model.regionDeadlineStart != null">
+                AND DATE_FORMAT(t5.region_deadline, '%Y-%m-%d') >= DATE_FORMAT(#{model.regionDeadlineStart}, '%Y-%m-%d')
+            </if>
+            <if test="model.regionDeadlineEnd != null">
+                AND DATE_FORMAT(t5.region_deadline, '%Y-%m-%d') &lt;= DATE_FORMAT(#{model.regionDeadlineEnd}, '%Y-%m-%d')
+            </if>
+        </where>
+    </select>
 </mapper>

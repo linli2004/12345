@@ -198,4 +198,12 @@ public class NormalWorkOrderPageQuery implements Serializable {
     private List<String> orderNoList;
 
     private Long operatorId;
+
+    private List<Long> leadUnitIdList;
+
+    private List<String> prefixList;
+
+    private LocalDateTime regionDeadlineStart;
+
+    private LocalDateTime regionDeadlineEnd;
 }

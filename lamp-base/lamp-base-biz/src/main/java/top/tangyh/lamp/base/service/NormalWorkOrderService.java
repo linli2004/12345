@@ -48,6 +48,8 @@ public interface NormalWorkOrderService extends SuperService<Long, NormalWorkOrd
 
     IPage<NormalWorkOrderResultVO> findCommentedPageResultVO(PageParams<NormalWorkOrderPageQuery> params);
 
+    IPage<NormalWorkOrderResultVO> selectOrderAllConditions(PageParams<NormalWorkOrderPageQuery> params);
+
 }
 
 

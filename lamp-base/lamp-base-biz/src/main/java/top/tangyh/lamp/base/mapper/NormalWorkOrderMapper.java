@@ -48,6 +48,10 @@ public interface NormalWorkOrderMapper extends SuperMapper<NormalWorkOrder> {
     IPage<NormalWorkOrderResultVO> selectCommentedPageResultVO(IPage<NormalWorkOrder> page,
                                                                @Param(Constants.WRAPPER) Wrapper<NormalWorkOrder> wrapper,
                                                                @Param("model") NormalWorkOrderPageQuery model);
+
+    IPage<NormalWorkOrderResultVO> selectOrderAllConditions(IPage<NormalWorkOrder> page,
+                                                               @Param(Constants.WRAPPER) Wrapper<NormalWorkOrder> wrapper,
+                                                               @Param("model") NormalWorkOrderPageQuery model);
 }
 
 
