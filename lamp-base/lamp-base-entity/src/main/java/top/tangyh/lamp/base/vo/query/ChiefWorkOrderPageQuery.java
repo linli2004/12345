@@ -6,16 +6,17 @@ import lombok.experimental.Accessors;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 
 /**
  * <p>
  * 表单查询条件VO
- * 提醒模板
+ * 督办工单
  * </p>
  *
  * @author lunar
- * @date 2026-03-10 08:39:01
+ * @date 2026-03-13 16:00:00
  */
 @Data
 @NoArgsConstructor
@@ -24,8 +25,8 @@ import java.io.Serializable;
 @Accessors(chain = true)
 @EqualsAndHashCode
 @Builder
-@Schema(description = "提醒模板")
-public class RemindTemplatePageQuery implements Serializable {
+@Schema(description = "督办工单")
+public class ChiefWorkOrderPageQuery implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
@@ -34,30 +35,25 @@ public class RemindTemplatePageQuery implements Serializable {
     private Long id;
 
     /**
+     * 批次编号
+     */
+    @Schema(description = "批次编号")
+    private String batchNo;
+    /**
      * 名称
      */
     @Schema(description = "名称")
     private String name;
     /**
-     * 展示内容
+     * 状态
      */
-    @Schema(description = "展示内容")
-    private String displayContent;
+    @Schema(description = "状态")
+    private String status;
     /**
-     * 创建人组织
+     * 导入时间
      */
-    @Schema(description = "创建人组织")
-    private Long createdOrgId;
-    /**
-     * 提醒类型
-     */
-    @Schema(description = "提醒类型")
-    private String type;
-    /**
-     * 附件id
-     */
-    @Schema(description = "附件id")
-    private Long fileId;
+    @Schema(description = "导入时间")
+    private LocalDateTime importTime;
 
 
 }

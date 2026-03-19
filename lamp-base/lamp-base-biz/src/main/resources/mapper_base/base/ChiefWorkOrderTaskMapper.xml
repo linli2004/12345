@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="top.tangyh.lamp.base.mapper.ChiefWorkOrderTaskMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="top.tangyh.lamp.base.entity.ChiefWorkOrderTask">
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="created_time" jdbcType="TIMESTAMP" property="createdTime"/>
+        <result column="created_by" jdbcType="BIGINT" property="createdBy"/>
+        <result column="updated_time" jdbcType="TIMESTAMP" property="updatedTime"/>
+        <result column="updated_by" jdbcType="BIGINT" property="updatedBy"/>
+        <result column="order_no" jdbcType="VARCHAR" property="orderNo"/>
+        <result column="current_node_code" jdbcType="VARCHAR" property="currentNodeCode"/>
+        <result column="lead_unit_id" jdbcType="BIGINT" property="leadUnitId"/>
+        <result column="co_unit_ids" jdbcType="VARCHAR" property="coUnitIds"/>
+        <result column="cc_unit_ids" jdbcType="VARCHAR" property="ccUnitIds"/>
+        <result column="process_deadline" jdbcType="TIMESTAMP" property="processDeadline"/>
+        <result column="level" jdbcType="VARCHAR" property="level"/>
+        <result column="valid" jdbcType="VARCHAR" property="valid"/>
+        <result column="created_org_id" jdbcType="BIGINT" property="createdOrgId"/>
+        <result column="read_random_str" jdbcType="VARCHAR" property="readRandomStr"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, order_no, current_node_code, lead_unit_id, co_unit_ids, cc_unit_ids,
+        process_deadline, level,valid, created_by, created_time, updated_by, updated_time,
+        created_org_id,read_random_str
+    </sql>
+
+</mapper>
