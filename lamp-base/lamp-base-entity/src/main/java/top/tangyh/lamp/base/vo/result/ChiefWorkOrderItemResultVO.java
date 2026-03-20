@@ -13,6 +13,7 @@ import top.tangyh.lamp.base.entity.WorkOrderDynamic;
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -197,4 +198,8 @@ public class ChiefWorkOrderItemResultVO extends Entity<Long> implements Serializ
     private String settleCondition;
     private ChiefWorkOrderDynamic finishOrBackDynamic;
     private ChiefWorkOrderItem chiefWorkOrderItem;
+    private String status;
+
+    private List<NormalWorkOrderTaskResultVO> workOrderTaskList;
+
 }

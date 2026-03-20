@@ -7,9 +7,12 @@ import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 import top.tangyh.basic.base.mapper.SuperMapper;
 import top.tangyh.lamp.base.entity.ChiefWorkOrderItem;
+import top.tangyh.lamp.base.entity.NormalWorkOrder;
 import top.tangyh.lamp.base.vo.query.ChiefWorkOrderItemPageQuery;
+import top.tangyh.lamp.base.vo.query.NormalWorkOrderPageQuery;
 import top.tangyh.lamp.base.vo.result.ChiefWorkOrderItemResultVO;
 import top.tangyh.lamp.base.vo.result.NormalWorkOrderRankingResultVO;
+import top.tangyh.lamp.base.vo.result.NormalWorkOrderResultVO;
 import top.tangyh.lamp.base.vo.result.SignCategoryIsNullNormalWorkOrderResultVO;
 
 import java.util.List;
@@ -72,4 +75,9 @@ public interface ChiefWorkOrderItemMapper extends SuperMapper<ChiefWorkOrderItem
     Long signCategoryIsNull();
 
     List<NormalWorkOrderRankingResultVO> getRanking();
+
+    IPage<ChiefWorkOrderItemResultVO> selectOrderAllConditions(IPage<ChiefWorkOrderItem> page,
+                                                            @Param(Constants.WRAPPER) Wrapper<ChiefWorkOrderItem> wrapper,
+                                                            @Param("model") ChiefWorkOrderItemPageQuery model);
+
 }

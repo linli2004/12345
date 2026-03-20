@@ -70,4 +70,9 @@ public interface ChiefWorkOrderItemService extends SuperService<Long, ChiefWorkO
      * @return 分页结果
      */
     IPage<ChiefWorkOrderItemResultVO> findNotCommentPageResultVO(PageParams<ChiefWorkOrderItemPageQuery> params);
+
+    IPage<ChiefWorkOrderItemResultVO> selectOrderAllConditions(PageParams<ChiefWorkOrderItemPageQuery> params);
+
+    void getFinishOrBackContentJson(List<ChiefWorkOrderItemResultVO> records, ChiefWorkOrderItemPageQuery model);
+
 }

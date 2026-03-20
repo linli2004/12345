@@ -450,11 +450,13 @@ public class ChiefWorkOrderTaskServiceImpl extends SuperServiceImpl<ChiefWorkOrd
                 superManager.update(Wrappers.<ChiefWorkOrderTask>lambdaUpdate().set(ChiefWorkOrderTask::getLevel, Constant.TASK_LEVEL_0)
                         .in(ChiefWorkOrderTask::getId, existBackTask.stream().map(ChiefWorkOrderTask::getId).collect(Collectors.toList()))
                         .eq(ChiefWorkOrderTask::getCurrentNodeCode, Constant.NODE_CODE_BASIC_BACK_LEADER_APPROVE));
+                normalWorkOrderTaskList.forEach(t -> t.setLevel(Constant.TASK_LEVEL_1));
             } else {//如果不存在没动的task是15.1的 12.1的task level置0
                 if (CollectionUtils.isNotEmpty(otherTask)) {
                     superManager.update(Wrappers.<ChiefWorkOrderTask>lambdaUpdate().set(ChiefWorkOrderTask::getLevel, Constant.TASK_LEVEL_0)
                             .in(ChiefWorkOrderTask::getId, otherTask.stream().map(ChiefWorkOrderTask::getId).collect(Collectors.toList()))
                             .eq(ChiefWorkOrderTask::getCurrentNodeCode, Constant.NODE_CODE_BASIC_FINAL_LEADER_APPROVE));
+                    normalWorkOrderTaskList.forEach(t -> t.setLevel(Constant.TASK_LEVEL_1));
                 }
             }
         }

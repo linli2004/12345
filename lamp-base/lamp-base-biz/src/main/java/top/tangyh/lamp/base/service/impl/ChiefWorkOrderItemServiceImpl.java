@@ -368,6 +368,41 @@ public class ChiefWorkOrderItemServiceImpl extends SuperServiceImpl<ChiefWorkOrd
     }
 
     @Override
+    public IPage<ChiefWorkOrderItemResultVO> selectOrderAllConditions(PageParams<ChiefWorkOrderItemPageQuery> params) {
+        IPage<ChiefWorkOrderItem> page = params.buildPage(ChiefWorkOrderItem.class);
+        ChiefWorkOrderItemPageQuery model = params.getModel();
+        Map<String, Object> extra = params.getExtra();
+        LbQueryWrap<ChiefWorkOrderItem> wrap = Wraps.lbq(null, extra, ChiefWorkOrderItem.class);
+        wrap.like(ChiefWorkOrderItem::getWorkOrderNo, model.getWorkOrderNo())
+                .like(ChiefWorkOrderItem::getTitle, model.getTitle())
+                .like(ChiefWorkOrderItem::getAppealContent, model.getAppealContent())
+                .like(ChiefWorkOrderItem::getAppealType, model.getAppealType())
+                .like(ChiefWorkOrderItem::getContactPhone, model.getContactPhone())
+                .like(ChiefWorkOrderItem::getSettleCondition, model.getSettleCondition())
+                .like(ChiefWorkOrderItem::getBatchNo, model.getBatchNo())
+                .and(model.getIsJointQuery(), w -> {
+                    if (model.getIsJointQuery() && StringUtils.isNotBlank(model.getKeyword())) {
+                        w.like(ChiefWorkOrderItem::getWorkOrderNo, model.getKeyword())
+                                .or()
+                                .like(ChiefWorkOrderItem::getTitle, model.getKeyword())
+                                .or()
+                                .like(ChiefWorkOrderItem::getAppealContent, model.getKeyword());
+                    }
+                });
+
+        return superManager.selectOrderAllConditions(page, wrap, model);
+    }
+
+    @Override
+    public void getFinishOrBackContentJson(List<ChiefWorkOrderItemResultVO> records, ChiefWorkOrderItemPageQuery model) {
+        if (CollectionUtils.isEmpty(records)) return;
+        List<String> orderNoList = records.stream().map(ChiefWorkOrderItemResultVO::getWorkOrderNo).collect(Collectors.toList());
+        if (!CollectionUtils.isEmpty(orderNoList)) {
+            setContentJson(records, model.getDisplayStatus(), orderNoList);
+        }
+    }
+
+    @Override
     public Long getWorkOrderCount(String displayStatus, String roleCode, String leadUnitId) {
         return superManager.getWorkOrderCount(displayStatus, roleCode, leadUnitId);
     }
