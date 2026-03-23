@@ -13,6 +13,8 @@ import top.tangyh.lamp.base.manager.WorkOrderTemporaryManager;
 import top.tangyh.lamp.base.service.WorkOrderDynamicService;
 import top.tangyh.lamp.common.constant.DsConstant;
 
+import java.util.List;
+
 /**
  * <p>
  * 业务实现类
@@ -36,6 +38,11 @@ public class WorkOrderDynamicServiceImpl extends SuperServiceImpl<WorkOrderDynam
                 .eq(WorkOrderTemporary::getOrderNo, entity.getOrderNo())
                 .eq(WorkOrderTemporary::getOperatorId, entity.getOperatorId())
                 .like(WorkOrderTemporary::getNodeName, "批示"));
+    }
+
+    @Override
+    public List<WorkOrderDynamic> getLastOperateTimeByOrderNo(List<String> orderNoList) {
+        return superManager.getLastOperateTimeByOrderNo(orderNoList);
     }
 }
 

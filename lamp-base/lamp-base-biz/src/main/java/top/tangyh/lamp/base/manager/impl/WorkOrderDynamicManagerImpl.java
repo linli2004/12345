@@ -8,6 +8,8 @@ import top.tangyh.lamp.base.entity.WorkOrderDynamic;
 import top.tangyh.lamp.base.manager.WorkOrderDynamicManager;
 import top.tangyh.lamp.base.mapper.WorkOrderDynamicMapper;
 
+import java.util.List;
+
 /**
  * <p>
  * 通用业务实现类
@@ -23,6 +25,10 @@ import top.tangyh.lamp.base.mapper.WorkOrderDynamicMapper;
 @Service
 public class WorkOrderDynamicManagerImpl extends SuperManagerImpl<WorkOrderDynamicMapper, WorkOrderDynamic> implements WorkOrderDynamicManager {
 
+    @Override
+    public List<WorkOrderDynamic> getLastOperateTimeByOrderNo(List<String> orderNoList) {
+        return baseMapper.getLastOperateTimeByOrderNo(orderNoList);
+    }
 }
 
 
