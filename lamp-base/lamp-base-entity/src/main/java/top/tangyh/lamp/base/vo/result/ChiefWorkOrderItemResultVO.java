@@ -200,6 +200,6 @@ public class ChiefWorkOrderItemResultVO extends Entity<Long> implements Serializ
     private ChiefWorkOrderItem chiefWorkOrderItem;
     private String status;
 
-    private List<NormalWorkOrderTaskResultVO> workOrderTaskList;
+    private List<ChiefWorkOrderTaskResultVO> workOrderTaskList;
 
 }

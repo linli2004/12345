@@ -99,7 +99,7 @@ public class NormalWorkOrderController extends SuperController<NormalWorkOrderSe
         if (null != params.getModel().getCoOrccType()) return R.success(page);
         List<String> orderNoList = page.getRecords().stream().map(NormalWorkOrderResultVO::getOrderNo).toList();
         List<NormalWorkOrderTask> workOrderTaskList = null;
-        if (Constant.ROLE_CODE_TOWN_SPECIALIST.equals(params.getModel().getRoleCode())) {
+        if (Constant.ROLE_CODE_TOWN_SPECIALIST.equals(params.getModel().getRoleCode()) || Constant.ROLE_CODE_TOWN_LEADER.equals(params.getModel().getRoleCode())) {
             workOrderTaskList = normalWorkOrderTaskService.list(Wraps.<NormalWorkOrderTask>lbQ().eq(NormalWorkOrderTask::getValid, Constant.TASK_VALID).in(NormalWorkOrderTask::getOrderNo, orderNoList));
         } else {
             workOrderTaskList = normalWorkOrderTaskService.list(Wraps.<NormalWorkOrderTask>lbQ().eq(NormalWorkOrderTask::getLeadUnitId, params.getModel().getLeadUnitId()).eq(NormalWorkOrderTask::getValid, Constant.TASK_VALID).in(NormalWorkOrderTask::getOrderNo, orderNoList));
@@ -109,7 +109,7 @@ public class NormalWorkOrderController extends SuperController<NormalWorkOrderSe
         if (echoService != null) {
             echoService.action(taskResultVOList);
         }
-        if (!Constant.ROLE_CODE_TOWN_SPECIALIST.equals(params.getModel().getRoleCode())) {
+        if (!Constant.ROLE_CODE_TOWN_SPECIALIST.equals(params.getModel().getRoleCode()) &&  !Constant.ROLE_CODE_TOWN_LEADER.equals(params.getModel().getRoleCode())) {
             List<BaseEmployeeResultVO> leader = baseEmployeeService.getEmployeeIdByRoleCodeAndOrgId(List.of(Constant.ROLE_CODE_DEPT_LEADER), List.of(Long.valueOf(params.getModel().getLeadUnitId())));
             List<BaseEmployeeResultVO> director = baseEmployeeService.getEmployeeIdByRoleCodeAndOrgId(List.of(Constant.ROLE_CODE_DEPT_DIRECTOR), List.of(Long.valueOf(params.getModel().getLeadUnitId())));
             if (!CollectionUtils.isEmpty(leader))
@@ -136,7 +136,6 @@ public class NormalWorkOrderController extends SuperController<NormalWorkOrderSe
      * <p>
      * 导出包含工单Excel清单和每个工单详情Word文档的压缩包
      *
-     * @param idList   工单ID列表
      * @param status   工单状态
      * @param response HTTP响应对象，用于写入ZIP流
      */
