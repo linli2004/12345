@@ -22,10 +22,8 @@ import top.tangyh.basic.interfaces.echo.EchoService;
 import top.tangyh.lamp.Constant;
 import top.tangyh.lamp.base.entity.ChiefWorkOrderItem;
 import top.tangyh.lamp.base.entity.ChiefWorkOrderTask;
-import top.tangyh.lamp.base.entity.WorkOrderDynamic;
 import top.tangyh.lamp.base.service.ChiefWorkOrderItemService;
 import top.tangyh.lamp.base.service.ChiefWorkOrderTaskService;
-import top.tangyh.lamp.base.service.WorkOrderDynamicService;
 import top.tangyh.lamp.base.service.user.BaseEmployeeService;
 import top.tangyh.lamp.base.vo.query.ChiefWorkOrderItemPageQuery;
 import top.tangyh.lamp.base.vo.result.ChiefWorkOrderItemResultVO;
@@ -34,7 +32,6 @@ import top.tangyh.lamp.base.vo.result.user.BaseEmployeeResultVO;
 import top.tangyh.lamp.base.vo.save.ChiefWorkOrderItemSaveVO;
 import top.tangyh.lamp.base.vo.update.ChiefWorkOrderItemUpdateVO;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -60,7 +57,6 @@ public class ChiefWorkOrderItemController extends SuperController<ChiefWorkOrder
     private final ChiefWorkOrderItemService chiefWorkOrderItemService;
     private final ChiefWorkOrderTaskService chiefWorkOrderTaskService;
     private final BaseEmployeeService baseEmployeeService;
-    private final WorkOrderDynamicService workOrderDynamicService;
 
     @Override
     public EchoService getEchoService() {
@@ -128,16 +124,7 @@ public class ChiefWorkOrderItemController extends SuperController<ChiefWorkOrder
                         java.util.LinkedHashMap::new,
                         Collectors.toList()
                 ));
-        List<WorkOrderDynamic> lastOperateTimeByOrderNo = workOrderDynamicService.getLastOperateTimeByOrderNo(params.getModel().getOrderNoList());
-        Map<String, LocalDateTime> lastOperateTimeMap = lastOperateTimeByOrderNo.stream()
-                .collect(Collectors.toMap(
-                        WorkOrderDynamic::getOrderNo,
-                        WorkOrderDynamic::getCreatedTime
-                ));
-        pageResultVO.getRecords().forEach(t -> {
-            t.setWorkOrderTaskList(taskMap.get(t.getId().toString()));
-            t.setLastOperateTime(lastOperateTimeMap.get(t.getId().toString()));
-        });
+        pageResultVO.getRecords().forEach(t -> t.setWorkOrderTaskList(taskMap.get(t.getId().toString())));
         return R.success(pageResultVO);
     }
 

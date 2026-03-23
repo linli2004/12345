@@ -21,10 +21,8 @@ import top.tangyh.basic.interfaces.echo.EchoService;
 import top.tangyh.lamp.Constant;
 import top.tangyh.lamp.base.entity.NormalWorkOrder;
 import top.tangyh.lamp.base.entity.NormalWorkOrderTask;
-import top.tangyh.lamp.base.entity.WorkOrderDynamic;
 import top.tangyh.lamp.base.service.NormalWorkOrderService;
 import top.tangyh.lamp.base.service.NormalWorkOrderTaskService;
-import top.tangyh.lamp.base.service.WorkOrderDynamicService;
 import top.tangyh.lamp.base.service.user.BaseEmployeeService;
 import top.tangyh.lamp.base.vo.query.NormalWorkOrderPageQuery;
 import top.tangyh.lamp.base.vo.result.NormalWorkOrderResultVO;
@@ -36,7 +34,6 @@ import top.tangyh.lamp.base.vo.update.NormalWorkOrderUpdateVO;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -68,7 +65,6 @@ public class NormalWorkOrderController extends SuperController<NormalWorkOrderSe
 
     private final NormalWorkOrderTaskService normalWorkOrderTaskService;
     private final BaseEmployeeService baseEmployeeService;
-    private final WorkOrderDynamicService workOrderDynamicService;
 
     /**
      * 普通工单导入
@@ -130,16 +126,7 @@ public class NormalWorkOrderController extends SuperController<NormalWorkOrderSe
                 ));
         params.getModel().setOrderNoList(orderNoList);
         superService.getFinishOrBackContentJson(page.getRecords(), params.getModel());
-        List<WorkOrderDynamic> lastOperateTimeByOrderNo = workOrderDynamicService.getLastOperateTimeByOrderNo(params.getModel().getOrderNoList());
-        Map<String, LocalDateTime> lastOperateTimeMap = lastOperateTimeByOrderNo.stream()
-                .collect(Collectors.toMap(
-                        WorkOrderDynamic::getOrderNo,
-                        WorkOrderDynamic::getCreatedTime
-                ));
-        page.getRecords().forEach(t -> {
-            t.setWorkOrderTaskList(taskMap.get(t.getOrderNo()));
-            t.setLastOperateTime(lastOperateTimeMap.get(t.getOrderNo()));
-        });
+        page.getRecords().forEach(t -> t.setWorkOrderTaskList(taskMap.get(t.getOrderNo())));
         return R.success(page);
     }
 
