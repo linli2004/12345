@@ -34,4 +34,5 @@ public interface ChiefWorkOrderService extends SuperService<Long, ChiefWorkOrder
      * @param response 响应
      */
     void downloadTemplate(HttpServletResponse response);
+    String generateBatchNo(LocalDateTime supervisionTime);
 }

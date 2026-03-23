@@ -63,4 +63,10 @@ public class ChiefWorkOrderController extends SuperController<ChiefWorkOrderServ
     public void downloadTemplate(HttpServletResponse response) {
         superService.downloadTemplate(response);
     }
+
+    @Operation(summary = "生成批次编号", description = "生成批次编号")
+    @GetMapping(path = "/generateBatchNo")
+    public R<String> generateBatchNo(LocalDateTime supervisionTime) {
+        return R.success(superService.generateBatchNo(supervisionTime));
+    }
 }

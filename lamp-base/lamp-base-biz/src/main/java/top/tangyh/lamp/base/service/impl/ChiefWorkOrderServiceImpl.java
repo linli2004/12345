@@ -142,7 +142,8 @@ public class ChiefWorkOrderServiceImpl extends SuperServiceImpl<ChiefWorkOrderMa
         }
     }
 
-    private String generateBatchNo(LocalDateTime supervisionTime) {
+    @Override
+    public String generateBatchNo(LocalDateTime supervisionTime) {
         String dateStr = supervisionTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         // 查询当天已有的最大流水号
         LbQueryWrap<ChiefWorkOrder> wrapper = Wraps.<ChiefWorkOrder>lbQ()
