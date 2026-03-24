@@ -54,7 +54,6 @@ import java.util.stream.Collectors;
 public class ChiefWorkOrderItemController extends SuperController<ChiefWorkOrderItemService, Long, ChiefWorkOrderItem
         , ChiefWorkOrderItemSaveVO, ChiefWorkOrderItemUpdateVO, ChiefWorkOrderItemPageQuery, ChiefWorkOrderItemResultVO> {
     private final EchoService echoService;
-    private final ChiefWorkOrderItemService chiefWorkOrderItemService;
     private final ChiefWorkOrderTaskService chiefWorkOrderTaskService;
     private final BaseEmployeeService baseEmployeeService;
 
