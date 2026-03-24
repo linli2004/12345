@@ -3,6 +3,8 @@ package top.tangyh.lamp.base.service;
 import top.tangyh.basic.base.service.SuperService;
 import top.tangyh.lamp.base.entity.WorkOrderDynamic;
 
+import java.util.List;
+
 
 /**
  * <p>
@@ -15,7 +17,7 @@ import top.tangyh.lamp.base.entity.WorkOrderDynamic;
  * @create [2026-03-03 11:48:11] [lunar] [代码生成器生成]
  */
 public interface WorkOrderDynamicService extends SuperService<Long, WorkOrderDynamic> {
-
+    List<WorkOrderDynamic> getLastOperateTimeByOrderNo(List<String> orderNoList);
 }
 
 

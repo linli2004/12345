@@ -34,4 +34,25 @@
         created_by, created_time, updated_by, updated_time, created_org_id
     </sql>
 
+    <select id="getLastOperateTimeByOrderNo" resultMap="BaseResultMap">
+        SELECT t.order_no, t.created_time
+        FROM (
+                 SELECT
+                     t1.order_no,
+                     t1.created_time,
+                     ROW_NUMBER() OVER (PARTITION BY t1.order_no ORDER BY t1.created_time DESC) as rn
+                 FROM
+                     work_order_dynamic t1
+                 <where>
+                     <if test="orderNoList != null and orderNoList.size() > 0">
+                         t1.order_no in
+                         <foreach close=")" collection="orderNoList" item="orderNo" open="(" separator=",">
+                             #{orderNo}
+                         </foreach>
+                     </if>
+                </where>
+             ) t
+        WHERE t.rn = 1;
+    </select>
+
 </mapper>

@@ -8,7 +8,6 @@ import top.tangyh.basic.base.entity.Entity;
 import top.tangyh.basic.interfaces.echo.EchoVO;
 import top.tangyh.lamp.base.entity.ChiefWorkOrderDynamic;
 import top.tangyh.lamp.base.entity.ChiefWorkOrderItem;
-import top.tangyh.lamp.base.entity.WorkOrderDynamic;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -203,5 +202,7 @@ public class ChiefWorkOrderItemResultVO extends Entity<Long> implements Serializ
 
 
     private List<ChiefWorkOrderTaskResultVO> workOrderTaskList;
+
+    private LocalDateTime lastOperateTime;
 
 }

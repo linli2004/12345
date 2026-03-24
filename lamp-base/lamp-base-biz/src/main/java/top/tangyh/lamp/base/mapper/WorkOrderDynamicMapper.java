@@ -1,8 +1,11 @@
 package top.tangyh.lamp.base.mapper;
 
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 import top.tangyh.basic.base.mapper.SuperMapper;
 import top.tangyh.lamp.base.entity.WorkOrderDynamic;
+
+import java.util.List;
 
 /**
  * <p>
@@ -16,7 +19,7 @@ import top.tangyh.lamp.base.entity.WorkOrderDynamic;
  */
 @Repository
 public interface WorkOrderDynamicMapper extends SuperMapper<WorkOrderDynamic> {
-
+    List<WorkOrderDynamic> getLastOperateTimeByOrderNo(@Param("orderNoList") List<String> orderNoList);
 }
 
 

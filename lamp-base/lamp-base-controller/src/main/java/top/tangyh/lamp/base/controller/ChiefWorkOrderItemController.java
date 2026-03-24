@@ -1,48 +1,40 @@
 package top.tangyh.lamp.base.controller;
 
-import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.util.NumberUtil;
+import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import top.tangyh.basic.annotation.log.WebLog;
-import top.tangyh.basic.base.controller.SuperController;
-import top.tangyh.basic.interfaces.echo.EchoService;
-import top.tangyh.lamp.base.entity.ChiefWorkOrderItem;
-import top.tangyh.lamp.base.entity.NormalWorkOrderTask;
-import top.tangyh.lamp.base.manager.ChiefWorkOrderItemManager;
-import top.tangyh.lamp.base.service.ChiefWorkOrderItemService;
-
 import top.tangyh.basic.base.R;
+import top.tangyh.basic.base.controller.SuperController;
 import top.tangyh.basic.base.request.PageParams;
 import top.tangyh.basic.database.mybatis.conditions.Wraps;
+import top.tangyh.basic.interfaces.echo.EchoService;
 import top.tangyh.lamp.Constant;
+import top.tangyh.lamp.base.entity.ChiefWorkOrderItem;
 import top.tangyh.lamp.base.entity.ChiefWorkOrderTask;
+import top.tangyh.lamp.base.service.ChiefWorkOrderItemService;
 import top.tangyh.lamp.base.service.ChiefWorkOrderTaskService;
 import top.tangyh.lamp.base.service.user.BaseEmployeeService;
 import top.tangyh.lamp.base.vo.query.ChiefWorkOrderItemPageQuery;
 import top.tangyh.lamp.base.vo.result.ChiefWorkOrderItemResultVO;
 import top.tangyh.lamp.base.vo.result.ChiefWorkOrderTaskResultVO;
-import top.tangyh.lamp.base.vo.result.NormalWorkOrderTaskResultVO;
 import top.tangyh.lamp.base.vo.result.user.BaseEmployeeResultVO;
 import top.tangyh.lamp.base.vo.save.ChiefWorkOrderItemSaveVO;
 import top.tangyh.lamp.base.vo.update.ChiefWorkOrderItemUpdateVO;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Collectors;
-import cn.hutool.core.bean.BeanUtil;
-import org.springframework.util.CollectionUtils;
 
 /**
  * <p>
@@ -65,7 +57,6 @@ public class ChiefWorkOrderItemController extends SuperController<ChiefWorkOrder
     private final ChiefWorkOrderItemService chiefWorkOrderItemService;
     private final ChiefWorkOrderTaskService chiefWorkOrderTaskService;
     private final BaseEmployeeService baseEmployeeService;
-
 
     @Override
     public EchoService getEchoService() {

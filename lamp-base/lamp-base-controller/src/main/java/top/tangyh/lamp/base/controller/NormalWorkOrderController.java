@@ -124,9 +124,9 @@ public class NormalWorkOrderController extends SuperController<NormalWorkOrderSe
                         java.util.LinkedHashMap::new,
                         Collectors.toList()
                 ));
-        page.getRecords().forEach(t -> t.setWorkOrderTaskList(taskMap.get(t.getOrderNo())));
         params.getModel().setOrderNoList(orderNoList);
         superService.getFinishOrBackContentJson(page.getRecords(), params.getModel());
+        page.getRecords().forEach(t -> t.setWorkOrderTaskList(taskMap.get(t.getOrderNo())));
         return R.success(page);
     }
 
