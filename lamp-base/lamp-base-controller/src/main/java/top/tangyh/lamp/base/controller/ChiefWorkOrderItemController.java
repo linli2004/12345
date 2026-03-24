@@ -102,6 +102,12 @@ public class ChiefWorkOrderItemController extends SuperController<ChiefWorkOrder
         return R.success(page);
     }
 
+    @PostMapping("/itemPage")
+    @Operation(summary = "导入详情", description = "导入详情")
+    public R<IPage<ChiefWorkOrderItemResultVO>> itemPage(@RequestBody @Validated PageParams<ChiefWorkOrderItemPageQuery> params) {
+        return super.page(params);
+    }
+
     @Override
     public R<IPage<ChiefWorkOrderItemResultVO>> page(@RequestBody @Validated PageParams<ChiefWorkOrderItemPageQuery> params) {
         IPage<ChiefWorkOrderItemResultVO> pageResultVO = superService.findPageResultVO(params);

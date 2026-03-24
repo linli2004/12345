@@ -199,6 +199,8 @@ public class ChiefWorkOrderItemResultVO extends Entity<Long> implements Serializ
     private ChiefWorkOrderDynamic finishOrBackDynamic;
     private ChiefWorkOrderItem chiefWorkOrderItem;
     private String status;
+    private LocalDateTime lastOperateTime;
+
 
     private List<ChiefWorkOrderTaskResultVO> workOrderTaskList;
 

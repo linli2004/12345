@@ -189,4 +189,6 @@ public class ChiefWorkOrderItem extends Entity<Long> {
     @TableField(value = "settle_condition", condition = LIKE)
     private String settleCondition;
 
+    @TableField(value = "last_operate_time", condition = EQUAL)
+    private LocalDateTime lastOperateTime;
 }
