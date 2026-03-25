@@ -386,7 +386,7 @@ public class ChiefWorkOrderTaskServiceImpl extends SuperServiceImpl<ChiefWorkOrd
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean urgeChiefWorkOrder(NormalWorkOrderTaskActionVO urgeVO) {
-        ChiefWorkOrder workOrderTemp = chiefWorkOrderManager.getOne(Wraps.<ChiefWorkOrder>lbQ().eq(ChiefWorkOrder::getId, urgeVO.getOrderNo()));
+        ChiefWorkOrderItem workOrderTemp = chiefWorkOrderItemManager.getOne(Wraps.<ChiefWorkOrderItem>lbQ().eq(ChiefWorkOrderItem::getId, urgeVO.getOrderNo()));
         List<ChiefWorkOrderTask> taskTempList = superManager.list(Wraps.<ChiefWorkOrderTask>lbQ().eq(ChiefWorkOrderTask::getValid, Constant.TASK_VALID).eq(ChiefWorkOrderTask::getOrderNo, urgeVO.getOrderNo()));
         ArgumentAssert.notEmpty(taskTempList, "工单编号有误");
         List<String> employeeIdList = Lists.newArrayList();
@@ -401,8 +401,8 @@ public class ChiefWorkOrderTaskServiceImpl extends SuperServiceImpl<ChiefWorkOrd
             }
         });
         ExtendMsgPublishVO data = new ExtendMsgPublishVO();
-        data.setTitle(String.format(titleTemplate, workOrderTemp.getName()));
-        data.setContent(String.format(titleTemplate, workOrderTemp.getName()));
+        data.setTitle(String.format(titleTemplate, workOrderTemp.getTitle()));
+        data.setContent(String.format(titleTemplate, workOrderTemp.getTitle()));
         data.setRemindMode("01");
         data.setRecipientList(employeeIdList);
         return msgBiz.publish(data, new SysUser());
