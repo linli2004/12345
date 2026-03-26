@@ -361,10 +361,10 @@ public class ChiefWorkOrderTaskServiceImpl extends SuperServiceImpl<ChiefWorkOrd
         List<BaseEmployeeResultVO> employeeList = baseEmployeeService.getEmployeeIdByRoleCodeAndOrgId(Arrays.asList(Constant.ROLE_CODE_DEPT_LEADER, Constant.ROLE_CODE_DEPT_DIRECTOR, Constant.ROLE_CODE_DEPT_SPECIALIST), taskTempList.stream().map(ChiefWorkOrderTask::getLeadUnitId).collect(Collectors.toList()));
         if (!CollectionUtils.isEmpty(employeeList))
             employeeIdList.addAll(employeeList.stream().map(e -> String.valueOf(e.getId())).toList());
-        ChiefWorkOrder workOrderTemp = chiefWorkOrderManager.getOne(Wraps.<ChiefWorkOrder>lbQ().eq(ChiefWorkOrder::getId, revokeVO.getOrderNo()));
+        ChiefWorkOrderItem workOrderTemp = chiefWorkOrderItemManager.getOne(Wraps.<ChiefWorkOrderItem>lbQ().eq(ChiefWorkOrderItem::getId, revokeVO.getOrderNo()));
         ExtendMsgPublishVO data = new ExtendMsgPublishVO();
-        data.setTitle(String.format(titleTemplate, workOrderTemp.getName()));
-        data.setContent(String.format(titleTemplate, workOrderTemp.getName()));
+        data.setTitle(String.format(titleTemplate, workOrderTemp.getTitle()));
+        data.setContent(String.format(titleTemplate, workOrderTemp.getTitle()));
         data.setRemindMode("03");
         data.setRecipientList(employeeIdList);
         msgBiz.publish(data, new SysUser());
