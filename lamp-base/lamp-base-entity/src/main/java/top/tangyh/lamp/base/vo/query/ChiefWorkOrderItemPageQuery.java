@@ -265,4 +265,9 @@ public class ChiefWorkOrderItemPageQuery implements Serializable {
 
 
     private Long operatorId;
+
+    private List<Long> leadUnitIdList;
+    private List<String> prefixList;
+    private String regionDeadlineStart;
+    private String regionDeadlineEnd;
 }

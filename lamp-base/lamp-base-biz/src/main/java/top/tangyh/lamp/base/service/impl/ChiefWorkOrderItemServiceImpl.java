@@ -8,7 +8,6 @@ import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.deepoove.poi.XWPFTemplate;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -38,7 +37,6 @@ import top.tangyh.lamp.common.constant.DsConstant;
 import top.tangyh.lamp.file.service.FileService;
 
 import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -379,16 +377,7 @@ public class ChiefWorkOrderItemServiceImpl extends SuperServiceImpl<ChiefWorkOrd
                 .like(ChiefWorkOrderItem::getAppealType, model.getAppealType())
                 .like(ChiefWorkOrderItem::getContactPhone, model.getContactPhone())
                 .like(ChiefWorkOrderItem::getSettleCondition, model.getSettleCondition())
-                .like(ChiefWorkOrderItem::getBatchNo, model.getBatchNo())
-                .and(model.getIsJointQuery(), w -> {
-                    if (model.getIsJointQuery() && StringUtils.isNotBlank(model.getKeyword())) {
-                        w.like(ChiefWorkOrderItem::getWorkOrderNo, model.getKeyword())
-                                .or()
-                                .like(ChiefWorkOrderItem::getTitle, model.getKeyword())
-                                .or()
-                                .like(ChiefWorkOrderItem::getAppealContent, model.getKeyword());
-                    }
-                });
+                .like(ChiefWorkOrderItem::getBatchNo, model.getBatchNo());
 
         return superManager.selectOrderAllConditions(page, wrap, model);
     }
