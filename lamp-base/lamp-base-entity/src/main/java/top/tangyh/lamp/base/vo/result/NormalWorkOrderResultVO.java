@@ -7,6 +7,7 @@ import lombok.experimental.Accessors;
 import top.tangyh.basic.base.entity.Entity;
 import top.tangyh.basic.interfaces.echo.EchoVO;
 import top.tangyh.lamp.base.entity.WorkOrderDynamic;
+import top.tangyh.lamp.msg.entity.ExtendMsg;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -189,4 +190,6 @@ public class NormalWorkOrderResultVO extends Entity<Long> implements Serializabl
     private LocalDateTime municipalDeadline;
 
     private String status;
+
+    private List<ExtendMsg> urgeList;
 }
