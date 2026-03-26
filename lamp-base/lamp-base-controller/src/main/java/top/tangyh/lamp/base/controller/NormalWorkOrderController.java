@@ -31,6 +31,8 @@ import top.tangyh.lamp.base.vo.result.user.BaseEmployeeResultVO;
 import top.tangyh.lamp.base.vo.save.NormalWorkOrderSaveVO;
 import top.tangyh.lamp.base.vo.update.NormalWorkOrderTaskActionVO;
 import top.tangyh.lamp.base.vo.update.NormalWorkOrderUpdateVO;
+import top.tangyh.lamp.msg.entity.ExtendMsg;
+import top.tangyh.lamp.msg.service.ExtendMsgService;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -65,7 +67,7 @@ public class NormalWorkOrderController extends SuperController<NormalWorkOrderSe
 
     private final NormalWorkOrderTaskService normalWorkOrderTaskService;
     private final BaseEmployeeService baseEmployeeService;
-
+    private final ExtendMsgService extendMsgService;
     /**
      * 普通工单导入
      *
@@ -126,7 +128,17 @@ public class NormalWorkOrderController extends SuperController<NormalWorkOrderSe
                 ));
         params.getModel().setOrderNoList(orderNoList);
         superService.getFinishOrBackContentJson(page.getRecords(), params.getModel());
-        page.getRecords().forEach(t -> t.setWorkOrderTaskList(taskMap.get(t.getOrderNo())));
+        List<ExtendMsg> urgeList = extendMsgService.list(Wraps.<ExtendMsg>lbQ().eq(ExtendMsg::getStatus, "SUCCESS").eq(ExtendMsg::getRemindMode, "01").in(ExtendMsg::getContent, orderNoList));
+        Map<String, List<ExtendMsg>> urgeMap = urgeList.stream()
+                .collect(Collectors.groupingBy(
+                        ExtendMsg::getContent,
+                        java.util.LinkedHashMap::new,
+                        Collectors.toList()
+                ));
+        page.getRecords().forEach(t -> {
+            t.setWorkOrderTaskList(taskMap.get(t.getOrderNo()));
+            t.setUrgeList(urgeMap.get(t.getOrderNo()));
+        });
         return R.success(page);
     }
 

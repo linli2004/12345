@@ -31,6 +31,8 @@ import top.tangyh.lamp.base.vo.result.ChiefWorkOrderTaskResultVO;
 import top.tangyh.lamp.base.vo.result.user.BaseEmployeeResultVO;
 import top.tangyh.lamp.base.vo.save.ChiefWorkOrderItemSaveVO;
 import top.tangyh.lamp.base.vo.update.ChiefWorkOrderItemUpdateVO;
+import top.tangyh.lamp.msg.entity.ExtendMsg;
+import top.tangyh.lamp.msg.service.ExtendMsgService;
 
 import java.util.List;
 import java.util.Map;
@@ -56,6 +58,7 @@ public class ChiefWorkOrderItemController extends SuperController<ChiefWorkOrder
     private final EchoService echoService;
     private final ChiefWorkOrderTaskService chiefWorkOrderTaskService;
     private final BaseEmployeeService baseEmployeeService;
+    private final ExtendMsgService extendMsgService;
 
     @Override
     public EchoService getEchoService() {
@@ -129,7 +132,17 @@ public class ChiefWorkOrderItemController extends SuperController<ChiefWorkOrder
                         java.util.LinkedHashMap::new,
                         Collectors.toList()
                 ));
-        pageResultVO.getRecords().forEach(t -> t.setWorkOrderTaskList(taskMap.get(t.getId().toString())));
+        List<ExtendMsg> urgeList = extendMsgService.list(Wraps.<ExtendMsg>lbQ().eq(ExtendMsg::getStatus, "SUCCESS").eq(ExtendMsg::getRemindMode, "01").in(ExtendMsg::getContent, orderNoList));
+        Map<String, List<ExtendMsg>> urgeMap = urgeList.stream()
+                .collect(Collectors.groupingBy(
+                        ExtendMsg::getContent,
+                        java.util.LinkedHashMap::new,
+                        Collectors.toList()
+                ));
+        pageResultVO.getRecords().forEach(t -> {
+            t.setWorkOrderTaskList(taskMap.get(t.getId().toString()));
+            t.setUrgeList(urgeMap.get(t.getId().toString()));
+        });
         return R.success(pageResultVO);
     }
 
