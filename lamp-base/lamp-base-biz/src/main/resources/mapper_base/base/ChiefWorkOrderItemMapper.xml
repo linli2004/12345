@@ -84,6 +84,10 @@
         )
         <where>
             ${ew.sqlSegment}
+            <if test="model.orderFlag != null and model.orderFlag eq '1'.toString()">
+                AND TIMESTAMPDIFF(MINUTE, NOW(), t3.region_deadline) &lt;= 1440
+                AND TIMESTAMPDIFF(MINUTE, NOW(), t3.region_deadline) >= 0
+            </if>
         </where>
     </select>
 

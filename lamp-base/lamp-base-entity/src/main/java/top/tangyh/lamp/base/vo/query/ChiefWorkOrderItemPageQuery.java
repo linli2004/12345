@@ -273,4 +273,7 @@ public class ChiefWorkOrderItemPageQuery implements Serializable {
     private List<String> prefixList;
     private String regionDeadlineStart;
     private String regionDeadlineEnd;
+
+    @Schema(description = "1:一日内到期")
+    private String orderFlag;
 }

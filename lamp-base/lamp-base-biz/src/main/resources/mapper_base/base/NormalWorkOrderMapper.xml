@@ -97,6 +97,13 @@
             <if test='model.expireHour != null'>
             AND TIMESTAMPDIFF(HOUR, NOW(), t3.region_deadline) &lt;= #{model.expireHour}
             </if>
+            <if test="model.orderFlag != null and model.orderFlag eq '1'.toString()">
+                AND TIMESTAMPDIFF(MINUTE, NOW(), t3.region_deadline) &lt;= 1440
+                AND TIMESTAMPDIFF(MINUTE, NOW(), t3.region_deadline) >= 0
+            </if>
+            <if test="model.orderFlag != null and model.orderFlag eq '2'.toString()">
+                AND EXISTS (SELECT 1 FROM `work_order_dynamic` t5 WHERE t5.order_no = t3.order_no AND t5.dept_id = #{model.currentDeptId} AND t5.process_type = '签收' AND CURRENT_DATE = DATE(t5.created_time))
+            </if>
         </where>
     </select>
 

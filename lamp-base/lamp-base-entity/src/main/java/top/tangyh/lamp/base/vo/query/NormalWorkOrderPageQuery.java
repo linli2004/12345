@@ -209,4 +209,9 @@ public class NormalWorkOrderPageQuery implements Serializable {
     private LocalDateTime regionDeadlineStart;
 
     private LocalDateTime regionDeadlineEnd;
+
+    @Schema(description = "1:一日内到期 2:当日签收")
+    private String orderFlag;
+    private String currentDeptId;
+
 }
