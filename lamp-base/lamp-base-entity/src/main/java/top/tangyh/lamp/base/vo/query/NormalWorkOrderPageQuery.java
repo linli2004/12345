@@ -171,6 +171,9 @@ public class NormalWorkOrderPageQuery implements Serializable {
     @Schema(description = "是否允许批示:1-允许;2-不允许")
     private String allowComment;
 
+    @Schema(description = "批示领导ID")
+    private Long commentLeaderId;
+
     @Schema(description = "展示状态")
     private String displayStatus;
 

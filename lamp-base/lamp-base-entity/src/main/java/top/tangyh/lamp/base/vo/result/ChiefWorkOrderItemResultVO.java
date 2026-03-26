@@ -191,6 +191,9 @@ public class ChiefWorkOrderItemResultVO extends Entity<Long> implements Serializ
     @Schema(description = "是否允许批示:1-允许;2-不允许")
     private String allowComment;
 
+    @Schema(description = "批示领导ID")
+    private Long commentLeaderId;
+
     /**
      * 结案条件:0-单主办;1-任意结案;2-全部结案
      */

@@ -189,6 +189,9 @@ public class NormalWorkOrderResultVO extends Entity<Long> implements Serializabl
     private LocalDateTime municipalAssignTime;
     private LocalDateTime municipalDeadline;
 
+    @Schema(description = "批示领导ID")
+    private Long commentLeaderId;
+
     private String status;
 
     private List<ExtendMsg> urgeList;

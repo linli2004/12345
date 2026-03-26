@@ -40,6 +40,7 @@
         <result column="allow_back" property="allowBack" />
         <result column="allow_back_time" property="allowBackTime" />
         <result column="allow_comment" property="allowComment" />
+        <result column="comment_leader_id" property="commentLeaderId" />
     </resultMap>
 
     <!-- 通用查询结果列 -->
@@ -48,14 +49,14 @@
         order_category_name, region_assign_time, region_deadline, urgency, source_dept_name, channel, 
         helper_name, contact_phone, gender, incident_location, address, is_difficult, 
         difficult_content, host_dept_name, assist_dept_name, cc_dept_name, settle_condition, last_operate_time, 
-        created_by, created_time, updated_by, updated_time, created_org_id, allow_back, allow_back_time, allow_comment
+        created_by, created_time, updated_by, updated_time, created_org_id, allow_back, allow_back_time, allow_comment, comment_leader_id
     </sql>
     <sql id="Base_Column_List2">
         t3.id, t3.order_no, t3.order_title, t3.order_content, t3.appeal_type, t3.order_category_id, t3.
         order_category_name, t3.region_assign_time, t3.region_deadline, t3.urgency, t3.source_dept_name, t3.channel, t3.
         helper_name, t3.contact_phone, t3.gender, t3.incident_location, t3.address, t3.is_difficult, t3.
         difficult_content, t3.host_dept_name, t3.assist_dept_name, t3.cc_dept_name, t3.settle_condition, t3.last_operate_time, t3.
-        created_by, t3.created_time, t3.updated_by, t3.updated_time, t3.created_org_id, t3.allow_back, t3.allow_back_time, t3.allow_comment,
+        created_by, t3.created_time, t3.updated_by, t3.updated_time, t3.created_org_id, t3.allow_back, t3.allow_back_time, t3.allow_comment, t3.comment_leader_id,
         t3.assist_status, t3.municipal_host_dept_name, t3.municipal_assist_dept_name, t3.municipal_assign_time, t3.municipal_deadline
     </sql>
     <resultMap id="ResultVOResultMap" type="top.tangyh.lamp.base.vo.result.NormalWorkOrderResultVO"
@@ -238,7 +239,7 @@
     FROM
         normal_work_order t3
     WHERE
-        t3.allow_comment = '1'
+        t3.allow_comment = '1' and t3.comment_leader_id = #{model.operatorId}
         AND NOT EXISTS ( SELECT 1 FROM `work_order_dynamic` t2 WHERE t2.order_no = t3.order_no AND t2.operator_id = #{model.operatorId}  AND t2.process_type = '批示' )
     </select>
 
@@ -248,7 +249,7 @@
         FROM
         normal_work_order t3
         WHERE
-        t3.allow_comment = '1'
+        t3.allow_comment = '1' and t3.comment_leader_id = #{model.operatorId}
         AND EXISTS ( SELECT 1 FROM `work_order_dynamic` t2 WHERE t2.order_no = t3.order_no AND t2.operator_id = #{model.operatorId}  AND t2.process_type = '批示' )
     </select>
 

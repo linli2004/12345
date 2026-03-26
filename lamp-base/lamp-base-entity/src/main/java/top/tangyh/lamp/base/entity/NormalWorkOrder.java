@@ -197,4 +197,10 @@ public class NormalWorkOrder extends Entity<Long> {
      */
     @TableField(value = "municipal_deadline", condition = EQUAL)
     private LocalDateTime municipalDeadline;
+
+    /**
+     * 批示领导ID
+     */
+    @TableField(value = "comment_leader_id", condition = EQUAL)
+    private Long commentLeaderId;
 }

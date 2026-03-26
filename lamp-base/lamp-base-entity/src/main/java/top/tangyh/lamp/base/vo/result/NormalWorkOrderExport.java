@@ -150,6 +150,9 @@ public class NormalWorkOrderExport {
     @Schema(description = "是否允许批示:1-允许;2-不允许")
     private String allowComment;
 
+//    @Schema(description = "批示领导ID")
+//    private Long commentLeaderId;
+
     private List<NormalWorkOrderTaskResultVO> workOrderTaskList;
 
     private WorkOrderDynamic finishOrBackDynamic;

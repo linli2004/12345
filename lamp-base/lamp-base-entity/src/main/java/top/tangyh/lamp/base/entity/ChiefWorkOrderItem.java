@@ -191,4 +191,10 @@ public class ChiefWorkOrderItem extends Entity<Long> {
 
     @TableField(value = "last_operate_time", condition = EQUAL)
     private LocalDateTime lastOperateTime;
+
+    /**
+     * 批示领导ID
+     */
+    @TableField(value = "comment_leader_id", condition = EQUAL)
+    private Long commentLeaderId;
 }

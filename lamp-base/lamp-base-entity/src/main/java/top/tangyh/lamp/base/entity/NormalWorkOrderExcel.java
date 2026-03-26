@@ -94,5 +94,7 @@ public class NormalWorkOrderExcel {
     private String municipalAssignTime;
     @ExcelProperty("市交办办结期限")
     private String municipalDeadline;
+//    @ExcelProperty("批示领导ID")
+//    private Long commentLeaderId;
     private String exportTime;
 }

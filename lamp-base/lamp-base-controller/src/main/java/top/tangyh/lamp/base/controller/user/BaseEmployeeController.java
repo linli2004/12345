@@ -137,4 +137,10 @@ public class BaseEmployeeController extends SuperCacheController<BaseEmployeeSer
         return R.success(baseEmployeeBiz.getCurrentUserMap());
     }
 
+    @Operation(summary = "查询用户信息根据roleCode")
+    @PostMapping(value = "/getEmployeeByRoleCode")
+    @WebLog("查询用户信息根据roleCode")
+    public R<List<BaseEmployeeResultVO>> getEmployeeByRoleCode(@RequestBody List<String> roleCodeList) {
+        return R.success(baseEmployeeBiz.getEmployeeByRoleCode(roleCodeList));
+    }
 }

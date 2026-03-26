@@ -209,6 +209,9 @@ public class ChiefWorkOrderItemUpdateVO implements Serializable {
     @Size(max = 255, message = "是否允许批示:1-允许;2-不允许长度不能超过{max}")
     private String allowComment;
 
+    @Schema(description = "批示领导ID")
+    private Long commentLeaderId;
+
     /**
      * 结案条件:0-单主办;1-任意结案;2-全部结案
      */

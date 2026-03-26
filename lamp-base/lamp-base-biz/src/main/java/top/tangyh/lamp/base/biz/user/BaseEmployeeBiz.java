@@ -372,4 +372,8 @@ public class BaseEmployeeBiz {
         param.setUserIdList(Collections.singletonList(defTenant.getCreatedBy()));
         return bindUser(param);
     }
+
+    public List<BaseEmployeeResultVO> getEmployeeByRoleCode(List<String> roleCodeList) {
+        return baseEmployeeService.getEmployeeIdByRoleCodeAndOrgId(roleCodeList, null);
+    }
 }
