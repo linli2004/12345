@@ -204,6 +204,5 @@ public class ChiefWorkOrderItemResultVO extends Entity<Long> implements Serializ
 
     private List<ChiefWorkOrderTaskResultVO> workOrderTaskList;
     private List<ExtendMsg> urgeList;
-//    private LocalDateTime lastOperateTime;
 
 }
