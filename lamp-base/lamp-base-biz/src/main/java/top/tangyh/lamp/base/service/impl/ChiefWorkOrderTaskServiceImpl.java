@@ -130,6 +130,7 @@ public class ChiefWorkOrderTaskServiceImpl extends SuperServiceImpl<ChiefWorkOrd
             workOrderTemp.setAllowBack(processingVO.getAllowBack());
             workOrderTemp.setAllowBackTime(processingVO.getAllowBackTime());
             workOrderTemp.setAllowComment(processingVO.getAllowComment());
+            workOrderTemp.setCommentLeaderId(processingVO.getCommentLeaderId());
             workOrderList.add(workOrderTemp);
         });
         superManager.saveOrUpdateBatch(normalWorkOrderTaskList);
@@ -472,6 +473,7 @@ public class ChiefWorkOrderTaskServiceImpl extends SuperServiceImpl<ChiefWorkOrd
         workOrderTemp.setAllowBack(processingVO.getAllowBack());
         workOrderTemp.setAllowBackTime(processingVO.getAllowBackTime());
         workOrderTemp.setAllowComment(processingVO.getAllowComment());
+        workOrderTemp.setCommentLeaderId(processingVO.getCommentLeaderId());
         superManager.saveOrUpdateBatch(normalWorkOrderTaskList);
         chiefWorkOrderDynamicManager.save(dynamicTemp);
         return chiefWorkOrderItemManager.updateById(workOrderTemp);

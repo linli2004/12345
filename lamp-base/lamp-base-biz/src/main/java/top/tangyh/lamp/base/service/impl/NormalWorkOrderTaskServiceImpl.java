@@ -129,7 +129,7 @@ public class NormalWorkOrderTaskServiceImpl extends SuperServiceImpl<NormalWorkO
             dynamicTemp.setNodeCode(Constant.NODE_CODE_TOWN_FIRST_PROCESSING);
             dynamicTemp.setProcessType(Constant.PROCESS_TYPE_MAP.get(Constant.NODE_CODE_TOWN_FIRST_PROCESSING));
             workOrderDynamicList.add(dynamicTemp);
-            //更改normal_work_order 工单分类id 工单分类名称 结案条件 是否允许退回 允许退回时间 允许批示
+            //更改normal_work_order 工单分类id 工单分类名称 结案条件 是否允许退回 允许退回时间 允许批示 批示领导
             NormalWorkOrder workOrderTemp = normalWorkOrderManager.getOne(Wraps.<NormalWorkOrder>lbQ().eq(NormalWorkOrder::getOrderNo, processingVO.getOrderNo()));
             workOrderTemp.setOrderCategoryId(processingVO.getOrderCategoryId());
             workOrderTemp.setOrderCategoryName(processingVO.getOrderCategoryName());
@@ -137,6 +137,7 @@ public class NormalWorkOrderTaskServiceImpl extends SuperServiceImpl<NormalWorkO
             workOrderTemp.setAllowBack(processingVO.getAllowBack());
             workOrderTemp.setAllowBackTime(processingVO.getAllowBackTime());
             workOrderTemp.setAllowComment(processingVO.getAllowComment());
+            workOrderTemp.setCommentLeaderId(processingVO.getCommentLeaderId());
             workOrderList.add(workOrderTemp);
         });
         superManager.saveOrUpdateBatch(normalWorkOrderTaskList);
@@ -475,6 +476,7 @@ public class NormalWorkOrderTaskServiceImpl extends SuperServiceImpl<NormalWorkO
         workOrderTemp.setAllowBack(processingVO.getAllowBack());
         workOrderTemp.setAllowBackTime(processingVO.getAllowBackTime());
         workOrderTemp.setAllowComment(processingVO.getAllowComment());
+        workOrderTemp.setCommentLeaderId(processingVO.getCommentLeaderId());
         superManager.saveOrUpdateBatch(normalWorkOrderTaskList);
         workOrderDynamicManager.save(dynamicTemp);
         return normalWorkOrderManager.updateById(workOrderTemp);

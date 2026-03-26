@@ -134,6 +134,9 @@ public class NormalWorkOrderTaskActionVO implements Serializable {
     @Schema(description = "是否允许批示:1-允许;2-不允许")
     private String allowComment;
 
+    @Schema(description = "批示领导id")
+    private Long commentLeaderId;
+
     //负责人，领导 审批-----------------------------------------------------------------
     /**
      * 审批结果
