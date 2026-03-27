@@ -10,7 +10,6 @@
         <result column="updated_time" jdbcType="TIMESTAMP" property="updatedTime"/>
         <result column="updated_by" jdbcType="BIGINT" property="updatedBy"/>
         <result column="batch_no" jdbcType="VARCHAR" property="batchNo"/>
-        <result column="serial_no" jdbcType="INTEGER" property="serialNo"/>
         <result column="title" jdbcType="VARCHAR" property="title"/>
         <result column="work_order_no" jdbcType="VARCHAR" property="workOrderNo"/>
         <result column="contact_phone" jdbcType="VARCHAR" property="contactPhone"/>
@@ -241,19 +240,13 @@
     </select>
 
     <select id="selectOrderAllConditions" resultMap="ResultVOResultMap">
-        SELECT t5.* from
-        (SELECT
-        t3.*,
-        "已退回" as status
-        FROM
-        normal_work_order t3
-        INNER JOIN (
-        SELECT
-        DISTINCT t2.order_no AS task_order_no
-        FROM
-        normal_work_order_task t2
-        WHERE
-        t2.valid = '1'
+        SELECT t5.* FROM
+        (
+        SELECT t3.*, "已退回" AS status FROM chief_work_order_item t3
+        WHERE t3.id IN (
+        SELECT DISTINCT t2.order_no
+        FROM normal_work_order_task t2
+        WHERE t2.valid = '1'
         <if test="model.leadUnitIdList != null and model.leadUnitIdList.size() > 0">
             AND t2.lead_unit_id IN
             <foreach collection="model.leadUnitIdList" item="id" open="(" separator="," close=")">
@@ -261,28 +254,18 @@
             </foreach>
         </if>
         AND EXISTS (
-        SELECT 1
-        FROM normal_work_order_task sub_t2
-        WHERE sub_t2.order_no = t2.order_no
-        AND sub_t2.valid = '1'
-        AND sub_t2.LEVEL = '0'
+        SELECT 1 FROM normal_work_order_task sub_t2
+        WHERE sub_t2.order_no = t2.order_no AND sub_t2.valid = '1' AND sub_t2.LEVEL = '0'
         AND sub_t2.current_node_code IN (SELECT t1.node_code FROM role_status_mapping t1 WHERE t1.display_status = '已退回' AND t1.role_code = '1')
         )
-        ) t4 ON t3.order_no = t4.task_order_no
+        )
 
-        union all
-        SELECT
-        t3.*,
-        "办结" as status
-        FROM
-        normal_work_order t3
-        INNER JOIN (
-        SELECT
-        DISTINCT t2.order_no AS task_order_no
-        FROM
-        normal_work_order_task t2
-        WHERE
-        t2.valid = '1'
+        UNION ALL
+
+        SELECT t3.*, "办结" AS status FROM chief_work_order_item t3
+        WHERE t3.id IN (
+        SELECT DISTINCT t2.order_no FROM normal_work_order_task t2
+        WHERE t2.valid = '1'
         <if test="model.leadUnitIdList != null and model.leadUnitIdList.size() > 0">
             AND t2.lead_unit_id IN
             <foreach collection="model.leadUnitIdList" item="id" open="(" separator="," close=")">
@@ -290,28 +273,18 @@
             </foreach>
         </if>
         AND EXISTS (
-        SELECT 1
-        FROM normal_work_order_task sub_t2
-        WHERE sub_t2.order_no = t2.order_no
-        AND sub_t2.valid = '1'
-        AND sub_t2.LEVEL = '0'
+        SELECT 1 FROM normal_work_order_task sub_t2
+        WHERE sub_t2.order_no = t2.order_no AND sub_t2.valid = '1' AND sub_t2.LEVEL = '0'
         AND sub_t2.current_node_code IN (SELECT t1.node_code FROM role_status_mapping t1 WHERE t1.display_status = '办结' AND t1.role_code = '1')
         )
-        ) t4 ON t3.order_no = t4.task_order_no
+        )
 
-        union all
-        SELECT
-        t3.*,
-        "结案待审" as status
-        FROM
-        normal_work_order t3
-        INNER JOIN (
-        SELECT
-        DISTINCT t2.order_no AS task_order_no
-        FROM
-        normal_work_order_task t2
-        WHERE
-        t2.valid = '1'
+        UNION ALL
+
+        SELECT t3.*, "结案待审" AS status FROM chief_work_order_item t3
+        WHERE t3.id IN (
+        SELECT DISTINCT t2.order_no FROM normal_work_order_task t2
+        WHERE t2.valid = '1'
         <if test="model.leadUnitIdList != null and model.leadUnitIdList.size() > 0">
             AND t2.lead_unit_id IN
             <foreach collection="model.leadUnitIdList" item="id" open="(" separator="," close=")">
@@ -319,28 +292,18 @@
             </foreach>
         </if>
         AND EXISTS (
-        SELECT 1
-        FROM normal_work_order_task sub_t2
-        WHERE sub_t2.order_no = t2.order_no
-        AND sub_t2.valid = '1'
-        AND sub_t2.LEVEL = '0'
+        SELECT 1 FROM normal_work_order_task sub_t2
+        WHERE sub_t2.order_no = t2.order_no AND sub_t2.valid = '1' AND sub_t2.LEVEL = '0'
         AND sub_t2.current_node_code IN (SELECT t1.node_code FROM role_status_mapping t1 WHERE t1.display_status = '结案待审' AND t1.role_code = '1')
         )
-        ) t4 ON t3.order_no = t4.task_order_no
+        )
 
-        union all
-        SELECT
-        t3.*,
-        "下派跟踪" as status
-        FROM
-        normal_work_order t3
-        INNER JOIN (
-        SELECT
-        DISTINCT t2.order_no AS task_order_no
-        FROM
-        normal_work_order_task t2
-        WHERE
-        t2.valid = '1'
+        UNION ALL
+
+        SELECT t3.*, "下派跟踪" AS status FROM chief_work_order_item t3
+        WHERE t3.id IN (
+        SELECT DISTINCT t2.order_no FROM normal_work_order_task t2
+        WHERE t2.valid = '1'
         <if test="model.leadUnitIdList != null and model.leadUnitIdList.size() > 0">
             AND t2.lead_unit_id IN
             <foreach collection="model.leadUnitIdList" item="id" open="(" separator="," close=")">
@@ -348,28 +311,18 @@
             </foreach>
         </if>
         AND EXISTS (
-        SELECT 1
-        FROM normal_work_order_task sub_t2
-        WHERE sub_t2.order_no = t2.order_no
-        AND sub_t2.valid = '1'
-        AND sub_t2.LEVEL = '0'
+        SELECT 1 FROM normal_work_order_task sub_t2
+        WHERE sub_t2.order_no = t2.order_no AND sub_t2.valid = '1' AND sub_t2.LEVEL = '0'
         AND sub_t2.current_node_code IN (SELECT t1.node_code FROM role_status_mapping t1 WHERE t1.display_status = '下派跟踪' AND t1.role_code = '1')
         )
-        ) t4 ON t3.order_no = t4.task_order_no
+        )
 
-        union all
-        SELECT
-        t3.*,
-        "下级已退回" as status
-        FROM
-        normal_work_order t3
-        INNER JOIN (
-        SELECT
-        DISTINCT t2.order_no AS task_order_no
-        FROM
-        normal_work_order_task t2
-        WHERE
-        t2.valid = '1'
+        UNION ALL
+
+        SELECT t3.*, "下级已退回" AS status FROM chief_work_order_item t3
+        WHERE t3.id IN (
+        SELECT DISTINCT t2.order_no FROM normal_work_order_task t2
+        WHERE t2.valid = '1'
         <if test="model.leadUnitIdList != null and model.leadUnitIdList.size() > 0">
             AND t2.lead_unit_id IN
             <foreach collection="model.leadUnitIdList" item="id" open="(" separator="," close=")">
@@ -377,28 +330,18 @@
             </foreach>
         </if>
         AND EXISTS (
-        SELECT 1
-        FROM normal_work_order_task sub_t2
-        WHERE sub_t2.order_no = t2.order_no
-        AND sub_t2.valid = '1'
-        AND sub_t2.LEVEL = '0'
+        SELECT 1 FROM normal_work_order_task sub_t2
+        WHERE sub_t2.order_no = t2.order_no AND sub_t2.valid = '1' AND sub_t2.LEVEL = '0'
         AND sub_t2.current_node_code IN (SELECT t1.node_code FROM role_status_mapping t1 WHERE t1.display_status = '下级已退回' AND t1.role_code = '1')
         )
-        ) t4 ON t3.order_no = t4.task_order_no
+        )
 
-        union all
-        SELECT
-        t3.*,
-        "处办中" as status
-        FROM
-        normal_work_order t3
-        INNER JOIN (
-        SELECT
-        DISTINCT t2.order_no AS task_order_no
-        FROM
-        normal_work_order_task t2
-        WHERE
-        t2.valid = '1'
+        UNION ALL
+
+        SELECT t3.*, "处办中" AS status FROM chief_work_order_item t3
+        WHERE t3.id IN (
+        SELECT DISTINCT t2.order_no FROM normal_work_order_task t2
+        WHERE t2.valid = '1'
         <if test="model.leadUnitIdList != null and model.leadUnitIdList.size() > 0">
             AND t2.lead_unit_id IN
             <foreach collection="model.leadUnitIdList" item="id" open="(" separator="," close=")">
@@ -406,28 +349,18 @@
             </foreach>
         </if>
         AND EXISTS (
-        SELECT 1
-        FROM normal_work_order_task sub_t2
-        WHERE sub_t2.order_no = t2.order_no
-        AND sub_t2.valid = '1'
-        AND sub_t2.LEVEL = '0'
+        SELECT 1 FROM normal_work_order_task sub_t2
+        WHERE sub_t2.order_no = t2.order_no AND sub_t2.valid = '1' AND sub_t2.LEVEL = '0'
         AND sub_t2.current_node_code IN (SELECT t1.node_code FROM role_status_mapping t1 WHERE t1.display_status = '处办中' AND t1.role_code = '1')
         )
-        ) t4 ON t3.order_no = t4.task_order_no
+        )
 
-        union all
-        SELECT
-        t3.*,
-        "待签收" as status
-        FROM
-        normal_work_order t3
-        INNER JOIN (
-        SELECT
-        DISTINCT t2.order_no AS task_order_no
-        FROM
-        normal_work_order_task t2
-        WHERE
-        t2.valid = '1'
+        UNION ALL
+
+        SELECT t3.*, "待签收" AS status FROM chief_work_order_item t3
+        WHERE t3.id IN (
+        SELECT DISTINCT t2.order_no FROM normal_work_order_task t2
+        WHERE t2.valid = '1'
         <if test="model.leadUnitIdList != null and model.leadUnitIdList.size() > 0">
             AND t2.lead_unit_id IN
             <foreach collection="model.leadUnitIdList" item="id" open="(" separator="," close=")">
@@ -435,14 +368,12 @@
             </foreach>
         </if>
         AND EXISTS (
-        SELECT 1
-        FROM normal_work_order_task sub_t2
-        WHERE sub_t2.order_no = t2.order_no
-        AND sub_t2.valid = '1'
-        AND sub_t2.LEVEL = '0'
+        SELECT 1 FROM normal_work_order_task sub_t2
+        WHERE sub_t2.order_no = t2.order_no AND sub_t2.valid = '1' AND sub_t2.LEVEL = '0'
         AND sub_t2.current_node_code IN (SELECT t1.node_code FROM role_status_mapping t1 WHERE t1.display_status = '待签收' AND t1.role_code = '1')
         )
-        ) t4 ON t3.order_no = t4.task_order_no) t5
+        )
+        ) t5
         <where>
             ${ew.sqlSegment}
             <if test="model.prefixList != null and model.prefixList.size() > 0">

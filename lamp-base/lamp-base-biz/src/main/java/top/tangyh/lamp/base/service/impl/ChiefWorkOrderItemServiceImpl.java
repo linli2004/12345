@@ -322,14 +322,8 @@ public class ChiefWorkOrderItemServiceImpl extends SuperServiceImpl<ChiefWorkOrd
                     }
                 });
 
-        IPage<ChiefWorkOrderItemResultVO> resultVOPage = superManager.selectCommentedResultVO(page, wrap, model);
-        
-        if (!CollectionUtils.isEmpty(resultVOPage.getRecords())) {
-            List<String> orderNoList = resultVOPage.getRecords().stream().map(ChiefWorkOrderItemResultVO::getWorkOrderNo).collect(Collectors.toList());
-            setContentJson(resultVOPage.getRecords(), model.getDisplayStatus(), orderNoList);
-        }
-        
-        return resultVOPage;
+
+        return superManager.selectCommentedResultVO(page, wrap, model);
     }
 
     @Override
@@ -355,14 +349,7 @@ public class ChiefWorkOrderItemServiceImpl extends SuperServiceImpl<ChiefWorkOrd
                     }
                 });
 
-        IPage<ChiefWorkOrderItemResultVO> resultVOPage = superManager.selectNotCommentResultVO(page, wrap, model);
-        
-        if (!CollectionUtils.isEmpty(resultVOPage.getRecords())) {
-            List<String> orderNoList = resultVOPage.getRecords().stream().map(ChiefWorkOrderItemResultVO::getWorkOrderNo).collect(Collectors.toList());
-            setContentJson(resultVOPage.getRecords(), model.getDisplayStatus(), orderNoList);
-        }
-        
-        return resultVOPage;
+        return superManager.selectNotCommentResultVO(page, wrap, model);
     }
 
     @Override
@@ -378,8 +365,8 @@ public class ChiefWorkOrderItemServiceImpl extends SuperServiceImpl<ChiefWorkOrd
                 .like(ChiefWorkOrderItem::getContactPhone, model.getContactPhone())
                 .like(ChiefWorkOrderItem::getSettleCondition, model.getSettleCondition())
                 .like(ChiefWorkOrderItem::getBatchNo, model.getBatchNo());
-
-        return superManager.selectOrderAllConditions(page, wrap, model);
+        IPage<ChiefWorkOrderItemResultVO> chiefWorkOrderItemResultVOIPage = superManager.selectOrderAllConditions(page, wrap, model);
+        return chiefWorkOrderItemResultVOIPage;
     }
 
     @Override

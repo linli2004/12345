@@ -365,7 +365,7 @@ public class ChiefWorkOrderTaskServiceImpl extends SuperServiceImpl<ChiefWorkOrd
         ChiefWorkOrderItem workOrderTemp = chiefWorkOrderItemManager.getOne(Wraps.<ChiefWorkOrderItem>lbQ().eq(ChiefWorkOrderItem::getId, revokeVO.getOrderNo()));
         ExtendMsgPublishVO data = new ExtendMsgPublishVO();
         data.setTitle(String.format(titleTemplate, workOrderTemp.getTitle()));
-        data.setContent(String.format(titleTemplate, workOrderTemp.getId()));
+        data.setContent(workOrderTemp.getId().toString());
         data.setRemindMode("03");
         data.setRecipientList(employeeIdList);
         msgBiz.publish(data, new SysUser());
@@ -403,7 +403,7 @@ public class ChiefWorkOrderTaskServiceImpl extends SuperServiceImpl<ChiefWorkOrd
         });
         ExtendMsgPublishVO data = new ExtendMsgPublishVO();
         data.setTitle(String.format(titleTemplate, workOrderTemp.getTitle()));
-        data.setContent(String.format(titleTemplate, workOrderTemp.getId()));
+        data.setContent(workOrderTemp.getId().toString());
         data.setRemindMode("01");
         data.setRecipientList(employeeIdList);
         return msgBiz.publish(data, new SysUser());
