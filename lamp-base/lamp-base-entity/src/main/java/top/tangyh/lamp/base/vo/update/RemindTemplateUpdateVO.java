@@ -65,6 +65,12 @@ public class RemindTemplateUpdateVO implements Serializable {
      */
     @Schema(description = "附件id")
     private Long fileId;
+    /**
+     * 文件名称
+     */
+    @Schema(description = "文件名称")
+    @Size(max = 255, message = "文件名称长度不能超过{max}")
+    private String fileName;
 
 
 }

@@ -62,6 +62,11 @@ public class RemindTemplateResultVO extends Entity<Long> implements Serializable
      */
     @Schema(description = "附件id")
     private Long fileId;
+    /**
+     * 文件名称
+     */
+    @Schema(description = "文件名称")
+    private String fileName;
 
 
 }

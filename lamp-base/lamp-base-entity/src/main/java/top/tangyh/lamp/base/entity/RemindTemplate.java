@@ -58,6 +58,10 @@ public class RemindTemplate extends Entity<Long> {
      */
     @TableField(value = "file_id", condition = EQUAL)
     private Long fileId;
-
+    /**
+     * 文件名称
+     */
+    @TableField(value = "file_name", condition = LIKE)
+    private String fileName;
 
 }
