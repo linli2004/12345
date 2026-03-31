@@ -39,6 +39,7 @@ public interface ChiefWorkOrderItemService extends SuperService<Long, ChiefWorkO
      */
     List<ChiefWorkOrderItemResultVO> selectListResultVO(ChiefWorkOrderItemPageQuery model);
 
+    void setContentJson(List<ChiefWorkOrderItemResultVO> workOrderResultList, String displayStatus, List<String> orderNoList);
     /**
      * 导出
      *
@@ -72,6 +73,7 @@ public interface ChiefWorkOrderItemService extends SuperService<Long, ChiefWorkO
     IPage<ChiefWorkOrderItemResultVO> findNotCommentPageResultVO(PageParams<ChiefWorkOrderItemPageQuery> params);
 
     IPage<ChiefWorkOrderItemResultVO> selectOrderAllConditions(PageParams<ChiefWorkOrderItemPageQuery> params);
+    List<ChiefWorkOrderItemResultVO> selectOrderAllConditionsList(ChiefWorkOrderItemPageQuery params);
 
     void getFinishOrBackContentJson(List<ChiefWorkOrderItemResultVO> records, ChiefWorkOrderItemPageQuery model);
 

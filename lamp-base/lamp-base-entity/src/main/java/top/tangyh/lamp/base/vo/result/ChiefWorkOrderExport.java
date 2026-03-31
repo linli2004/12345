@@ -1,43 +1,16 @@
 package top.tangyh.lamp.base.vo.result;
 
-import cn.hutool.core.map.MapUtil;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
-import lombok.experimental.Accessors;
-import top.tangyh.basic.base.entity.Entity;
-import top.tangyh.basic.interfaces.echo.EchoVO;
+import lombok.Data;
 import top.tangyh.lamp.base.entity.ChiefWorkOrderDynamic;
 import top.tangyh.lamp.base.entity.ChiefWorkOrderItem;
 import top.tangyh.lamp.msg.entity.ExtendMsg;
 
-import java.io.Serial;
-import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
-/**
- * <p>
- * 表单查询方法返回值VO
- * 督办工单详情
- * </p>
- *
- * @author lunar
- * @date 2026-03-13 16:00:00
- */
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-@ToString(callSuper = true)
-@Accessors(chain = true)
-@EqualsAndHashCode(callSuper = true)
-@Builder
-@Schema(description = "督办工单详情")
-public class ChiefWorkOrderItemResultVO extends Entity<Long> implements Serializable, EchoVO {
-    @Serial
-    private static final long serialVersionUID = 1L;
-    @Builder.Default
-    private final Map<String, Object> echoMap = MapUtil.newHashMap();
+public class ChiefWorkOrderExport {
 
     @Schema(description = "ID")
     private Long id;
@@ -52,8 +25,6 @@ public class ChiefWorkOrderItemResultVO extends Entity<Long> implements Serializ
      */
     @Schema(description = "标题")
     private String title;
-    private String sourceDeptName;
-
     /**
      * 转办单工单编号
      */
@@ -210,4 +181,5 @@ public class ChiefWorkOrderItemResultVO extends Entity<Long> implements Serializ
     private List<ChiefWorkOrderTaskResultVO> workOrderTaskList;
     private List<ExtendMsg> urgeList;
 
+    private String processDept = "津南区";
 }

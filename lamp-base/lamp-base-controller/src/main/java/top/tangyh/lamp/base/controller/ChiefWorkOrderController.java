@@ -2,6 +2,7 @@ package top.tangyh.lamp.base.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -19,8 +20,6 @@ import top.tangyh.lamp.base.vo.result.ChiefWorkOrderResultVO;
 import top.tangyh.lamp.base.vo.save.ChiefWorkOrderSaveVO;
 import top.tangyh.lamp.base.vo.update.ChiefWorkOrderTaskActionVO;
 import top.tangyh.lamp.base.vo.update.ChiefWorkOrderUpdateVO;
-
-import jakarta.servlet.http.HttpServletResponse;
 
 import java.time.LocalDateTime;
 
@@ -68,5 +67,10 @@ public class ChiefWorkOrderController extends SuperController<ChiefWorkOrderServ
     @GetMapping(path = "/generateBatchNo")
     public R<String> generateBatchNo(LocalDateTime supervisionTime) {
         return R.success(superService.generateBatchNo(supervisionTime));
+    }
+
+    @PostMapping("/export")
+    public void export(@RequestParam String batchNo, HttpServletResponse response) {
+        superService.exportTaskZip(batchNo, response);
     }
 }

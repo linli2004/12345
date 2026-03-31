@@ -4,12 +4,9 @@ import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import top.tangyh.basic.base.manager.SuperManager;
 import top.tangyh.lamp.base.entity.ChiefWorkOrderItem;
-import top.tangyh.lamp.base.entity.NormalWorkOrder;
 import top.tangyh.lamp.base.vo.query.ChiefWorkOrderItemPageQuery;
-import top.tangyh.lamp.base.vo.query.NormalWorkOrderPageQuery;
 import top.tangyh.lamp.base.vo.result.ChiefWorkOrderItemResultVO;
 import top.tangyh.lamp.base.vo.result.NormalWorkOrderRankingResultVO;
-import top.tangyh.lamp.base.vo.result.NormalWorkOrderResultVO;
 import top.tangyh.lamp.base.vo.result.SignCategoryIsNullNormalWorkOrderResultVO;
 
 import java.util.List;
@@ -42,5 +39,6 @@ public interface ChiefWorkOrderItemManager extends SuperManager<ChiefWorkOrderIt
 
     List<NormalWorkOrderRankingResultVO> getRanking();
     IPage<ChiefWorkOrderItemResultVO> selectOrderAllConditions(IPage<ChiefWorkOrderItem> page, Wrapper<ChiefWorkOrderItem> wrapper, ChiefWorkOrderItemPageQuery model);
+    List<ChiefWorkOrderItemResultVO> selectOrderAllConditions(Wrapper<ChiefWorkOrderItem> wrapper, ChiefWorkOrderItemPageQuery model);
 
 }

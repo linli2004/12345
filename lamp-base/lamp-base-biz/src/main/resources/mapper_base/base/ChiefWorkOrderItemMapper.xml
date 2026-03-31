@@ -83,18 +83,14 @@
         )
         <where>
             ${ew.sqlSegment}
-            <if test="model.orderFlag != null and model.orderFlag eq '1'.toString()">
-                AND TIMESTAMPDIFF(MINUTE, NOW(), t3.region_deadline) &lt;= 1440
-                AND TIMESTAMPDIFF(MINUTE, NOW(), t3.region_deadline) >= 0
-            </if>
         </where>
     </select>
 
     <select id="selectListResultVO" resultMap="ResultVOResultMap">
         SELECT
         <include refid="Base_Column_List2"/>
-        FROM chief_work_order_item t3
-        RIGHT JOIN (
+        FROM chief_work_order_item t3 where t3.id in
+        (
         SELECT
         DISTINCT t2.order_no as task_order_no
         FROM
@@ -102,15 +98,13 @@
         WHERE
         t2.current_node_code IN ( SELECT t1.node_code FROM role_status_mapping t1 WHERE t1.display_status = #{model.displayStatus} AND t1.role_code = '1' )
         and t2.valid = '1'  and t2.level = '0'
-        ) t4 ON t3.work_order_no = t4.task_order_no
-        <where>
-            <if test="model.orderNoList != null and model.orderNoList.size() > 0">
-                AND t3.work_order_no IN
-                <foreach collection="model.orderNoList" item="item" open="(" separator="," close=")">
-                    #{item}
-                </foreach>
-            </if>
-        </where>
+        )
+        <if test="model.orderNoList != null and model.orderNoList.size() > 0">
+            AND t3.id IN
+            <foreach collection="model.orderNoList" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
     </select>
 
     <select id="selectCountResultVO" resultType="java.lang.Integer">

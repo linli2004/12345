@@ -44,6 +44,7 @@ public class ChiefWorkOrderItem extends Entity<Long> {
      */
     @TableField(value = "title", condition = LIKE)
     private String title;
+    private String sourceDeptName;
     /**
      * 转办单工单编号
      */

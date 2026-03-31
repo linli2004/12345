@@ -15,7 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import top.tangyh.basic.base.request.PageParams;
 import top.tangyh.basic.base.service.impl.SuperServiceImpl;
@@ -29,8 +28,8 @@ import top.tangyh.lamp.base.manager.ChiefWorkOrderItemManager;
 import top.tangyh.lamp.base.property.WorkExportFolderProperty;
 import top.tangyh.lamp.base.service.ChiefWorkOrderItemService;
 import top.tangyh.lamp.base.vo.query.ChiefWorkOrderItemPageQuery;
+import top.tangyh.lamp.base.vo.result.ChiefWorkOrderExport;
 import top.tangyh.lamp.base.vo.result.ChiefWorkOrderItemResultVO;
-import top.tangyh.lamp.base.vo.result.NormalWorkOrderExport;
 import top.tangyh.lamp.base.vo.result.NormalWorkOrderRankingResultVO;
 import top.tangyh.lamp.base.vo.result.SignCategoryIsNullNormalWorkOrderResultVO;
 import top.tangyh.lamp.common.constant.DsConstant;
@@ -67,7 +66,6 @@ import java.util.zip.ZipOutputStream;
 @Service
 @DS(DsConstant.BASE_TENANT)
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class ChiefWorkOrderItemServiceImpl extends SuperServiceImpl<ChiefWorkOrderItemManager, Long, ChiefWorkOrderItem> implements ChiefWorkOrderItemService {
     private final ChiefWorkOrderDynamicManager chiefWorkOrderDynamicManager;
     private final WorkExportFolderProperty workExportFolderProperty;
@@ -109,7 +107,8 @@ public class ChiefWorkOrderItemServiceImpl extends SuperServiceImpl<ChiefWorkOrd
         return workOrderResultList;
     }
 
-    void setContentJson(List<ChiefWorkOrderItemResultVO> workOrderResultList, String displayStatus, List<String> orderNoList) {
+    @Override
+    public void setContentJson(List<ChiefWorkOrderItemResultVO> workOrderResultList, String displayStatus, List<String> orderNoList) {
         List<ChiefWorkOrderDynamic> dynamicList = chiefWorkOrderDynamicManager.list(Wraps.<ChiefWorkOrderDynamic>lbQ().eq(ChiefWorkOrderDynamic::getProcessType, displayStatus.replaceAll("已", "")).in(ChiefWorkOrderDynamic::getOrderNo, orderNoList).orderByDesc(ChiefWorkOrderDynamic::getCreatedTime));
         Map<String, List<ChiefWorkOrderDynamic>> dynamicMap = dynamicList.stream()
                 .collect(Collectors.groupingBy(
@@ -118,7 +117,7 @@ public class ChiefWorkOrderItemServiceImpl extends SuperServiceImpl<ChiefWorkOrd
                         Collectors.toList()
                 ));
         workOrderResultList.forEach(t -> {
-            List<ChiefWorkOrderDynamic> tempList = dynamicMap.get(t.getWorkOrderNo());
+            List<ChiefWorkOrderDynamic> tempList = dynamicMap.get(t.getId().toString());
             if (!CollectionUtils.isEmpty(tempList)) t.setFinishOrBackDynamic(tempList.get(0));
         });
     }
@@ -126,39 +125,29 @@ public class ChiefWorkOrderItemServiceImpl extends SuperServiceImpl<ChiefWorkOrd
     @Override
     @SneakyThrows
     public void exportTaskZip(List<String> orderNoList, HttpServletResponse response, String status) {
-        ArgumentAssert.notBlank(workExportFolderProperty.getWorkFinishExcelPath(), "未配置 Excel 模板路径");
-        ArgumentAssert.notBlank(workExportFolderProperty.getWorkFinishWordPath(), "未配置 Word 模板路径");
-
         // 1. 查询数据
         ChiefWorkOrderItemPageQuery chiefWorkOrderPageQuery = new ChiefWorkOrderItemPageQuery();
         chiefWorkOrderPageQuery.setOrderNoList(orderNoList);
         chiefWorkOrderPageQuery.setDisplayStatus(status);
         List<ChiefWorkOrderItemResultVO> chiefWorkOrderResultVOS = this.selectListResultVO(chiefWorkOrderPageQuery);
-        List<NormalWorkOrderExport> normalWorkOrderExports = BeanUtil.copyToList(chiefWorkOrderResultVOS, NormalWorkOrderExport.class);
-
+        List<ChiefWorkOrderExport> chiefWorkOrderExports = BeanUtil.copyToList(chiefWorkOrderResultVOS, ChiefWorkOrderExport.class);
         // 2. 准备文件名和填充数据
-        Path wordPath = null;
         Path execlPath = null;
         String fileNamePrefix = "导出文件";
         if (Objects.equals(status, "办结")) {
-            wordPath = Paths.get(workExportFolderProperty.getWorkFinishWordPath());
-            execlPath = Paths.get(workExportFolderProperty.getWorkFinishExcelPath());
+            ArgumentAssert.notNull(workExportFolderProperty.getChiefWorkFinishExcelPath(), "未配置 Excel 模板路径");
+            execlPath = Paths.get(workExportFolderProperty.getChiefWorkFinishExcelPath());
             fileNamePrefix = "办结文件导出";
-            fillExportData(normalWorkOrderExports, status);
         }
         if (Objects.equals(status, "已退回")) {
-            wordPath = Paths.get(workExportFolderProperty.getWorkBackWordPath());
-            execlPath = Paths.get(workExportFolderProperty.getWorkBackExcelPath());
+            ArgumentAssert.notNull(workExportFolderProperty.getChiefWorkBackExcelPath(), "未配置 Excel 模板路径");
+            execlPath = Paths.get(workExportFolderProperty.getChiefWorkBackExcelPath());
             fileNamePrefix = "退回文件导出";
-            fillExportData(normalWorkOrderExports, status);
         }
         String fileName = URLEncoder.encode(fileNamePrefix + ".zip", StandardCharsets.UTF_8).replaceAll("\\+", "%20");
         response.setContentType("application/zip");
         response.setHeader("Content-Disposition", "attachment; filename=" + fileName);
 
-        // 3. 预读取Word模板到内存，避免循环IO
-        assert wordPath != null;
-        byte[] wordTemplateBytes = Files.readAllBytes(wordPath);
 
         // 4. 生成ZIP
         try (ZipOutputStream zos = new ZipOutputStream(response.getOutputStream());
@@ -177,14 +166,16 @@ public class ChiefWorkOrderItemServiceImpl extends SuperServiceImpl<ChiefWorkOrd
                     .withTemplate(excelTemplateInputStream)
                     .build();
             WriteSheet writeSheet = EasyExcel.writerSheet("12345事件工作表(街镇)").build();
-            excelWriter.fill(normalWorkOrderExports, writeSheet);
+            excelWriter.fill(chiefWorkOrderExports, writeSheet);
             excelWriter.finish();
             zos.closeEntry();
 
             // 4.3 生成每个工单的Word文档
-            for (int i = 0; i < normalWorkOrderExports.size(); i++) {
-                NormalWorkOrderExport normalWorkOrder = normalWorkOrderExports.get(i);
-                List<Long> fileIds = extractFileIds(normalWorkOrder);
+            for (int i = 0; i < chiefWorkOrderExports.size(); i++) {
+                int count = 1;
+                int row = i + 1;
+                ChiefWorkOrderExport chiefWorkOrderExport = chiefWorkOrderExports.get(i);
+                List<Long> fileIds = extractFileIds(chiefWorkOrderExport);
                 if (!CollectionUtils.isEmpty(fileIds)) {
                     Map<Long, String> urlMap = fileService.findUrlById(fileIds);
                     for (Long fid : fileIds) {
@@ -193,15 +184,16 @@ public class ChiefWorkOrderItemServiceImpl extends SuperServiceImpl<ChiefWorkOrd
                             continue;
                         }
                         String attachmentsFileName = null;
-                        if (normalWorkOrder.getFinishOrBackDynamic() != null && StringUtils.isNotBlank(normalWorkOrder.getFinishOrBackDynamic().getContentJson())) {
+                        if (chiefWorkOrderExport.getFinishOrBackDynamic() != null && StringUtils.isNotBlank(chiefWorkOrderExport.getFinishOrBackDynamic().getContentJson())) {
                             try {
-                                JSONObject obj = JSON.parseObject(normalWorkOrder.getFinishOrBackDynamic().getContentJson());
-                                attachmentsFileName = obj.getString("attachmentsFileName");
+                                JSONObject obj = JSON.parseObject(chiefWorkOrderExport.getFinishOrBackDynamic().getContentJson());
+                                attachmentsFileName = obj.getString("situationDescFileName");
                             } catch (Exception e) {
-                                // ignore
+                                log.error("文件下载失败: {}",fid);
                             }
                         }
-                        String entryName = rootFolderName + i+1 + "/" + deriveFileName(fid, fUrl, attachmentsFileName);
+                        String entryName = rootFolderName  + row + "-" +count + "-" + deriveFileName(fid, fUrl, attachmentsFileName);
+                        count++;
                         zos.putNextEntry(new ZipEntry(entryName));
                         try (BufferedInputStream bis = new BufferedInputStream(new URL(fUrl).openStream())) {
                             bis.transferTo(zos);
@@ -216,63 +208,18 @@ public class ChiefWorkOrderItemServiceImpl extends SuperServiceImpl<ChiefWorkOrd
         }
     }
 
-    /**
-     * 填充导出数据中的扩展字段（特别是JSON解析部分）
-     */
-    private void fillExportData(List<NormalWorkOrderExport> exports, String status) {
-        exports.forEach(exp -> {
-            exp.setOrderStatus(status);
-            if (exp.getFinishOrBackDynamic() != null) {
-                exp.setDeptName(exp.getFinishOrBackDynamic().getDeptName());
-                exp.setOperatorName(exp.getFinishOrBackDynamic().getOperatorName());
-                exp.setFinishTime(exp.getFinishOrBackDynamic().getCreatedTime());
-                exp.setIsDifficultStr(Boolean.TRUE.equals(exp.getIsDifficult()) ? "是" : "否");
-                // 判断是否超期
-                if (exp.getFinishOrBackDynamic().getCreatedTime() != null && exp.getMunicipalDeadline() != null) {
-                    exp.setIsExpire(exp.getFinishOrBackDynamic().getCreatedTime().isAfter(exp.getMunicipalDeadline()) ? "是" : "否");
-                } else {
-                    exp.setIsExpire("否");
-                }
-
-                String json = exp.getFinishOrBackDynamic().getContentJson();
-                if (StringUtils.isNotBlank(json)) {
-                    try {
-                        JSONObject obj = JSON.parseObject(json);
-                        exp.setClosingUnit(obj.getString("closingUnit"));
-                        exp.setPublicReplyContent(obj.getString("publicReplyContent"));
-                        exp.setCitizenReplyContent(obj.getString("citizenReplyContent"));
-                        exp.setReplyResult(obj.getString("replyResult"));
-                        exp.setContactCitizenFirst(obj.getInteger("contactCitizenFirst") != null && obj.getInteger("contactCitizenFirst") == 1 ? "是" : "否");
-                        exp.setReplyTime(obj.getString("replyTime"));
-                        exp.setIsOnSite(obj.getInteger("isOnSite") != null && obj.getInteger("isOnSite") == 1 ? "是" : "否");
-                        exp.setReplier(obj.getString("replier"));
-                        exp.setIsFinalReply(obj.getInteger("isFinalReply"));
-                        exp.setPublicReplyType(obj.getString("publicReplyType"));
-                        exp.setInternalReplyType(obj.getString("internalReplyType"));
-                        exp.setNotifyCitizenFirst(obj.getInteger("notifyCitizenFirst"));
-                        exp.setInternalReplyContent(obj.getString("internalReplyContent"));
-                        exp.setReturnReason(obj.getString("returnReason"));
-                        exp.setReturnType(obj.getString("returnType"));
-                    } catch (Exception e) {
-                        log.warn("解析finishOrBackContentJson失败, orderNo={}", exp.getOrderNo(), e);
-                    }
-                }
-            }
-        });
-    }
-
-    private List<Long> extractFileIds(NormalWorkOrderExport export) {
+    private List<Long> extractFileIds(ChiefWorkOrderExport export) {
         List<Long> fileIds = Lists.newArrayList();
         if (export.getFinishOrBackDynamic() != null && StringUtils.isNotBlank(export.getFinishOrBackDynamic().getContentJson())) {
             try {
                 JSONObject jsonObject = JSON.parseObject(export.getFinishOrBackDynamic().getContentJson());
                 // 尝试获取 attachments 字段
-                String attachments = jsonObject.getString("attachments");
+                String attachments = jsonObject.getString("situationDesc");
                 if (StringUtils.isNotBlank(attachments)) {
                     fileIds.add(Long.parseLong(attachments));
                 }
             } catch (Exception e) {
-                log.warn("解析附件ID失败 orderNo={}", export.getOrderNo(), e);
+                log.warn("解析附件ID失败 id={}", export.getId(), e);
             }
         }
         return fileIds.stream().distinct().collect(Collectors.toList());
@@ -359,14 +306,28 @@ public class ChiefWorkOrderItemServiceImpl extends SuperServiceImpl<ChiefWorkOrd
         Map<String, Object> extra = params.getExtra();
         LbQueryWrap<ChiefWorkOrderItem> wrap = Wraps.lbq(null, extra, ChiefWorkOrderItem.class);
         wrap.like(ChiefWorkOrderItem::getWorkOrderNo, model.getWorkOrderNo())
+                .eq(ChiefWorkOrderItem::getBatchNo, model.getBatchNo())
                 .like(ChiefWorkOrderItem::getTitle, model.getTitle())
                 .like(ChiefWorkOrderItem::getAppealContent, model.getAppealContent())
                 .like(ChiefWorkOrderItem::getAppealType, model.getAppealType())
                 .like(ChiefWorkOrderItem::getContactPhone, model.getContactPhone())
                 .like(ChiefWorkOrderItem::getSettleCondition, model.getSettleCondition())
                 .like(ChiefWorkOrderItem::getBatchNo, model.getBatchNo());
-        IPage<ChiefWorkOrderItemResultVO> chiefWorkOrderItemResultVOIPage = superManager.selectOrderAllConditions(page, wrap, model);
-        return chiefWorkOrderItemResultVOIPage;
+        return superManager.selectOrderAllConditions(page, wrap, model);
+    }
+
+    @Override
+    public List<ChiefWorkOrderItemResultVO> selectOrderAllConditionsList(ChiefWorkOrderItemPageQuery params) {
+        LbQueryWrap<ChiefWorkOrderItem> wrap = Wraps.lbq(null,null, ChiefWorkOrderItem.class);
+        wrap.like(ChiefWorkOrderItem::getWorkOrderNo, params.getWorkOrderNo())
+                .eq(ChiefWorkOrderItem::getBatchNo, params.getBatchNo())
+                .like(ChiefWorkOrderItem::getTitle, params.getTitle())
+                .like(ChiefWorkOrderItem::getAppealContent, params.getAppealContent())
+                .like(ChiefWorkOrderItem::getAppealType, params.getAppealType())
+                .like(ChiefWorkOrderItem::getContactPhone, params.getContactPhone())
+                .like(ChiefWorkOrderItem::getSettleCondition, params.getSettleCondition())
+                .like(ChiefWorkOrderItem::getBatchNo, params.getBatchNo());
+        return superManager.selectOrderAllConditions(wrap, params);
     }
 
     @Override

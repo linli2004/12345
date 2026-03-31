@@ -3,7 +3,11 @@ package top.tangyh.lamp.base.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.EasyExcel;
+import com.alibaba.excel.ExcelWriter;
 import com.alibaba.excel.read.listener.PageReadListener;
+import com.alibaba.excel.write.metadata.WriteSheet;
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONObject;
 import com.baidu.fsg.uid.UidGenerator;
 import com.baomidou.dynamic.datasource.annotation.DS;
 import jakarta.servlet.http.HttpServletResponse;
@@ -11,10 +15,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.compress.utils.Lists;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import top.tangyh.basic.base.service.impl.SuperServiceImpl;
-import top.tangyh.basic.context.ContextUtil;
 import top.tangyh.basic.database.mybatis.conditions.Wraps;
 import top.tangyh.basic.database.mybatis.conditions.query.LbQueryWrap;
 import top.tangyh.basic.utils.ArgumentAssert;
@@ -25,20 +30,31 @@ import top.tangyh.lamp.base.manager.ChiefWorkOrderManager;
 import top.tangyh.lamp.base.manager.NormalWorkOrderTaskManager;
 import top.tangyh.lamp.base.manager.WorkOrderDynamicManager;
 import top.tangyh.lamp.base.property.WorkExportFolderProperty;
+import top.tangyh.lamp.base.service.ChiefWorkOrderItemService;
 import top.tangyh.lamp.base.service.ChiefWorkOrderService;
+import top.tangyh.lamp.base.vo.query.ChiefWorkOrderItemPageQuery;
+import top.tangyh.lamp.base.vo.result.ChiefWorkOrderExport;
+import top.tangyh.lamp.base.vo.result.ChiefWorkOrderItemResultVO;
 import top.tangyh.lamp.base.vo.update.ChiefWorkOrderTaskActionVO;
-import top.tangyh.lamp.base.vo.update.NormalWorkOrderTaskActionVO;
 import top.tangyh.lamp.common.constant.DsConstant;
 import top.tangyh.lamp.file.service.FileService;
 
+import java.io.BufferedInputStream;
 import java.io.InputStream;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  * <p>
@@ -53,10 +69,10 @@ import java.util.List;
 @Service
 @DS(DsConstant.BASE_TENANT)
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class ChiefWorkOrderServiceImpl extends SuperServiceImpl<ChiefWorkOrderManager, Long, ChiefWorkOrder> implements ChiefWorkOrderService {
 
     private final ChiefWorkOrderItemManager chiefWorkOrderItemManager;
+    private final ChiefWorkOrderItemService chiefWorkOrderItemService;
     private final WorkOrderDynamicManager workOrderDynamicManager;
     private final NormalWorkOrderTaskManager normalWorkOrderTaskManager;
     private final WorkExportFolderProperty workExportFolderProperty;
@@ -185,11 +201,129 @@ public class ChiefWorkOrderServiceImpl extends SuperServiceImpl<ChiefWorkOrderMa
                 }
                 return LocalDateTime.parse(dateStr, DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"));
             }
-            // 简单处理，如果解析失败返回null或抛出异常，根据业务需求定
             return null;
         } catch (Exception e) {
             log.warn("日期解析失败: {}", dateStr);
             return null;
         }
+    }
+
+    @SneakyThrows
+    @Override
+    public void exportTaskZip(String batchNo, HttpServletResponse response) {
+        // 1. 查询数据
+        ChiefWorkOrderItemPageQuery chiefWorkOrderPageQuery = new ChiefWorkOrderItemPageQuery();
+        chiefWorkOrderPageQuery.setBatchNo(batchNo);
+
+        List<ChiefWorkOrderItemResultVO> chiefWorkOrderResultVOS = chiefWorkOrderItemService.selectOrderAllConditionsList(chiefWorkOrderPageQuery);
+        List<String> finishOrderNoList = chiefWorkOrderResultVOS.stream().filter(item -> Objects.equals("办结", item.getStatus())).map(item -> String.valueOf(item.getId())).toList();
+        chiefWorkOrderItemService.setContentJson(chiefWorkOrderResultVOS, "办结",finishOrderNoList);
+        List<String> backOrderNoList = chiefWorkOrderResultVOS.stream().filter(item -> Objects.equals("退回", item.getStatus())).map(item -> String.valueOf(item.getId())).toList();
+        chiefWorkOrderItemService.setContentJson(chiefWorkOrderResultVOS, "已退回",backOrderNoList);
+
+        List<ChiefWorkOrderExport> chiefWorkOrderExports = BeanUtil.copyToList(chiefWorkOrderResultVOS, ChiefWorkOrderExport.class);
+        // 2. 准备文件名和填充数据
+        ArgumentAssert.notNull(workExportFolderProperty.getChiefWorkFinishExcelPath(), "未配置 Excel 模板路径");
+        Path execlPath = Paths.get(workExportFolderProperty.getChiefWorkFinishExcelPath());
+        String fileNamePrefix = "督办工单导出";
+
+        String fileName = URLEncoder.encode(fileNamePrefix + ".zip", StandardCharsets.UTF_8).replaceAll("\\+", "%20");
+        response.setContentType("application/zip");
+        response.setHeader("Content-Disposition", "attachment; filename=" + fileName);
+
+
+        // 4. 生成ZIP
+        try (ZipOutputStream zos = new ZipOutputStream(response.getOutputStream());
+             InputStream excelTemplateInputStream = Files.newInputStream(execlPath)) {
+
+            // 4.1 创建根目录
+            String rootFolderName = fileNamePrefix + "/";
+            zos.putNextEntry(new ZipEntry(rootFolderName));
+            zos.closeEntry();
+
+            // 4.2 生成Excel汇总表
+            String exportTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+            zos.putNextEntry(new ZipEntry(rootFolderName + "12345事件工作表(街镇)" + exportTime + ".xlsx"));
+            ExcelWriter excelWriter = EasyExcel.write(zos)
+                    .autoCloseStream(Boolean.FALSE)
+                    .withTemplate(excelTemplateInputStream)
+                    .build();
+            WriteSheet writeSheet = EasyExcel.writerSheet("12345事件工作表(街镇)").build();
+            excelWriter.fill(chiefWorkOrderExports, writeSheet);
+            excelWriter.finish();
+            zos.closeEntry();
+
+            // 4.3 生成每个工单的Word文档
+            for (int i = 0; i < chiefWorkOrderExports.size(); i++) {
+                int count = 1;
+                int row = i + 1;
+                ChiefWorkOrderExport chiefWorkOrderExport = chiefWorkOrderExports.get(i);
+                List<Long> fileIds = extractFileIds(chiefWorkOrderExport);
+                if (!CollectionUtils.isEmpty(fileIds)) {
+                    Map<Long, String> urlMap = fileService.findUrlById(fileIds);
+                    for (Long fid : fileIds) {
+                        String fUrl = urlMap.get(fid);
+                        if (StringUtils.isBlank(fUrl)) {
+                            continue;
+                        }
+                        String attachmentsFileName = null;
+                        if (chiefWorkOrderExport.getFinishOrBackDynamic() != null && StringUtils.isNotBlank(chiefWorkOrderExport.getFinishOrBackDynamic().getContentJson())) {
+                            try {
+                                JSONObject obj = JSON.parseObject(chiefWorkOrderExport.getFinishOrBackDynamic().getContentJson());
+                                attachmentsFileName = obj.getString("situationDescFileName");
+                            } catch (Exception e) {
+                                log.error("文件下载失败: {}",fid);
+                            }
+                        }
+                        String entryName = rootFolderName  + row + "-" +count + "-" + deriveFileName(fid, fUrl, attachmentsFileName);
+                        count++;
+                        zos.putNextEntry(new ZipEntry(entryName));
+                        try (BufferedInputStream bis = new BufferedInputStream(new URL(fUrl).openStream())) {
+                            bis.transferTo(zos);
+                        } catch (Exception e) {
+                            log.warn("下载附件失败, id={}, url={}", fid, fUrl, e);
+                        }
+                        zos.closeEntry();
+                    }
+                }
+            }
+            zos.finish();
+        }
+    }
+
+    private List<Long> extractFileIds(ChiefWorkOrderExport export) {
+        List<Long> fileIds = Lists.newArrayList();
+        if (export.getFinishOrBackDynamic() != null && StringUtils.isNotBlank(export.getFinishOrBackDynamic().getContentJson())) {
+            try {
+                JSONObject jsonObject = JSON.parseObject(export.getFinishOrBackDynamic().getContentJson());
+                // 尝试获取 attachments 字段
+                String attachments = jsonObject.getString("situationDesc");
+                if (StringUtils.isNotBlank(attachments)) {
+                    fileIds.add(Long.parseLong(attachments));
+                }
+            } catch (Exception e) {
+                log.warn("解析附件ID失败 id={}", export.getId(), e);
+            }
+        }
+        return fileIds.stream().distinct().collect(Collectors.toList());
+    }
+
+    private String deriveFileName(Long fileId, String url, String jsonFileName) {
+        if (StringUtils.isNotBlank(jsonFileName)) {
+            return jsonFileName;
+        }
+        String fileName = String.valueOf(fileId);
+        if (StringUtils.isNotBlank(url)) {
+            try {
+                String path = new java.net.URL(url).getPath();
+                String tempName = path.substring(path.lastIndexOf('/') + 1);
+                if (StringUtils.isNotBlank(tempName)) {
+                    fileName = java.net.URLDecoder.decode(tempName, StandardCharsets.UTF_8);
+                }
+            } catch (Exception e) {
+                log.error("解析文件名失败:{}", fileName, e);
+            }
+        }
+        return fileName;
     }
 }

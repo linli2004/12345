@@ -7,15 +7,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import top.tangyh.basic.base.manager.impl.SuperManagerImpl;
 import top.tangyh.lamp.base.entity.ChiefWorkOrderItem;
-import top.tangyh.lamp.base.entity.NormalWorkOrder;
 import top.tangyh.lamp.base.manager.ChiefWorkOrderItemManager;
 import top.tangyh.lamp.base.mapper.ChiefWorkOrderItemMapper;
 import top.tangyh.lamp.base.vo.query.ChiefWorkOrderItemPageQuery;
-import top.tangyh.lamp.base.vo.query.NormalWorkOrderPageQuery;
 import top.tangyh.lamp.base.vo.result.ChiefWorkOrderItemResultVO;
-
 import top.tangyh.lamp.base.vo.result.NormalWorkOrderRankingResultVO;
-import top.tangyh.lamp.base.vo.result.NormalWorkOrderResultVO;
 import top.tangyh.lamp.base.vo.result.SignCategoryIsNullNormalWorkOrderResultVO;
 
 import java.util.List;
@@ -82,5 +78,10 @@ public class ChiefWorkOrderItemManagerImpl extends SuperManagerImpl<ChiefWorkOrd
     @Override
     public IPage<ChiefWorkOrderItemResultVO> selectOrderAllConditions(IPage<ChiefWorkOrderItem> page, Wrapper<ChiefWorkOrderItem> wrapper, ChiefWorkOrderItemPageQuery model) {
         return baseMapper.selectOrderAllConditions(page, wrapper, model);
+    }
+
+    @Override
+    public List<ChiefWorkOrderItemResultVO> selectOrderAllConditions(Wrapper<ChiefWorkOrderItem> wrapper, ChiefWorkOrderItemPageQuery model) {
+        return baseMapper.selectOrderAllConditions(wrapper, model);
     }
 }
