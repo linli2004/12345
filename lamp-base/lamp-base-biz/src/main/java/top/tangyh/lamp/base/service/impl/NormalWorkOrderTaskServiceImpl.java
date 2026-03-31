@@ -419,8 +419,8 @@ public class NormalWorkOrderTaskServiceImpl extends SuperServiceImpl<NormalWorkO
         ArgumentAssert.notNull(taskTempList, "工单编号有误");
         Set<String> leadUnitIdSet = taskTempList.stream().map(NormalWorkOrderTask::getLeadUnitId).map(String::valueOf).collect(Collectors.toSet());
         String[] leadUnitIdArray = processingVO.getLeadUnitIds().split(",");
-        List<NormalWorkOrderTask> existBackTask = taskTempList.stream().filter(a -> !Arrays.stream(leadUnitIdArray).collect(Collectors.toSet()).contains(a.getLeadUnitId().toString()) && Constant.NODE_CODE_BASIC_BACK_LEADER_APPROVE.equals(a.getCurrentNodeCode())).toList();
-        List<NormalWorkOrderTask> otherTask = taskTempList.stream().filter(a -> !Arrays.stream(leadUnitIdArray).collect(Collectors.toSet()).contains(a.getLeadUnitId().toString())).toList();
+        List<NormalWorkOrderTask> existBackTask = taskTempList.stream().filter(a -> !Arrays.stream(leadUnitIdArray).collect(Collectors.toSet()).contains(a.getLeadUnitId().toString()) && !"1".equals(a.getLeadUnitId().toString()) && Constant.NODE_CODE_BASIC_BACK_LEADER_APPROVE.equals(a.getCurrentNodeCode())).toList();
+        List<NormalWorkOrderTask> otherTask = taskTempList.stream().filter(a -> !Arrays.stream(leadUnitIdArray).collect(Collectors.toSet()).contains(a.getLeadUnitId().toString()) && !"1".equals(a.getLeadUnitId().toString())).toList();
         leadUnitIdSet.addAll(Arrays.stream(leadUnitIdArray).collect(Collectors.toSet()));
         List<NormalWorkOrderTask> normalWorkOrderTaskList = Lists.newArrayList();
         List<String> list = new ArrayList<>(Arrays.stream(leadUnitIdArray).toList());
@@ -457,9 +457,11 @@ public class NormalWorkOrderTaskServiceImpl extends SuperServiceImpl<NormalWorkO
                 normalWorkOrderTaskList.forEach(t -> t.setLevel(Constant.TASK_LEVEL_1));
             } else {//如果不存在没动的task是15.1的 12.1的task level置0
                 if (CollectionUtils.isNotEmpty(otherTask)) {
-                    superManager.update(Wrappers.<NormalWorkOrderTask>lambdaUpdate().set(NormalWorkOrderTask::getLevel, Constant.TASK_LEVEL_0)
+                    boolean updated = superManager.update(Wrappers.<NormalWorkOrderTask>lambdaUpdate().set(NormalWorkOrderTask::getLevel, Constant.TASK_LEVEL_0)
                             .in(NormalWorkOrderTask::getId, otherTask.stream().map(NormalWorkOrderTask::getId).collect(Collectors.toList()))
                             .eq(NormalWorkOrderTask::getCurrentNodeCode, Constant.NODE_CODE_BASIC_FINAL_LEADER_APPROVE));
+                    if(!updated) superManager.update(Wrappers.<NormalWorkOrderTask>lambdaUpdate().set(NormalWorkOrderTask::getLevel, Constant.TASK_LEVEL_0)
+                            .in(NormalWorkOrderTask::getId, otherTask.stream().map(NormalWorkOrderTask::getId).collect(Collectors.toList())));
                     normalWorkOrderTaskList.forEach(t -> t.setLevel(Constant.TASK_LEVEL_1));
                 }
             }

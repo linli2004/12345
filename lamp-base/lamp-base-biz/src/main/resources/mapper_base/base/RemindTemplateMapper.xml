@@ -16,12 +16,15 @@
         <result column="updated_time" property="updatedTime" />
         <result column="updated_by" property="updatedBy" />
         <result column="created_org_id" property="createdOrgId" />
+        <result column="type" property="type" />
+        <result column="file_id" property="fileId" />
+        <result column="file_name" property="fileName" />
     </resultMap>
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
         id, name, display_content, created_time, created_by, updated_time, 
-        updated_by, created_org_id
+        updated_by, created_org_id, type, file_id, file_name
     </sql>
 
 </mapper>
