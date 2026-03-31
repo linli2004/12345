@@ -78,7 +78,7 @@ public class NormalWorkOrderTaskServiceImpl extends SuperServiceImpl<NormalWorkO
             workOrderDynamicList.add(dynamicTemp);
         });
         workOrderDynamicManager.saveBatch(workOrderDynamicList);
-        return superManager.update(Wrappers.<NormalWorkOrderTask>lambdaUpdate()
+        return superManager.update(new NormalWorkOrderTask(), Wrappers.<NormalWorkOrderTask>lambdaUpdate()
                 .set(NormalWorkOrderTask::getCurrentNodeCode, Constant.NODE_CODE_TOWN_SIGN)
                 .eq(NormalWorkOrderTask::getValid, Constant.TASK_VALID)
                 .in(NormalWorkOrderTask::getOrderNo, signVO.getOrderNoList()));
@@ -110,14 +110,14 @@ public class NormalWorkOrderTaskServiceImpl extends SuperServiceImpl<NormalWorkO
             if (leadUnitIdArray.length > 1) {
                 for (int i = 1; i < leadUnitIdArray.length; i++) {
                     //新增task
-                    NormalWorkOrderTask taskTemp = BeanUtil.copyProperties(normalWorkOrderTask, NormalWorkOrderTask.class, "id");
+                    NormalWorkOrderTask taskTemp = BeanUtil.copyProperties(normalWorkOrderTask, NormalWorkOrderTask.class, "id", "createdTime", "updatedTime");
                     taskTemp.setLeadUnitId(Long.valueOf(leadUnitIdArray[i]));
                     currentLoopTaskList.add(taskTemp);
                 }
                 //如果是全部结案的情况，为镇级新增一条task,它的level是0，当前循环其他task level为1
                 if (Constant.SETTLE_CONDITION_ALL.equals(processingVO.getSettleCondition())) {
                     currentLoopTaskList.forEach(t -> t.setLevel(Constant.TASK_LEVEL_1));
-                    NormalWorkOrderTask taskTemp = BeanUtil.copyProperties(normalWorkOrderTask, NormalWorkOrderTask.class, "id");
+                    NormalWorkOrderTask taskTemp = BeanUtil.copyProperties(normalWorkOrderTask, NormalWorkOrderTask.class, "id", "createdTime", "updatedTime");
                     taskTemp.setLeadUnitId(1L);
                     taskTemp.setLevel(Constant.TASK_LEVEL_0);
                     currentLoopTaskList.add(taskTemp);
@@ -125,7 +125,7 @@ public class NormalWorkOrderTaskServiceImpl extends SuperServiceImpl<NormalWorkO
             }
             normalWorkOrderTaskList.addAll(currentLoopTaskList);
             //新增 交办的办理动态
-            WorkOrderDynamic dynamicTemp = BeanUtil.copyProperties(processingVO, WorkOrderDynamic.class, "id");
+            WorkOrderDynamic dynamicTemp = BeanUtil.copyProperties(processingVO, WorkOrderDynamic.class, "id", "createdTime", "updatedTime");
             dynamicTemp.setNodeCode(Constant.NODE_CODE_TOWN_FIRST_PROCESSING);
             dynamicTemp.setProcessType(Constant.PROCESS_TYPE_MAP.get(Constant.NODE_CODE_TOWN_FIRST_PROCESSING));
             workOrderDynamicList.add(dynamicTemp);
@@ -159,7 +159,7 @@ public class NormalWorkOrderTaskServiceImpl extends SuperServiceImpl<NormalWorkO
                 normalWorkOrderTaskList.add(t);
             });
             //新增 退回的办理动态
-            WorkOrderDynamic dynamicTemp = BeanUtil.copyProperties(backVO, WorkOrderDynamic.class, "id");
+            WorkOrderDynamic dynamicTemp = BeanUtil.copyProperties(backVO, WorkOrderDynamic.class, "id", "createdTime", "updatedTime");
             dynamicTemp.setTaskId(backVO.getId());
             dynamicTemp.setNodeCode(Constant.NODE_CODE_TOWN_BACK);
             dynamicTemp.setProcessType(Constant.PROCESS_TYPE_MAP.get(Constant.NODE_CODE_TOWN_BACK));
@@ -188,7 +188,7 @@ public class NormalWorkOrderTaskServiceImpl extends SuperServiceImpl<NormalWorkO
             normalWorkOrderTaskList.add(t);
         });
         //新增 办结的办理动态
-        WorkOrderDynamic dynamicTemp = BeanUtil.copyProperties(finishVO, WorkOrderDynamic.class, "id");
+        WorkOrderDynamic dynamicTemp = BeanUtil.copyProperties(finishVO, WorkOrderDynamic.class, "id", "createdTime", "updatedTime");
         dynamicTemp.setTaskId(finishVO.getId());
         dynamicTemp.setNodeCode(Constant.NODE_CODE_TOWN_FINAL);
         dynamicTemp.setProcessType(Constant.PROCESS_TYPE_MAP.get(Constant.NODE_CODE_TOWN_FINAL));
@@ -202,14 +202,15 @@ public class NormalWorkOrderTaskServiceImpl extends SuperServiceImpl<NormalWorkO
     @Transactional(rollbackFor = Exception.class)
     public boolean basicSignNormalWorkOrder(NormalWorkOrderTaskActionVO signVO) {
         //新增 基层签收的办理动态
-        WorkOrderDynamic dynamicTemp = BeanUtil.copyProperties(signVO, WorkOrderDynamic.class, "id");
+        WorkOrderDynamic dynamicTemp = BeanUtil.copyProperties(signVO, WorkOrderDynamic.class, "id", "createdTime", "updatedTime");
         dynamicTemp.setOrderNo(signVO.getOrderNo());
         dynamicTemp.setTaskId(signVO.getId());
         dynamicTemp.setNodeCode(Constant.NODE_CODE_BASIC_SIGN);
         dynamicTemp.setProcessType(Constant.PROCESS_TYPE_MAP.get(Constant.NODE_CODE_BASIC_SIGN));
         workOrderDynamicManager.save(dynamicTemp);
         //更改normal_work_order_task node_code 4 基层签收
-        return superManager.update(Wrappers.<NormalWorkOrderTask>lambdaUpdate()
+
+        return superManager.update(new NormalWorkOrderTask(), Wrappers.<NormalWorkOrderTask>lambdaUpdate()
                 .set(NormalWorkOrderTask::getCurrentNodeCode, Constant.NODE_CODE_BASIC_SIGN)
                 .eq(NormalWorkOrderTask::getValid, Constant.TASK_VALID)
                 .eq(NormalWorkOrderTask::getId, signVO.getId()));
@@ -222,14 +223,14 @@ public class NormalWorkOrderTaskServiceImpl extends SuperServiceImpl<NormalWorkO
         NormalWorkOrder workOrderTemp = normalWorkOrderManager.getOne(Wraps.<NormalWorkOrder>lbQ().eq(NormalWorkOrder::getOrderNo, backVO.getOrderNo()));
         ArgumentAssert.isFalse(Constant.ALLOW_BACK_0.equals(workOrderTemp.getAllowBack()) || (Constant.ALLOW_BACK_2.equals(workOrderTemp.getAllowBack()) && LocalDateTime.now().isAfter(workOrderTemp.getAllowBackTime())), "此工单已不允许退回");
         //新增 基层退回的办理动态
-        WorkOrderDynamic dynamicTemp = BeanUtil.copyProperties(backVO, WorkOrderDynamic.class, "id");
+        WorkOrderDynamic dynamicTemp = BeanUtil.copyProperties(backVO, WorkOrderDynamic.class, "id", "createdTime", "updatedTime");
         dynamicTemp.setOrderNo(backVO.getOrderNo());
         dynamicTemp.setTaskId(backVO.getId());
         dynamicTemp.setNodeCode(Constant.NODE_CODE_BASIC_BACK);
         dynamicTemp.setProcessType(Constant.PROCESS_TYPE_MAP.get(Constant.NODE_CODE_BASIC_BACK));
         workOrderDynamicManager.save(dynamicTemp);
         //更改normal_work_order_task node_code 5.3 基层退回
-        return superManager.update(Wrappers.<NormalWorkOrderTask>lambdaUpdate()
+        return superManager.update(new NormalWorkOrderTask(), Wrappers.<NormalWorkOrderTask>lambdaUpdate()
                 .set(NormalWorkOrderTask::getCurrentNodeCode, Constant.NODE_CODE_BASIC_BACK)
                 .eq(NormalWorkOrderTask::getValid, Constant.TASK_VALID)
                 .eq(NormalWorkOrderTask::getId, backVO.getId()));
@@ -239,14 +240,14 @@ public class NormalWorkOrderTaskServiceImpl extends SuperServiceImpl<NormalWorkO
     @Transactional(rollbackFor = Exception.class)
     public boolean basicFinishNormalWorkOrder(NormalWorkOrderTaskActionVO finishVO) {
         //新增 基层办结的办理动态
-        WorkOrderDynamic dynamicTemp = BeanUtil.copyProperties(finishVO, WorkOrderDynamic.class, "id");
+        WorkOrderDynamic dynamicTemp = BeanUtil.copyProperties(finishVO, WorkOrderDynamic.class, "id", "createdTime", "updatedTime");
         dynamicTemp.setOrderNo(finishVO.getOrderNo());
         dynamicTemp.setTaskId(finishVO.getId());
         dynamicTemp.setNodeCode(Constant.NODE_CODE_BASIC_FINAL);
         dynamicTemp.setProcessType(Constant.PROCESS_TYPE_MAP.get(Constant.NODE_CODE_BASIC_FINAL));
         workOrderDynamicManager.save(dynamicTemp);
         //更改normal_work_order_task node_code 5.2 基层办结
-        return superManager.update(Wrappers.<NormalWorkOrderTask>lambdaUpdate()
+        return superManager.update(new NormalWorkOrderTask(), Wrappers.<NormalWorkOrderTask>lambdaUpdate()
                 .set(NormalWorkOrderTask::getCurrentNodeCode, Constant.NODE_CODE_BASIC_FINAL)
                 .eq(NormalWorkOrderTask::getValid, Constant.TASK_VALID)
                 .eq(NormalWorkOrderTask::getId, finishVO.getId()));
@@ -256,14 +257,14 @@ public class NormalWorkOrderTaskServiceImpl extends SuperServiceImpl<NormalWorkO
     @Transactional(rollbackFor = Exception.class)
     public boolean basicDirectorAuditNormalWorkOrder(NormalWorkOrderTaskActionVO auditVO) {
         //新增 基层负责人审批的办理动态
-        WorkOrderDynamic dynamicTemp = BeanUtil.copyProperties(auditVO, WorkOrderDynamic.class, "id");
+        WorkOrderDynamic dynamicTemp = BeanUtil.copyProperties(auditVO, WorkOrderDynamic.class, "id", "createdTime", "updatedTime");
         dynamicTemp.setOrderNo(auditVO.getOrderNo());
         dynamicTemp.setTaskId(auditVO.getId());
         String nodeCode = AuditNodeCodeEnum.getNodeCode(auditVO.getAuditType(), auditVO.getAuditResult(), Constant.ROLE_CODE_DEPT_DIRECTOR);
         dynamicTemp.setNodeCode(nodeCode);
         dynamicTemp.setProcessType(Constant.PROCESS_TYPE_MAP.get(nodeCode));
         workOrderDynamicManager.save(dynamicTemp);
-        return superManager.update(Wrappers.<NormalWorkOrderTask>lambdaUpdate()
+        return superManager.update(new NormalWorkOrderTask(), Wrappers.<NormalWorkOrderTask>lambdaUpdate()
                 .set(NormalWorkOrderTask::getCurrentNodeCode, nodeCode)
                 .eq(NormalWorkOrderTask::getValid, Constant.TASK_VALID)
                 .eq(NormalWorkOrderTask::getId, auditVO.getId()));
@@ -273,7 +274,7 @@ public class NormalWorkOrderTaskServiceImpl extends SuperServiceImpl<NormalWorkO
     @Transactional(rollbackFor = Exception.class)
     public boolean basicLeaderAuditNormalWorkOrder(NormalWorkOrderTaskActionVO auditVO) {
         //新增 基层领导审批的办理动态
-        WorkOrderDynamic dynamicTemp = BeanUtil.copyProperties(auditVO, WorkOrderDynamic.class, "id");
+        WorkOrderDynamic dynamicTemp = BeanUtil.copyProperties(auditVO, WorkOrderDynamic.class, "id", "createdTime", "updatedTime");
         dynamicTemp.setOrderNo(auditVO.getOrderNo());
         dynamicTemp.setTaskId(auditVO.getId());
         String nodeCode = AuditNodeCodeEnum.getNodeCode(auditVO.getAuditType(), auditVO.getAuditResult(), Constant.ROLE_CODE_DEPT_LEADER);
@@ -281,7 +282,7 @@ public class NormalWorkOrderTaskServiceImpl extends SuperServiceImpl<NormalWorkO
         dynamicTemp.setProcessType(Constant.PROCESS_TYPE_MAP.get(nodeCode));
         workOrderDynamicManager.save(dynamicTemp);
         NormalWorkOrder workOrderTemp = normalWorkOrderManager.getOne(Wraps.<NormalWorkOrder>lbQ().eq(NormalWorkOrder::getOrderNo, auditVO.getOrderNo()));
-        superManager.update(Wrappers.<NormalWorkOrderTask>lambdaUpdate()
+        superManager.update(new NormalWorkOrderTask(), Wrappers.<NormalWorkOrderTask>lambdaUpdate()
                 .set(NormalWorkOrderTask::getCurrentNodeCode, nodeCode)
                 .set(!Constant.SETTLE_CONDITION_ALL.equals(workOrderTemp.getSettleCondition()), NormalWorkOrderTask::getLevel, Constant.TASK_LEVEL_0)
                 .eq(NormalWorkOrderTask::getValid, Constant.TASK_VALID)
@@ -305,7 +306,7 @@ public class NormalWorkOrderTaskServiceImpl extends SuperServiceImpl<NormalWorkO
             if (Constant.NODE_CODE_BASIC_FINAL_LEADER_APPROVE.equals(nodeCode)) {
                 List<NormalWorkOrderTask> taskList = taskTempList.stream().filter(item -> Objects.equals(Constant.NODE_CODE_BASIC_BACK_LEADER_APPROVE, item.getCurrentNodeCode())).toList();
                 if (!CollectionUtils.isEmpty(taskList)) {
-                    superManager.update(Wrappers.<NormalWorkOrderTask>lambdaUpdate()
+                    superManager.update(new NormalWorkOrderTask(), Wrappers.<NormalWorkOrderTask>lambdaUpdate()
                             .set(NormalWorkOrderTask::getLevel, Constant.TASK_LEVEL_1)
                             .eq(NormalWorkOrderTask::getValid, Constant.TASK_VALID)
                             .eq(NormalWorkOrderTask::getId, auditVO.getId()));
@@ -324,13 +325,13 @@ public class NormalWorkOrderTaskServiceImpl extends SuperServiceImpl<NormalWorkO
     public boolean townBasicBackNormalWorkOrder(NormalWorkOrderTaskActionVO backVO) {
         //所有task node 变13.3, level都变0
         //新增 镇级退回的办理动态
-        WorkOrderDynamic dynamicTemp = BeanUtil.copyProperties(backVO, WorkOrderDynamic.class, "id");
+        WorkOrderDynamic dynamicTemp = BeanUtil.copyProperties(backVO, WorkOrderDynamic.class, "id", "createdTime", "updatedTime");
         dynamicTemp.setOrderNo(backVO.getOrderNo());
         dynamicTemp.setTaskId(backVO.getId());
         dynamicTemp.setNodeCode(Constant.NODE_CODE_TOWN_BASIC_BACK);
         dynamicTemp.setProcessType(Constant.PROCESS_TYPE_MAP.get(Constant.NODE_CODE_TOWN_BASIC_BACK));
         workOrderDynamicManager.save(dynamicTemp);
-        return superManager.update(Wrappers.<NormalWorkOrderTask>lambdaUpdate()
+        return superManager.update(new NormalWorkOrderTask(), Wrappers.<NormalWorkOrderTask>lambdaUpdate()
                 .set(NormalWorkOrderTask::getCurrentNodeCode, Constant.NODE_CODE_TOWN_BASIC_BACK)
                 .set(NormalWorkOrderTask::getLevel, Constant.TASK_LEVEL_0)
                 .eq(NormalWorkOrderTask::getValid, Constant.TASK_VALID)
@@ -342,13 +343,13 @@ public class NormalWorkOrderTaskServiceImpl extends SuperServiceImpl<NormalWorkO
     public boolean townBasicFinishNormalWorkOrder(NormalWorkOrderTaskActionVO finishVO) {
         //所有task node 变13.1, level都变0
         //新增 镇级退回的办理动态
-        WorkOrderDynamic dynamicTemp = BeanUtil.copyProperties(finishVO, WorkOrderDynamic.class, "id");
+        WorkOrderDynamic dynamicTemp = BeanUtil.copyProperties(finishVO, WorkOrderDynamic.class, "id", "createdTime", "updatedTime");
         dynamicTemp.setOrderNo(finishVO.getOrderNo());
         dynamicTemp.setTaskId(finishVO.getId());
         dynamicTemp.setNodeCode(Constant.NODE_CODE_TOWN_BASIC_FINAL);
         dynamicTemp.setProcessType(Constant.PROCESS_TYPE_MAP.get(Constant.NODE_CODE_TOWN_BASIC_FINAL));
         workOrderDynamicManager.save(dynamicTemp);
-        return superManager.update(Wrappers.<NormalWorkOrderTask>lambdaUpdate()
+        return superManager.update(new NormalWorkOrderTask(), Wrappers.<NormalWorkOrderTask>lambdaUpdate()
                 .set(NormalWorkOrderTask::getCurrentNodeCode, Constant.NODE_CODE_TOWN_BASIC_FINAL)
                 .set(NormalWorkOrderTask::getLevel, Constant.TASK_LEVEL_0)
                 .eq(NormalWorkOrderTask::getValid, Constant.TASK_VALID)
@@ -372,7 +373,7 @@ public class NormalWorkOrderTaskServiceImpl extends SuperServiceImpl<NormalWorkO
         data.setRemindMode("03");
         data.setRecipientList(employeeIdList);
         msgBiz.publish(data, new SysUser());
-        superManager.update(Wrappers.<NormalWorkOrderTask>lambdaUpdate()
+        superManager.update(new NormalWorkOrderTask(), Wrappers.<NormalWorkOrderTask>lambdaUpdate()
                 .set(NormalWorkOrderTask::getValid, Constant.TASK_INVALID)
                 .eq(NormalWorkOrderTask::getOrderNo, revokeVO.getOrderNo()));
         NormalWorkOrderTask taskTemp = new NormalWorkOrderTask();
@@ -427,9 +428,9 @@ public class NormalWorkOrderTaskServiceImpl extends SuperServiceImpl<NormalWorkO
         list.add("1"); //unit_id=1的(全部结案的主task)
         ArgumentAssert.notEmpty(leadUnitIdArray, "主办单位不可为空");
         //将需要重新交办的task valid置0  包含unit_id=1的(全部结案的主task)
-        superManager.update(Wrappers.<NormalWorkOrderTask>lambdaUpdate().set(NormalWorkOrderTask::getValid, Constant.TASK_INVALID).eq(NormalWorkOrderTask::getOrderNo, processingVO.getOrderNo()).in(NormalWorkOrderTask::getLeadUnitId, list));
+        superManager.update(new NormalWorkOrderTask(), Wrappers.<NormalWorkOrderTask>lambdaUpdate().set(NormalWorkOrderTask::getValid, Constant.TASK_INVALID).eq(NormalWorkOrderTask::getOrderNo, processingVO.getOrderNo()).in(NormalWorkOrderTask::getLeadUnitId, list));
         for (String leadUnitId : leadUnitIdArray) {//新增task
-            NormalWorkOrderTask taskTemp = BeanUtil.copyProperties(processingVO, NormalWorkOrderTask.class, "id");
+            NormalWorkOrderTask taskTemp = BeanUtil.copyProperties(processingVO, NormalWorkOrderTask.class, "id", "createdTime", "updatedTime");
             taskTemp.setLeadUnitId(Long.valueOf(leadUnitId));
             taskTemp.setCurrentNodeCode(Constant.NODE_CODE_TOWN_AGAIN_PROCESSING);
             taskTemp.setLevel(leadUnitIdSet.size() > 1 ? Constant.TASK_LEVEL_1 : Constant.TASK_LEVEL_0);
@@ -439,10 +440,10 @@ public class NormalWorkOrderTaskServiceImpl extends SuperServiceImpl<NormalWorkO
             normalWorkOrderTaskList.forEach(t -> t.setLevel(Constant.TASK_LEVEL_1));
             //将其他task的level置1
             if (CollectionUtils.isNotEmpty(otherTask)) {
-                superManager.update(Wrappers.<NormalWorkOrderTask>lambdaUpdate().set(NormalWorkOrderTask::getLevel, Constant.TASK_LEVEL_1)
+                superManager.update(new NormalWorkOrderTask(), Wrappers.<NormalWorkOrderTask>lambdaUpdate().set(NormalWorkOrderTask::getLevel, Constant.TASK_LEVEL_1)
                         .in(NormalWorkOrderTask::getId, otherTask.stream().map(NormalWorkOrderTask::getId).collect(Collectors.toList())));
             }
-            NormalWorkOrderTask taskTemp = BeanUtil.copyProperties(processingVO, NormalWorkOrderTask.class, "id");
+            NormalWorkOrderTask taskTemp = BeanUtil.copyProperties(processingVO, NormalWorkOrderTask.class, "id", "createdTime", "updatedTime");
             taskTemp.setCurrentNodeCode(CollectionUtils.isEmpty(existBackTask) ? Constant.NODE_CODE_TOWN_AGAIN_PROCESSING : Constant.NODE_CODE_BASIC_BACK_LEADER_APPROVE);
             taskTemp.setLeadUnitId(1L);
             taskTemp.setLevel(Constant.TASK_LEVEL_0);
@@ -451,23 +452,24 @@ public class NormalWorkOrderTaskServiceImpl extends SuperServiceImpl<NormalWorkO
             normalWorkOrderTaskList.forEach(t -> t.setLevel(Constant.TASK_LEVEL_0));
             //如果存在没动的task是15.1的 15.1的task level置0
             if (CollectionUtils.isNotEmpty(existBackTask)) {
-                superManager.update(Wrappers.<NormalWorkOrderTask>lambdaUpdate().set(NormalWorkOrderTask::getLevel, Constant.TASK_LEVEL_0)
+                superManager.update(new NormalWorkOrderTask(), Wrappers.<NormalWorkOrderTask>lambdaUpdate().set(NormalWorkOrderTask::getLevel, Constant.TASK_LEVEL_0)
                         .in(NormalWorkOrderTask::getId, existBackTask.stream().map(NormalWorkOrderTask::getId).collect(Collectors.toList()))
                         .eq(NormalWorkOrderTask::getCurrentNodeCode, Constant.NODE_CODE_BASIC_BACK_LEADER_APPROVE));
                 normalWorkOrderTaskList.forEach(t -> t.setLevel(Constant.TASK_LEVEL_1));
             } else {//如果不存在没动的task是15.1的 12.1的task level置0
                 if (CollectionUtils.isNotEmpty(otherTask)) {
-                    boolean updated = superManager.update(Wrappers.<NormalWorkOrderTask>lambdaUpdate().set(NormalWorkOrderTask::getLevel, Constant.TASK_LEVEL_0)
+                    boolean updated = superManager.update(new NormalWorkOrderTask(), Wrappers.<NormalWorkOrderTask>lambdaUpdate().set(NormalWorkOrderTask::getLevel, Constant.TASK_LEVEL_0)
                             .in(NormalWorkOrderTask::getId, otherTask.stream().map(NormalWorkOrderTask::getId).collect(Collectors.toList()))
                             .eq(NormalWorkOrderTask::getCurrentNodeCode, Constant.NODE_CODE_BASIC_FINAL_LEADER_APPROVE));
-                    if(!updated) superManager.update(Wrappers.<NormalWorkOrderTask>lambdaUpdate().set(NormalWorkOrderTask::getLevel, Constant.TASK_LEVEL_0)
-                            .in(NormalWorkOrderTask::getId, otherTask.stream().map(NormalWorkOrderTask::getId).collect(Collectors.toList())));
+                    if (!updated)
+                        superManager.update(new NormalWorkOrderTask(), Wrappers.<NormalWorkOrderTask>lambdaUpdate().set(NormalWorkOrderTask::getLevel, Constant.TASK_LEVEL_0)
+                                .in(NormalWorkOrderTask::getId, otherTask.stream().map(NormalWorkOrderTask::getId).collect(Collectors.toList())));
                     normalWorkOrderTaskList.forEach(t -> t.setLevel(Constant.TASK_LEVEL_1));
                 }
             }
         }
         //新增 交办的办理动态
-        WorkOrderDynamic dynamicTemp = BeanUtil.copyProperties(processingVO, WorkOrderDynamic.class, "id");
+        WorkOrderDynamic dynamicTemp = BeanUtil.copyProperties(processingVO, WorkOrderDynamic.class, "id", "createdTime", "updatedTime");
         dynamicTemp.setNodeCode(Constant.NODE_CODE_TOWN_AGAIN_PROCESSING);
         dynamicTemp.setProcessType(Constant.PROCESS_TYPE_MAP.get(Constant.NODE_CODE_TOWN_AGAIN_PROCESSING));
         //更改normal_work_order 工单分类id 工单分类名称 结案条件 是否允许退回 允许退回时间 允许批示
