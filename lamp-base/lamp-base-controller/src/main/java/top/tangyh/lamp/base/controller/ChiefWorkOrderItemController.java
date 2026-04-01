@@ -104,7 +104,7 @@ public class ChiefWorkOrderItemController extends SuperController<ChiefWorkOrder
     @Override
     public R<IPage<ChiefWorkOrderItemResultVO>> page(@RequestBody @Validated PageParams<ChiefWorkOrderItemPageQuery> params) {
         IPage<ChiefWorkOrderItemResultVO> pageResultVO = superService.findPageResultVO(params);
-
+        if (null != params.getModel().getCoOrccType()) return R.success(pageResultVO);
         List<String> orderNoList = pageResultVO.getRecords().stream().map(item -> String.valueOf(item.getId())).toList();
         List<ChiefWorkOrderTask> workOrderTaskList = null;
         if (Constant.ROLE_CODE_TOWN_SPECIALIST.equals(params.getModel().getRoleCode()) || Constant.ROLE_CODE_TOWN_LEADER.equals(params.getModel().getRoleCode())) {
