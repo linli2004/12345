@@ -313,7 +313,7 @@ public class ChiefWorkOrderItemServiceImpl extends SuperServiceImpl<ChiefWorkOrd
                 .like(ChiefWorkOrderItem::getContactPhone, model.getContactPhone())
                 .like(ChiefWorkOrderItem::getSettleCondition, model.getSettleCondition())
                 .like(ChiefWorkOrderItem::getBatchNo, model.getBatchNo())
-                .between(ChiefWorkOrderItem::getLastOperateTime, model.getLastOperateTimeStart(), model.getLastOperateTimeEnd());
+                .between(model.getLastOperateTimeStart() != null && model.getLastOperateTimeEnd() != null ,ChiefWorkOrderItem::getLastOperateTime, model.getLastOperateTimeStart(), model.getLastOperateTimeEnd());
         return superManager.selectOrderAllConditions(page, wrap, model);
     }
 
