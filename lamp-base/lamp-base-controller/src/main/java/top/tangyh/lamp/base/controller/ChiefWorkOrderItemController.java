@@ -160,13 +160,43 @@ public class ChiefWorkOrderItemController extends SuperController<ChiefWorkOrder
     @PostMapping(path = "/notComment")
     @WebLog("督办工单待批示")
     public R<IPage<ChiefWorkOrderItemResultVO>> notCommentPage(@RequestBody @Validated PageParams<ChiefWorkOrderItemPageQuery> params) {
-        return R.success(superService.findNotCommentPageResultVO(params));
+        IPage<ChiefWorkOrderItemResultVO> notCommentPageResultVO = superService.findNotCommentPageResultVO(params);
+        List<String> orderNoList = notCommentPageResultVO.getRecords().stream().map(item -> String.valueOf(item.getId())).toList();
+        List<ChiefWorkOrderTask> workOrderTaskList = chiefWorkOrderTaskService.list(Wraps.<ChiefWorkOrderTask>lbQ().eq(ChiefWorkOrderTask::getValid, Constant.TASK_VALID).in(ChiefWorkOrderTask::getOrderNo, orderNoList));
+        if (CollectionUtils.isEmpty(workOrderTaskList)) return R.success(notCommentPageResultVO);
+        List<ChiefWorkOrderTaskResultVO> taskResultVOList = BeanUtil.copyToList(workOrderTaskList, ChiefWorkOrderTaskResultVO.class);
+        if (echoService != null) {
+            echoService.action(taskResultVOList);
+        }
+        Map<String, List<ChiefWorkOrderTaskResultVO>> taskMap = taskResultVOList.stream()
+                .collect(Collectors.groupingBy(
+                        ChiefWorkOrderTaskResultVO::getOrderNo,
+                        java.util.LinkedHashMap::new,
+                        Collectors.toList()
+                ));
+        notCommentPageResultVO.getRecords().forEach(t -> t.setWorkOrderTaskList(taskMap.get(t.getId().toString())));
+        return R.success(notCommentPageResultVO);
     }
 
     @Operation(summary = "督办工单已批示", description = "督办工单已批示")
     @PostMapping(path = "/commented")
     @WebLog("督办工单已批示")
     public R<IPage<ChiefWorkOrderItemResultVO>> commentedPage(@RequestBody @Validated PageParams<ChiefWorkOrderItemPageQuery> params) {
-        return R.success(superService.findCommentedPageResultVO(params));
+        IPage<ChiefWorkOrderItemResultVO> commentedPageResultVO = superService.findCommentedPageResultVO(params);
+        List<String> orderNoList = commentedPageResultVO.getRecords().stream().map(item -> String.valueOf(item.getId())).toList();
+        List<ChiefWorkOrderTask> workOrderTaskList = chiefWorkOrderTaskService.list(Wraps.<ChiefWorkOrderTask>lbQ().eq(ChiefWorkOrderTask::getValid, Constant.TASK_VALID).in(ChiefWorkOrderTask::getOrderNo, orderNoList));
+        if (CollectionUtils.isEmpty(workOrderTaskList)) return R.success(commentedPageResultVO);
+        List<ChiefWorkOrderTaskResultVO> taskResultVOList = BeanUtil.copyToList(workOrderTaskList, ChiefWorkOrderTaskResultVO.class);
+        if (echoService != null) {
+            echoService.action(taskResultVOList);
+        }
+        Map<String, List<ChiefWorkOrderTaskResultVO>> taskMap = taskResultVOList.stream()
+                .collect(Collectors.groupingBy(
+                        ChiefWorkOrderTaskResultVO::getOrderNo,
+                        java.util.LinkedHashMap::new,
+                        Collectors.toList()
+                ));
+        commentedPageResultVO.getRecords().forEach(t -> t.setWorkOrderTaskList(taskMap.get(t.getId().toString())));
+        return R.success(commentedPageResultVO);
     }
 }
