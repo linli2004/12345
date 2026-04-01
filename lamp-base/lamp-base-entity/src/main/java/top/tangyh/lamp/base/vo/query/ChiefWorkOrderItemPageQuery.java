@@ -276,4 +276,7 @@ public class ChiefWorkOrderItemPageQuery implements Serializable {
 
     @Schema(description = "1:一日内到期")
     private String orderFlag;
+
+    private String lastOperateTimeStart;
+    private String lastOperateTimeEnd;
 }
