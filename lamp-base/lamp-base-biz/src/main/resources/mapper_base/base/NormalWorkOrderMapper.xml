@@ -245,9 +245,11 @@
     <include refid="Base_Column_List2"/>
     FROM
         normal_work_order t3
-    WHERE
-        t3.allow_comment = '1' and t3.comment_leader_id = #{model.operatorId}
+    <where>
+        ${ew.sqlSegment}
+        and t3.allow_comment = '1' and t3.comment_leader_id = #{model.operatorId}
         AND NOT EXISTS ( SELECT 1 FROM `work_order_dynamic` t2 WHERE t2.order_no = t3.order_no AND t2.operator_id = #{model.operatorId}  AND t2.process_type = '批示' )
+    </where>
     </select>
 
     <select id="selectCommentedPageResultVO" resultMap="ResultVOResultMap">
@@ -255,9 +257,11 @@
         <include refid="Base_Column_List2"/>
         FROM
         normal_work_order t3
-        WHERE
-        t3.allow_comment = '1' and t3.comment_leader_id = #{model.operatorId}
+        <where>
+        ${ew.sqlSegment}
+        and t3.allow_comment = '1' and t3.comment_leader_id = #{model.operatorId}
         AND EXISTS ( SELECT 1 FROM `work_order_dynamic` t2 WHERE t2.order_no = t3.order_no AND t2.operator_id = #{model.operatorId}  AND t2.process_type = '批示' )
+        </where>
     </select>
 
     <select id="selectOrderAllConditions" resultMap="ResultVOResultMap">
