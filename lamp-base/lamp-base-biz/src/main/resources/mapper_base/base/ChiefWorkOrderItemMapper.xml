@@ -137,7 +137,7 @@
         <where>
         ${ew.sqlSegment}
         and t3.allow_comment = '1' and t3.comment_leader_id = #{model.operatorId}
-        AND EXISTS ( SELECT 1 FROM `work_order_dynamic` t2 WHERE t2.order_no = t3.work_order_no AND t2.operator_id = #{model.operatorId}  AND t2.process_type = '批示' )
+        AND EXISTS ( SELECT 1 FROM `work_order_dynamic` t2 WHERE t2.order_no = t3.id AND t2.operator_id = #{model.operatorId}  AND t2.process_type = '批示' )
         </where>
     </select>
 
@@ -149,7 +149,7 @@
         <where>
         ${ew.sqlSegment}
         and t3.allow_comment = '1' and t3.comment_leader_id = #{model.operatorId}
-        AND NOT EXISTS ( SELECT 1 FROM `work_order_dynamic` t2 WHERE t2.order_no = t3.work_order_no AND t2.operator_id = #{model.operatorId}  AND t2.process_type = '批示' )
+        AND NOT EXISTS ( SELECT 1 FROM `work_order_dynamic` t2 WHERE t2.order_no = t3.id AND t2.operator_id = #{model.operatorId}  AND t2.process_type = '批示' )
         </where>
     </select>
 
