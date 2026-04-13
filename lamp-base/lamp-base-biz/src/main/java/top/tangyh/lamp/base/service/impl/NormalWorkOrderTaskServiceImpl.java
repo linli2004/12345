@@ -348,6 +348,11 @@ public class NormalWorkOrderTaskServiceImpl extends SuperServiceImpl<NormalWorkO
         dynamicTemp.setTaskId(finishVO.getId());
         dynamicTemp.setNodeCode(Constant.NODE_CODE_TOWN_BASIC_FINAL);
         dynamicTemp.setProcessType(Constant.PROCESS_TYPE_MAP.get(Constant.NODE_CODE_TOWN_BASIC_FINAL));
+        //更改normal_work_order 工单分类id 工单分类名称
+        NormalWorkOrder workOrderTemp = normalWorkOrderManager.getOne(Wraps.<NormalWorkOrder>lbQ().eq(NormalWorkOrder::getOrderNo, finishVO.getOrderNo()));
+        workOrderTemp.setOrderCategoryId(finishVO.getOrderCategoryId());
+        workOrderTemp.setOrderCategoryName(finishVO.getOrderCategoryName());
+        normalWorkOrderManager.updateById(workOrderTemp);
         workOrderDynamicManager.save(dynamicTemp);
         return superManager.update(new NormalWorkOrderTask(), Wrappers.<NormalWorkOrderTask>lambdaUpdate()
                 .set(NormalWorkOrderTask::getCurrentNodeCode, Constant.NODE_CODE_TOWN_BASIC_FINAL)
