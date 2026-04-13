@@ -176,7 +176,8 @@
         COUNT(1) AS total
         FROM
         chief_work_order_item t3
-        RIGHT JOIN (
+        where t3.order_category_name is not null and
+        t3.id in (
         SELECT
         DISTINCT t2.order_no as task_order_no
         FROM
@@ -184,8 +185,7 @@
         WHERE 1 = 1
         <if test='roleCode != null and (roleCode != "1" and roleCode != "0")'>AND t2.lead_unit_id = #{leadUnitId} </if>
         and t2.valid = '1' <if test="roleCode != null and (roleCode eq '1'.toString() or roleCode eq '0'.toString())"> and t2.level = '0'</if>
-        ) t4 ON t3.work_order_no = t4.task_order_no
-        where t3.order_category_name is not null
+        )
         GROUP BY
         subString_index(t3.order_category_name, '-', 1)
     </select>

@@ -326,8 +326,7 @@ public class ChiefWorkOrderItemServiceImpl extends SuperServiceImpl<ChiefWorkOrd
                 .like(ChiefWorkOrderItem::getAppealContent, params.getAppealContent())
                 .like(ChiefWorkOrderItem::getAppealType, params.getAppealType())
                 .like(ChiefWorkOrderItem::getContactPhone, params.getContactPhone())
-                .like(ChiefWorkOrderItem::getSettleCondition, params.getSettleCondition())
-                .like(ChiefWorkOrderItem::getBatchNo, params.getBatchNo());
+                .like(ChiefWorkOrderItem::getSettleCondition, params.getSettleCondition());
         return superManager.selectOrderAllConditions(wrap, params);
     }
 

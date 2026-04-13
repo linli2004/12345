@@ -23,7 +23,7 @@ public class ChiefWorkOrderItemExcel {
 
     @ExcelProperty("诉求号码")
     private String appealPhone;
-    @ExcelProperty("诉求号码")
+    @ExcelProperty("归口类型")
     private String sourceDeptName;
 
     @ExcelProperty("诉求内容")

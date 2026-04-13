@@ -505,7 +505,7 @@ public class ChiefWorkOrderTaskServiceImpl extends SuperServiceImpl<ChiefWorkOrd
         ChiefWorkOrderItemPageQuery chiefWorkOrderItemPageQuery = new ChiefWorkOrderItemPageQuery();
         chiefWorkOrderItemPageQuery.setOrderNoList(orderNoList);
         Integer count = chiefWorkOrderItemManager.selectCountResultVO(chiefWorkOrderItemPageQuery);
-        if (count == orderNoList.size()) {
+        if (count == orderNoList.size() - 1) {
             chiefWorkOrderManager.update(Wrappers.<ChiefWorkOrder>lambdaUpdate()
                     .eq(ChiefWorkOrder::getBatchNo, batchNo)
                     .set(ChiefWorkOrder::getStatus, Constant.CHIEF_ORDER_FINISH));

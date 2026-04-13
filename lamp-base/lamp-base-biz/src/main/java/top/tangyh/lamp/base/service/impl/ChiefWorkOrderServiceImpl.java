@@ -270,7 +270,10 @@ public class ChiefWorkOrderServiceImpl extends SuperServiceImpl<ChiefWorkOrderMa
                         if (chiefWorkOrderExport.getFinishOrBackDynamic() != null && StringUtils.isNotBlank(chiefWorkOrderExport.getFinishOrBackDynamic().getContentJson())) {
                             try {
                                 JSONObject obj = JSON.parseObject(chiefWorkOrderExport.getFinishOrBackDynamic().getContentJson());
-                                attachmentsFileName = obj.getString("situationDescFileName");
+                                attachmentsFileName = obj.getString("attachmentsFileName");
+                                if (StringUtils.isBlank(attachmentsFileName)) {
+                                    attachmentsFileName = obj.getString("situationDescFileName");
+                                }
                             } catch (Exception e) {
                                 log.error("文件下载失败: {}",fid);
                             }
@@ -281,7 +284,7 @@ public class ChiefWorkOrderServiceImpl extends SuperServiceImpl<ChiefWorkOrderMa
                         try (BufferedInputStream bis = new BufferedInputStream(new URL(fUrl).openStream())) {
                             bis.transferTo(zos);
                         } catch (Exception e) {
-                            log.warn("下载附件失败, id={}, url={}", fid, fUrl, e);
+                            log.error("下载附件失败, id={}, url={}", fid, fUrl, e);
                         }
                         zos.closeEntry();
                     }
@@ -297,12 +300,16 @@ public class ChiefWorkOrderServiceImpl extends SuperServiceImpl<ChiefWorkOrderMa
             try {
                 JSONObject jsonObject = JSON.parseObject(export.getFinishOrBackDynamic().getContentJson());
                 // 尝试获取 attachments 字段
-                String attachments = jsonObject.getString("situationDesc");
+                String attachments = jsonObject.getString("attachments");
                 if (StringUtils.isNotBlank(attachments)) {
                     fileIds.add(Long.parseLong(attachments));
                 }
+                String situationDesc = jsonObject.getString("situationDesc");
+                if (StringUtils.isNotBlank(situationDesc)) {
+                    fileIds.add(Long.parseLong(situationDesc));
+                }
             } catch (Exception e) {
-                log.warn("解析附件ID失败 id={}", export.getId(), e);
+                log.error("解析附件ID失败 id={}", export.getId(), e);
             }
         }
         return fileIds.stream().distinct().collect(Collectors.toList());
