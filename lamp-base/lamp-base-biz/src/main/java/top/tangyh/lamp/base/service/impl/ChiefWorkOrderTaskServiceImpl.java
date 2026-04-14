@@ -343,6 +343,11 @@ public class ChiefWorkOrderTaskServiceImpl extends SuperServiceImpl<ChiefWorkOrd
         dynamicTemp.setTaskId(finishVO.getId());
         dynamicTemp.setNodeCode(Constant.NODE_CODE_TOWN_BASIC_FINAL);
         dynamicTemp.setProcessType(Constant.PROCESS_TYPE_MAP.get(Constant.NODE_CODE_TOWN_BASIC_FINAL));
+        //更改normal_work_order 工单分类id 工单分类名称
+        ChiefWorkOrderItem workOrderTemp = chiefWorkOrderItemManager.getOne(Wraps.<ChiefWorkOrderItem>lbQ().eq(ChiefWorkOrderItem::getId, finishVO.getOrderNo()));
+        workOrderTemp.setOrderCategoryId(finishVO.getOrderCategoryId());
+        workOrderTemp.setOrderCategoryName(finishVO.getOrderCategoryName());
+        chiefWorkOrderItemManager.updateById(workOrderTemp);
         chiefWorkOrderDynamicManager.save(dynamicTemp);
         updateChiefWorkOrderStatus(finishVO.getOrderNo());
         return superManager.update(new ChiefWorkOrderTask(), Wrappers.<ChiefWorkOrderTask>lambdaUpdate()

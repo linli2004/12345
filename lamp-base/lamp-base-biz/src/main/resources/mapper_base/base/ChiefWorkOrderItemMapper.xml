@@ -44,7 +44,7 @@
     </sql>
 
     <sql id="Base_Column_List2">
-        t3.id, t3.created_time, t3.created_by, t3.updated_time, t3.updated_by,
+        t3.id, t3.created_time, t3.created_by, t3.updated_time, t3.updated_by, t3.last_operate_time,
         t3.batch_no, t3.title, t3.work_order_no, t3.contact_phone, t3.appeal_phone, t3.appeal_content, t3.reply_content, t3.appeal_type, t3.satisfaction, t3.unsatisfied_reason, t3.online_supervision_no, t3.supervision_return_time, t3.supervision_finish_time, t3.supervision_reply_content, t3.supervision_sms_satisfaction, t3.supervision_return_content, t3.judgment_level1, t3.judgment_level2, t3.process_result, t3.is_final, t3.plan_finish_time, t3.category_adjust, t3.undertaker_unit, t3.final_result, t3.created_org_id, t3.order_category_id, t3.order_category_name, t3.allow_back, t3.allow_back_time, t3.allow_comment, t3.settle_condition, t3.comment_leader_id
     </sql>
 
