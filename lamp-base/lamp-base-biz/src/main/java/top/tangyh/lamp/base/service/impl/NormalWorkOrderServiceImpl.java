@@ -358,13 +358,13 @@ public class NormalWorkOrderServiceImpl extends SuperServiceImpl<NormalWorkOrder
     }
 
     @Override
-    public Long getWorkOrderCount(String displayStatus, String roleCode, String leadUnitId) {
-        return superManager.getWorkOrderCount(displayStatus, roleCode, leadUnitId);
+    public Long getWorkOrderCount(String displayStatus, String roleCode, String leadUnitId, String leadEmployeeId) {
+        return superManager.getWorkOrderCount(displayStatus, roleCode, leadUnitId, leadEmployeeId);
     }
 
     @Override
-    public List<SignCategoryIsNullNormalWorkOrderResultVO> groupByCategoryWorkOrderCount(String roleCode, String leadUnitId) {
-        return superManager.groupByCategoryWorkOrderCount(roleCode, leadUnitId);
+    public List<SignCategoryIsNullNormalWorkOrderResultVO> groupByCategoryWorkOrderCount(String roleCode, String leadUnitId, String leadEmployeeId) {
+        return superManager.groupByCategoryWorkOrderCount(roleCode, leadUnitId, leadEmployeeId);
     }
 
     @Override

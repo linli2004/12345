@@ -86,4 +86,6 @@ public class ChiefWorkOrderTaskResultVO extends Entity<Long> implements Serializ
     private String deptDirector;
     private String readRandomStr;
 
+    @Schema(description = "分管领导id")
+    private Long leadEmployeeId;
 }

@@ -65,9 +65,10 @@ public interface ChiefWorkOrderItemMapper extends SuperMapper<ChiefWorkOrderItem
      */
     IPage<ChiefWorkOrderItemResultVO> selectNotCommentResultVO(IPage<ChiefWorkOrderItem> page, @Param(Constants.WRAPPER) Wrapper<ChiefWorkOrderItem> query, @Param("model") ChiefWorkOrderItemPageQuery model);
 
-    Long getWorkOrderCount(@Param("displayStatus") String displayStatus, @Param("roleCode") String roleCode, @Param("leadUnitId") String leadUnitId);
+    Long getWorkOrderCount(@Param("displayStatus") String displayStatus, @Param("roleCode") String roleCode, @Param("leadUnitId") String leadUnitId, @Param("leadEmployeeId") String leadEmployeeId);
 
-    List<SignCategoryIsNullNormalWorkOrderResultVO> groupByCategoryWorkOrderCount(@Param("roleCode") String roleCode, @Param("leadUnitId") String leadUnitId);
+    List<SignCategoryIsNullNormalWorkOrderResultVO> groupByCategoryWorkOrderCount(@Param("roleCode") String roleCode, @Param("leadUnitId") String leadUnitId, @Param("leadEmployeeId") String leadEmployeeId);
+
 
     Long signCategoryIsNull();
 

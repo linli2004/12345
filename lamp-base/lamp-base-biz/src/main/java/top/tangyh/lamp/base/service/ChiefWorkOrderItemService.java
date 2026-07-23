@@ -49,9 +49,11 @@ public interface ChiefWorkOrderItemService extends SuperService<Long, ChiefWorkO
      */
     void exportTaskZip(List<String> orderNoList, HttpServletResponse response, String status);
 
-    Long getWorkOrderCount(String displayStatus, String roleCode, String leadUnitId);
+    Long getWorkOrderCount(String displayStatus, String roleCode, String leadUnitId, String leadEmployeeId);
 
-    List<SignCategoryIsNullNormalWorkOrderResultVO> groupByCategoryWorkOrderCount(String roleCode, String leadUnitId);
+
+    List<SignCategoryIsNullNormalWorkOrderResultVO> groupByCategoryWorkOrderCount(String roleCode, String leadUnitId, String leadEmployeeId);
+
 
     Long signCategoryIsNull();
 

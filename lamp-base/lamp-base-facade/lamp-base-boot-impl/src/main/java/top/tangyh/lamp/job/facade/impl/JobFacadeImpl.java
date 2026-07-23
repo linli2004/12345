@@ -4,6 +4,7 @@ import cn.hutool.http.HttpRequest;
 import cn.hutool.json.JSONUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import top.tangyh.basic.base.R;
 import top.tangyh.lamp.job.dto.XxlJobInfoVO;
@@ -14,6 +15,7 @@ import top.tangyh.lamp.job.facade.JobFacade;
  * @author tangyh
  * @since 2024/9/21 00:09
  */
+@Primary
 @Service
 @RequiredArgsConstructor
 public class JobFacadeImpl implements JobFacade {

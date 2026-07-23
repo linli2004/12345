@@ -279,4 +279,7 @@ public class ChiefWorkOrderItemPageQuery implements Serializable {
 
     private String lastOperateTimeStart;
     private String lastOperateTimeEnd;
+
+    @Schema(description = "分管领导id")
+    private Long leadEmployeeId;
 }

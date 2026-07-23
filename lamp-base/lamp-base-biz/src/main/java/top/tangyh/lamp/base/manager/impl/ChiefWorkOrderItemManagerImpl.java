@@ -56,13 +56,13 @@ public class ChiefWorkOrderItemManagerImpl extends SuperManagerImpl<ChiefWorkOrd
     }
 
     @Override
-    public Long getWorkOrderCount(String displayStatus, String roleCode, String leadUnitId) {
-        return baseMapper.getWorkOrderCount(displayStatus, roleCode, leadUnitId);
+    public Long getWorkOrderCount(String displayStatus, String roleCode, String leadUnitId, String leadEmployeeId) {
+        return baseMapper.getWorkOrderCount(displayStatus, roleCode, leadUnitId, leadEmployeeId);
     }
 
     @Override
-    public List<SignCategoryIsNullNormalWorkOrderResultVO> groupByCategoryWorkOrderCount(String roleCode, String leadUnitId) {
-        return baseMapper.groupByCategoryWorkOrderCount(roleCode, leadUnitId);
+    public List<SignCategoryIsNullNormalWorkOrderResultVO> groupByCategoryWorkOrderCount(String roleCode, String leadUnitId, String leadEmployeeId) {
+        return baseMapper.groupByCategoryWorkOrderCount(roleCode, leadUnitId, leadEmployeeId);
     }
 
     @Override

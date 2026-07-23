@@ -22,13 +22,14 @@
         <result column="updated_by" property="updatedBy" />
         <result column="updated_time" property="updatedTime" />
         <result column="created_org_id" property="createdOrgId" />
+        <result column="lead_employee_id" property="leadEmployeeId" />
     </resultMap>
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
         id, order_no, current_node_code, lead_unit_id, co_unit_ids, cc_unit_ids, 
         process_deadline, level,valid, created_by, created_time, updated_by, updated_time,
-        created_org_id
+        created_org_id,lead_employee_id
     </sql>
 
 </mapper>

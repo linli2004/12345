@@ -87,4 +87,6 @@ public class DefUserBaseInfoUpdateVO implements Serializable {
      */
     @Schema(description = "上传的头像")
     private Long logo;
+
+    private String mobile;
 }

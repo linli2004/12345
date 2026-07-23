@@ -39,8 +39,8 @@
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, created_time, created_by, updated_time, updated_by, 
-        batch_no, serial_no, title, work_order_no, contact_phone, appeal_phone, appeal_content, reply_content, appeal_type, satisfaction, unsatisfied_reason, online_supervision_no, supervision_return_time, supervision_finish_time, supervision_reply_content, supervision_sms_satisfaction, supervision_return_content, judgment_level1, judgment_level2, process_result, is_final, plan_finish_time, category_adjust, undertaker_unit, final_result, created_org_id, comment_leader_id
+        id, created_time, created_by, updated_time, updated_by,
+        batch_no,  title, work_order_no, contact_phone, appeal_phone, appeal_content, reply_content, appeal_type, satisfaction, unsatisfied_reason, online_supervision_no, supervision_return_time, supervision_finish_time, supervision_reply_content, supervision_sms_satisfaction, supervision_return_content, judgment_level1, judgment_level2, process_result, is_final, plan_finish_time, category_adjust, undertaker_unit, final_result, created_org_id, comment_leader_id
     </sql>
 
     <sql id="Base_Column_List2">
@@ -58,7 +58,7 @@
         FROM
         chief_work_order_item t3
         <where> ${ew.sqlSegment}
-        and t3.id in (
+        and CAST(t3.id AS CHAR) in (
         SELECT
         DISTINCT t2.order_no as task_order_no
         FROM
@@ -77,7 +77,8 @@
             </when>
             <otherwise>
                 t2.current_node_code IN ( SELECT t1.node_code FROM role_status_mapping t1 WHERE t1.display_status = #{model.displayStatus} AND t1.role_code = #{model.roleCode} )
-                <if test='model.roleCode != null and (model.roleCode != "1" and model.roleCode != "0")'>AND t2.lead_unit_id = #{model.leadUnitId} </if>
+                <if test='model.roleCode != null and (model.roleCode != "1" and model.roleCode != "0" and model.roleCode != "2")'>AND t2.lead_unit_id = #{model.leadUnitId} </if>
+                <if test="model.roleCode != null and model.roleCode eq '2'.toString()"> AND t2.lead_employee_id = #{model.leadEmployeeId} </if>
                 and t2.valid = '1' <if test="model.roleCode != null and (model.roleCode eq '1'.toString() or model.roleCode eq '0'.toString())"> and t2.level = '0'</if>
             </otherwise>
         </choose>
@@ -88,7 +89,7 @@
     <select id="selectListResultVO" resultMap="ResultVOResultMap">
         SELECT
         <include refid="Base_Column_List2"/>
-        FROM chief_work_order_item t3 where t3.id in
+        FROM chief_work_order_item t3 where CAST(t3.id AS CHAR) in
         (
         SELECT
         DISTINCT t2.order_no as task_order_no
@@ -99,7 +100,7 @@
         and t2.valid = '1'  and t2.level = '0'
         )
         <if test="model.orderNoList != null and model.orderNoList.size() > 0">
-            AND t3.id IN
+            AND CAST(t3.id AS CHAR) IN
             <foreach collection="model.orderNoList" item="item" open="(" separator="," close=")">
                 #{item}
             </foreach>
@@ -111,7 +112,7 @@
         count(*)
         FROM chief_work_order_item t3
         <where>
-            t3.id in(
+            CAST(t3.id AS CHAR) in(
             SELECT
             DISTINCT t2.order_no as task_order_no
             FROM
@@ -121,7 +122,7 @@
             and t2.valid = '1'  and t2.level = '0'
             )
             <if test="model.orderNoList != null and model.orderNoList.size() > 0">
-                AND t3.id IN
+                AND CAST(t3.id AS CHAR) IN
                 <foreach collection="model.orderNoList" item="item" open="(" separator="," close=")">
                     #{item}
                 </foreach>
@@ -160,14 +161,15 @@
         COUNT(*) AS total
         FROM
         chief_work_order_item t3
-        where t3.id in (
+        where CAST(t3.id AS CHAR) in (
         SELECT
         DISTINCT t2.order_no as task_order_no
         FROM
         normal_work_order_task t2
         WHERE
         t2.current_node_code IN ( SELECT t1.node_code FROM role_status_mapping t1 WHERE t1.display_status = #{displayStatus} AND t1.role_code = #{roleCode} )
-        <if test='roleCode != null and (roleCode != "1" and roleCode != "0")'>AND t2.lead_unit_id = #{leadUnitId} </if>
+        <if test='roleCode != null and (roleCode != "1" and roleCode != "0" and roleCode != "2")'>AND t2.lead_unit_id = #{leadUnitId} </if>
+        <if test="roleCode != null and roleCode eq '2'.toString()"> AND t2.lead_employee_id = #{leadEmployeeId} </if>
         and t2.valid = '1' <if test="roleCode != null and (roleCode eq '1'.toString() or roleCode eq '0'.toString())"> and t2.level = '0'</if>
         )
     </select>
@@ -179,13 +181,14 @@
         FROM
         chief_work_order_item t3
         where t3.order_category_name is not null and
-        t3.id in (
+        CAST(t3.id AS CHAR) in (
         SELECT
         DISTINCT t2.order_no as task_order_no
         FROM
         normal_work_order_task t2
-        WHERE 1 = 1
-        <if test='roleCode != null and (roleCode != "1" and roleCode != "0")'>AND t2.lead_unit_id = #{leadUnitId} </if>
+        WHERE 1=1
+        <if test='roleCode != null and (roleCode != "1" and roleCode != "0" and roleCode != "2")'>AND t2.lead_unit_id = #{leadUnitId} </if>
+        <if test="roleCode != null and roleCode eq '2'.toString()"> AND t2.lead_employee_id = #{leadEmployeeId} </if>
         and t2.valid = '1' <if test="roleCode != null and (roleCode eq '1'.toString() or roleCode eq '0'.toString())"> and t2.level = '0'</if>
         )
         GROUP BY
@@ -197,7 +200,7 @@
         COUNT(*) AS total
         FROM
         chief_work_order_item t3
-        where t3.id in(
+        where CAST(t3.id AS CHAR) in(
         SELECT
         DISTINCT t2.order_no as task_order_no
         FROM
@@ -242,7 +245,7 @@
         SELECT t5.* FROM
         (
         SELECT t3.*, "已退回" AS status FROM chief_work_order_item t3
-        WHERE t3.id IN (
+        WHERE CAST(t3.id AS CHAR) IN (
         SELECT DISTINCT t2.order_no
         FROM normal_work_order_task t2
         WHERE t2.valid = '1'
@@ -262,7 +265,7 @@
         UNION ALL
 
         SELECT t3.*, "办结" AS status FROM chief_work_order_item t3
-        WHERE t3.id IN (
+        WHERE CAST(t3.id AS CHAR) IN (
         SELECT DISTINCT t2.order_no FROM normal_work_order_task t2
         WHERE t2.valid = '1'
         <if test="model.leadUnitIdList != null and model.leadUnitIdList.size() > 0">
@@ -281,7 +284,7 @@
         UNION ALL
 
         SELECT t3.*, "结案待审" AS status FROM chief_work_order_item t3
-        WHERE t3.id IN (
+        WHERE CAST(t3.id AS CHAR) IN (
         SELECT DISTINCT t2.order_no FROM normal_work_order_task t2
         WHERE t2.valid = '1'
         <if test="model.leadUnitIdList != null and model.leadUnitIdList.size() > 0">
@@ -300,7 +303,7 @@
         UNION ALL
 
         SELECT t3.*, "下派跟踪" AS status FROM chief_work_order_item t3
-        WHERE t3.id IN (
+        WHERE CAST(t3.id AS CHAR) IN (
         SELECT DISTINCT t2.order_no FROM normal_work_order_task t2
         WHERE t2.valid = '1'
         <if test="model.leadUnitIdList != null and model.leadUnitIdList.size() > 0">
@@ -319,7 +322,7 @@
         UNION ALL
 
         SELECT t3.*, "下级已退回" AS status FROM chief_work_order_item t3
-        WHERE t3.id IN (
+        WHERE CAST(t3.id AS CHAR) IN (
         SELECT DISTINCT t2.order_no FROM normal_work_order_task t2
         WHERE t2.valid = '1'
         <if test="model.leadUnitIdList != null and model.leadUnitIdList.size() > 0">
@@ -338,7 +341,7 @@
         UNION ALL
 
         SELECT t3.*, "处办中" AS status FROM chief_work_order_item t3
-        WHERE t3.id IN (
+        WHERE CAST(t3.id AS CHAR) IN (
         SELECT DISTINCT t2.order_no FROM normal_work_order_task t2
         WHERE t2.valid = '1'
         <if test="model.leadUnitIdList != null and model.leadUnitIdList.size() > 0">
@@ -357,7 +360,7 @@
         UNION ALL
 
         SELECT t3.*, "待签收" AS status FROM chief_work_order_item t3
-        WHERE t3.id IN (
+        WHERE CAST(t3.id AS CHAR) IN (
         SELECT DISTINCT t2.order_no FROM normal_work_order_task t2
         WHERE t2.valid = '1'
         <if test="model.leadUnitIdList != null and model.leadUnitIdList.size() > 0">
@@ -378,7 +381,7 @@
             <if test="model.prefixList != null and model.prefixList.size() > 0">
                 AND (
                 <foreach collection="model.prefixList" item="prefix" separator=" OR ">
-                    t5.order_no LIKE CONCAT(#{prefix}, '%')
+                    t5.work_order_no LIKE CONCAT(#{prefix}, '%')
                 </foreach>
                 )
             </if>
@@ -386,10 +389,10 @@
                 AND t5.order_category_id = #{model.orderCategoryId}
             </if>
             <if test="model.regionDeadlineStart != null">
-                AND DATE_FORMAT(t5.region_deadline, '%Y-%m-%d') >= DATE_FORMAT(#{model.regionDeadlineStart}, '%Y-%m-%d')
+                AND DATE_FORMAT(t5.supervision_finish_time, '%Y-%m-%d') >= DATE_FORMAT(#{model.regionDeadlineStart}, '%Y-%m-%d')
             </if>
             <if test="model.regionDeadlineEnd != null">
-                AND DATE_FORMAT(t5.region_deadline, '%Y-%m-%d') &lt;= DATE_FORMAT(#{model.regionDeadlineEnd}, '%Y-%m-%d')
+                AND DATE_FORMAT(t5.supervision_finish_time, '%Y-%m-%d') &lt;= DATE_FORMAT(#{model.regionDeadlineEnd}, '%Y-%m-%d')
             </if>
         </where>
     </select>

@@ -27,9 +27,9 @@ public interface NormalWorkOrderManager extends SuperManager<NormalWorkOrder> {
 
     List<NormalWorkOrderResultVO> selectListResultVO(NormalWorkOrderPageQuery model);
 
-    Long getWorkOrderCount(String displayStatus, String roleCode, String leadUnitId);
+    Long getWorkOrderCount(String displayStatus, String roleCode, String leadUnitId, String leadEmployeeId);
 
-    List<SignCategoryIsNullNormalWorkOrderResultVO> groupByCategoryWorkOrderCount(String roleCode, String leadUnitId);
+    List<SignCategoryIsNullNormalWorkOrderResultVO> groupByCategoryWorkOrderCount(String roleCode, String leadUnitId, String leadEmployeeId);
 
     Long signCategoryIsNull();
 

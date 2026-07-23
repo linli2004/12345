@@ -121,6 +121,8 @@ public class NormalWorkOrderTaskResultVO extends Entity<Long> implements Seriali
     private String deptDirector;
     private String readRandomStr;
 
+    @Schema(description = "分管领导id")
+    private Long leadEmployeeId;
     public static List<Long> splitToLongList(String str) {
         if (!StringUtils.hasText(str)) {
             return Collections.emptyList();

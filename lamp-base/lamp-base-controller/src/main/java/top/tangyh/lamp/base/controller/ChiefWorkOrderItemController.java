@@ -22,20 +22,22 @@ import top.tangyh.basic.interfaces.echo.EchoService;
 import top.tangyh.lamp.Constant;
 import top.tangyh.lamp.base.entity.ChiefWorkOrderItem;
 import top.tangyh.lamp.base.entity.ChiefWorkOrderTask;
+import top.tangyh.lamp.base.entity.NormalWorkOrderTask;
+import top.tangyh.lamp.base.entity.user.BaseEmployee;
 import top.tangyh.lamp.base.service.ChiefWorkOrderItemService;
 import top.tangyh.lamp.base.service.ChiefWorkOrderTaskService;
 import top.tangyh.lamp.base.service.user.BaseEmployeeService;
 import top.tangyh.lamp.base.vo.query.ChiefWorkOrderItemPageQuery;
 import top.tangyh.lamp.base.vo.result.ChiefWorkOrderItemResultVO;
 import top.tangyh.lamp.base.vo.result.ChiefWorkOrderTaskResultVO;
+import top.tangyh.lamp.base.vo.result.NormalWorkOrderTaskResultVO;
 import top.tangyh.lamp.base.vo.result.user.BaseEmployeeResultVO;
 import top.tangyh.lamp.base.vo.save.ChiefWorkOrderItemSaveVO;
 import top.tangyh.lamp.base.vo.update.ChiefWorkOrderItemUpdateVO;
 import top.tangyh.lamp.msg.entity.ExtendMsg;
 import top.tangyh.lamp.msg.service.ExtendMsgService;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -70,7 +72,7 @@ public class ChiefWorkOrderItemController extends SuperController<ChiefWorkOrder
     @WebLog("查询统计 督办工单")
     public R<IPage<ChiefWorkOrderItemResultVO>> pageStatistic(@RequestBody @Validated PageParams<ChiefWorkOrderItemPageQuery> params) {
         IPage<ChiefWorkOrderItemResultVO> page = superService.selectOrderAllConditions(params);
-        List<String> orderNoList = page.getRecords().stream().filter(item -> "办结".equals(item.getStatus())).map(ChiefWorkOrderItemResultVO::getWorkOrderNo).toList();
+        List<String> orderNoList = page.getRecords().stream().filter(item -> "办结".equals(item.getStatus())).map(item -> String.valueOf(item.getId())).toList();
         List<ChiefWorkOrderTask> workOrderTaskList = chiefWorkOrderTaskService.list(Wraps.<ChiefWorkOrderTask>lbQ().eq(ChiefWorkOrderTask::getValid, Constant.TASK_VALID).in(ChiefWorkOrderTask::getOrderNo, orderNoList));
         if (CollectionUtils.isEmpty(workOrderTaskList)) return R.success(page);
         List<ChiefWorkOrderTaskResultVO> taskResultVOList = BeanUtil.copyToList(workOrderTaskList, ChiefWorkOrderTaskResultVO.class);
@@ -83,7 +85,7 @@ public class ChiefWorkOrderItemController extends SuperController<ChiefWorkOrder
                         java.util.LinkedHashMap::new,
                         Collectors.toList()
                 ));
-        page.getRecords().forEach(t -> t.setWorkOrderTaskList(taskMap.get(t.getWorkOrderNo())));
+        page.getRecords().forEach(t -> t.setWorkOrderTaskList(taskMap.get(String.valueOf(t.getId()))));
         
         params.getModel().setOrderNoList(orderNoList);
         params.getModel().setDisplayStatus("办结");
@@ -109,6 +111,13 @@ public class ChiefWorkOrderItemController extends SuperController<ChiefWorkOrder
         List<ChiefWorkOrderTask> workOrderTaskList = null;
         if (Constant.ROLE_CODE_TOWN_SPECIALIST.equals(params.getModel().getRoleCode()) || Constant.ROLE_CODE_TOWN_LEADER.equals(params.getModel().getRoleCode())) {
             workOrderTaskList = chiefWorkOrderTaskService.list(Wraps.<ChiefWorkOrderTask>lbQ().eq(ChiefWorkOrderTask::getValid, Constant.TASK_VALID).in(ChiefWorkOrderTask::getOrderNo, orderNoList));
+        } else if (Constant.ROLE_CODE_DEPT_LEADER.equals(params.getModel().getRoleCode())) {
+            if("处办中".equals(params.getModel().getDisplayStatus()) || "下级已退回".equals(params.getModel().getDisplayStatus()) || "结案待审".equals(params.getModel().getDisplayStatus())) {
+                workOrderTaskList = chiefWorkOrderTaskService.list(Wraps.<ChiefWorkOrderTask>lbQ().eq(ChiefWorkOrderTask::getLeadEmployeeId, params.getModel().getLeadEmployeeId()).eq(ChiefWorkOrderTask::getValid, Constant.TASK_VALID).last("and current_node_code IN ( SELECT t1.node_code FROM role_status_mapping t1 WHERE t1.display_status = '"+params.getModel().getDisplayStatus()+"' AND t1.role_code = '2')").in(ChiefWorkOrderTask::getOrderNo, orderNoList));
+            } else {
+                workOrderTaskList = chiefWorkOrderTaskService.list(Wraps.<ChiefWorkOrderTask>lbQ().eq(ChiefWorkOrderTask::getLeadEmployeeId, params.getModel().getLeadEmployeeId()).eq(ChiefWorkOrderTask::getValid, Constant.TASK_VALID).in(ChiefWorkOrderTask::getOrderNo, orderNoList));
+            }
+
         } else {
             workOrderTaskList = chiefWorkOrderTaskService.list(Wraps.<ChiefWorkOrderTask>lbQ().eq(ChiefWorkOrderTask::getLeadUnitId, params.getModel().getLeadUnitId()).eq(ChiefWorkOrderTask::getValid, Constant.TASK_VALID).in(ChiefWorkOrderTask::getOrderNo, orderNoList));
         }
@@ -118,12 +127,23 @@ public class ChiefWorkOrderItemController extends SuperController<ChiefWorkOrder
             echoService.action(taskResultVOList);
         }
         if (!Constant.ROLE_CODE_TOWN_SPECIALIST.equals(params.getModel().getRoleCode()) && !Constant.ROLE_CODE_TOWN_LEADER.equals(params.getModel().getRoleCode())) {
-            List<BaseEmployeeResultVO> leader = baseEmployeeService.getEmployeeIdByRoleCodeAndOrgId(List.of(Constant.ROLE_CODE_DEPT_LEADER), List.of(Long.valueOf(params.getModel().getLeadUnitId())));
-            List<BaseEmployeeResultVO> director = baseEmployeeService.getEmployeeIdByRoleCodeAndOrgId(List.of(Constant.ROLE_CODE_DEPT_DIRECTOR), List.of(Long.valueOf(params.getModel().getLeadUnitId())));
-            if (!CollectionUtils.isEmpty(leader))
-                taskResultVOList.forEach(t -> t.setDeptLeader(leader.get(0).getRealName()));
-            if (!CollectionUtils.isEmpty(director))
-                taskResultVOList.forEach(t -> t.setDeptDirector(director.get(0).getRealName()));
+            Set<Long> unitIdSet = taskResultVOList.stream().map(ChiefWorkOrderTaskResultVO::getLeadUnitId).collect(Collectors.toSet());
+            List<BaseEmployeeResultVO> directorEmployeeList = baseEmployeeService.getEmployeeIdByRoleCodeAndOrgId(List.of(Constant.ROLE_CODE_DEPT_DIRECTOR), new ArrayList<>(unitIdSet));
+            if (!CollectionUtils.isEmpty(directorEmployeeList)) {
+                Map<Long, String> directorEmployeeMap = directorEmployeeList.stream().collect(Collectors.toMap(BaseEmployeeResultVO::getDirectorUnitId, BaseEmployeeResultVO::getRealName));
+                taskResultVOList.forEach(t -> t.setDeptDirector(directorEmployeeMap.get(t.getLeadUnitId())));
+            }
+            Set<Long> leaderEmployeeIdSet = taskResultVOList.stream().map(ChiefWorkOrderTaskResultVO::getLeadEmployeeId).filter(Objects::nonNull).collect(Collectors.toSet());
+            if (!CollectionUtils.isEmpty(leaderEmployeeIdSet)) {
+                List<BaseEmployee> leaderEmployeeList = baseEmployeeService.findByIds(leaderEmployeeIdSet, null);
+                if (!CollectionUtils.isEmpty(leaderEmployeeList)) {
+                    Map<Long, String> leaderEmployeeMap = leaderEmployeeList.stream().collect(Collectors.toMap(BaseEmployee::getId, BaseEmployee::getRealName));
+                    taskResultVOList.forEach(t -> {
+                        if (null != t.getLeadEmployeeId() && leaderEmployeeMap.containsKey(t.getLeadEmployeeId()))
+                            t.setDeptLeader(leaderEmployeeMap.get(t.getLeadEmployeeId()));
+                    });
+                }
+            }
         }
         taskResultVOList.forEach(t -> t.setCurrentNodeName(Constant.SUB_WORK_ORDER_TYPE_MAP.get(t.getCurrentNodeCode())));
         Map<String, List<ChiefWorkOrderTaskResultVO>> taskMap = taskResultVOList.stream()

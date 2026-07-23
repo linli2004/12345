@@ -319,7 +319,7 @@ public class DefUserServiceImpl extends SuperCacheServiceImpl<DefUserManager, Lo
         }
 
         boolean flag = superManager.updateById(defUser);
-        if (StrUtil.isAllNotEmpty(data.getIdCard(), old.getIdCard()) && !StrUtil.equals(old.getIdCard(), data.getIdCard())) {
+        if (StrUtil.isAllNotEmpty(data.getIdCard(), old.getIdCard()) && !StrUtil.equals(old.getIdCard(), data.getIdCard())&& !StrUtil.equals(old.getMobile(), data.getMobile())) {
             cacheOps.del(DefUserIdCardCacheKeyBuilder.builder(old.getIdCard()));
         }
         return flag;

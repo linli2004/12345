@@ -49,8 +49,9 @@
 
     <select id="getEmployeeIdByRoleCodeAndOrgId" resultType="top.tangyh.lamp.base.vo.result.user.BaseEmployeeResultVO">
         SELECT
-        t4.id,
+        distinct t4.id,
         t4.real_name
+        ,t3.org_id as directorUnitId
         FROM
         base_role t1,
         base_employee_role_rel t2,
@@ -58,7 +59,7 @@
         base_employee t4
         <where>
             <if test="roleCodeList != null and roleCodeList.size() > 0">
-                t1.CODE in
+                t1.code in
                 <foreach close=")" collection="roleCodeList" item="roleCode" open="(" separator=",">
                     #{roleCode}
                 </foreach>

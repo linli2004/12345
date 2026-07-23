@@ -19,13 +19,14 @@
         <result column="valid" jdbcType="VARCHAR" property="valid"/>
         <result column="created_org_id" jdbcType="BIGINT" property="createdOrgId"/>
         <result column="read_random_str" jdbcType="VARCHAR" property="readRandomStr"/>
+        <result column="lead_employee_id" property="leadEmployeeId" />
     </resultMap>
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
         id, order_no, current_node_code, lead_unit_id, co_unit_ids, cc_unit_ids,
         process_deadline, level,valid, created_by, created_time, updated_by, updated_time,
-        created_org_id,read_random_str
+        created_org_id,read_random_str,lead_employee_id
     </sql>
 
 </mapper>

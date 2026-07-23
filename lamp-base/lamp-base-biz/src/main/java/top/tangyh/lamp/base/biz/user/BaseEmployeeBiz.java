@@ -19,6 +19,7 @@ import top.tangyh.basic.database.mybatis.conditions.Wraps;
 import top.tangyh.basic.exception.BizException;
 import top.tangyh.basic.utils.ArgumentAssert;
 import top.tangyh.basic.utils.CollHelper;
+import top.tangyh.lamp.Constant;
 import top.tangyh.lamp.base.entity.system.BaseRole;
 import top.tangyh.lamp.base.entity.user.BaseEmployee;
 import top.tangyh.lamp.base.entity.user.BaseEmployeeRoleRel;
@@ -45,9 +46,8 @@ import top.tangyh.lamp.system.vo.query.tenant.DefUserPageQuery;
 import top.tangyh.lamp.system.vo.save.tenant.DefTenantBindUserVO;
 import top.tangyh.lamp.system.vo.save.tenant.DefUserSaveVO;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 员工大业务层
@@ -102,25 +102,35 @@ public class BaseEmployeeBiz {
         return resultVO;
     }
 
-    public Map<String, String> getCurrentUserMap() {
+    public Map<String, Object> getCurrentUserMap() {
         Long operatorId = ContextUtil.getEmployeeId();
         ArgumentAssert.notNull(operatorId, "请先登录");
-        Map<String, String> responseMap = Maps.newLinkedHashMap();
+        Map<String, Object> responseMap = Maps.newLinkedHashMap();
         responseMap.put("operatorId", operatorId.toString());
         String operatorName = baseEmployeeService.getById(operatorId).getRealName();
         responseMap.put("operatorName", operatorName);
         DefUser defUser = defUserService.getById(ContextUtil.getUserId());
         if (null != defUser) responseMap.put("operatorPhone", defUser.getMobile());
-        List<BaseOrg> orgList = baseOrgService.findOrgByEmployeeId(operatorId);
-        if (CollectionUtils.isNotEmpty(orgList)) {
-            BaseOrg baseOrg = orgList.get(0);
-            responseMap.put("deptId", baseOrg.getId().toString());
-            responseMap.put("deptName", baseOrg.getName());
-        }
         List<BaseEmployeeRoleRel> employeeRoleRelList = baseEmployeeRoleRelService.list(Wraps.<BaseEmployeeRoleRel>lbQ().eq(BaseEmployeeRoleRel::getEmployeeId, operatorId));
         if (CollectionUtils.isNotEmpty(employeeRoleRelList)) {
             BaseRole baseRole = baseRoleService.getById(employeeRoleRelList.get(0).getRoleId());
             responseMap.put("roleCode", baseRole.getCode());
+        }
+        List<BaseOrg> orgList = baseOrgService.findOrgByEmployeeId(operatorId);
+        if (CollectionUtils.isNotEmpty(orgList)) {
+            if(Constant.ROLE_CODE_DEPT_LEADER.equals(responseMap.get("roleCode"))) {
+                List<Map<String, String>> deptMap = orgList.stream().map(org -> {
+                    Map<String, String> dept = new HashMap<>();
+                    dept.put("deptId", org.getId().toString());
+                    dept.put("deptName", org.getName());
+                    return dept;
+                }).collect(Collectors.toList());
+                responseMap.put("deptMap", deptMap);
+            } else {
+                BaseOrg baseOrg = orgList.get(0);
+                responseMap.put("deptId", baseOrg.getId().toString());
+                responseMap.put("deptName", baseOrg.getName());
+            }
         }
         return responseMap;
     }
@@ -375,5 +385,14 @@ public class BaseEmployeeBiz {
 
     public List<BaseEmployeeResultVO> getEmployeeByRoleCode(List<String> roleCodeList) {
         return baseEmployeeService.getEmployeeIdByRoleCodeAndOrgId(roleCodeList, null);
+    }
+
+    public List<BaseEmployeeResultVO> getLeaderEmployeeByOrgId(List<Long> orgIdList) {
+        List<BaseEmployeeResultVO> leaderEmployee = baseEmployeeService.getEmployeeIdByRoleCodeAndOrgId(new ArrayList<>(Collections.singletonList(Constant.ROLE_CODE_DEPT_LEADER)), orgIdList);
+        Set<String> uniqueKeys = new HashSet<>();
+        return leaderEmployee.stream()
+                .filter(e -> uniqueKeys.add(e.getId() + "_" + e.getRealName()))
+                .peek(e -> e.setDirectorUnitId(null))
+                .collect(Collectors.toList());
     }
 }

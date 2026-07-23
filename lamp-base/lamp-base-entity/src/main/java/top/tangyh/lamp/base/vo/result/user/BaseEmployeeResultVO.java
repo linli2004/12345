@@ -115,4 +115,6 @@ public class BaseEmployeeResultVO extends Entity<Long> implements Serializable, 
 
     @Schema(description = "用户信息")
     private SysUser defUser;
+
+    private Long directorUnitId;
 }

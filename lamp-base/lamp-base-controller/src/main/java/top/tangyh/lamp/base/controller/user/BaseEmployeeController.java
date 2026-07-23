@@ -133,7 +133,7 @@ public class BaseEmployeeController extends SuperCacheController<BaseEmployeeSer
     @Operation(summary = "查询登录用户的id,名称，联系电话，组织信息")
     @PostMapping(value = "/getCurrentEmployee")
     @WebLog("查询登录用户的id,名称，联系电话，组织信息")
-    public R<Map<String, String>> getCurrentEmployee() {
+    public R<Map<String, Object>> getCurrentEmployee() {
         return R.success(baseEmployeeBiz.getCurrentUserMap());
     }
 
@@ -142,5 +142,12 @@ public class BaseEmployeeController extends SuperCacheController<BaseEmployeeSer
     @WebLog("查询用户信息根据roleCode")
     public R<List<BaseEmployeeResultVO>> getEmployeeByRoleCode(@RequestBody List<String> roleCodeList) {
         return R.success(baseEmployeeBiz.getEmployeeByRoleCode(roleCodeList));
+    }
+
+    @Operation(summary = "查询分管领导用户信息")
+    @PostMapping(value = "/getLeaderEmployeeByOrgId")
+    @WebLog("查询分管领导用户信息")
+    public R<List<BaseEmployeeResultVO>> getLeaderEmployeeByOrgId(@RequestBody List<Long> orgIdList) {
+        return R.success(baseEmployeeBiz.getLeaderEmployeeByOrgId(orgIdList));
     }
 }

@@ -232,6 +232,7 @@ public class NormalWorkOrderTaskServiceImpl extends SuperServiceImpl<NormalWorkO
         //更改normal_work_order_task node_code 5.3 基层退回
         return superManager.update(new NormalWorkOrderTask(), Wrappers.<NormalWorkOrderTask>lambdaUpdate()
                 .set(NormalWorkOrderTask::getCurrentNodeCode, Constant.NODE_CODE_BASIC_BACK)
+                .set(NormalWorkOrderTask::getLeadEmployeeId, backVO.getLeadEmployeeId())
                 .eq(NormalWorkOrderTask::getValid, Constant.TASK_VALID)
                 .eq(NormalWorkOrderTask::getId, backVO.getId()));
     }
@@ -249,6 +250,7 @@ public class NormalWorkOrderTaskServiceImpl extends SuperServiceImpl<NormalWorkO
         //更改normal_work_order_task node_code 5.2 基层办结
         return superManager.update(new NormalWorkOrderTask(), Wrappers.<NormalWorkOrderTask>lambdaUpdate()
                 .set(NormalWorkOrderTask::getCurrentNodeCode, Constant.NODE_CODE_BASIC_FINAL)
+                .set(NormalWorkOrderTask::getLeadEmployeeId, finishVO.getLeadEmployeeId())
                 .eq(NormalWorkOrderTask::getValid, Constant.TASK_VALID)
                 .eq(NormalWorkOrderTask::getId, finishVO.getId()));
     }
@@ -266,6 +268,7 @@ public class NormalWorkOrderTaskServiceImpl extends SuperServiceImpl<NormalWorkO
         workOrderDynamicManager.save(dynamicTemp);
         return superManager.update(new NormalWorkOrderTask(), Wrappers.<NormalWorkOrderTask>lambdaUpdate()
                 .set(NormalWorkOrderTask::getCurrentNodeCode, nodeCode)
+                .set(NormalWorkOrderTask::getLeadEmployeeId, auditVO.getLeadEmployeeId())
                 .eq(NormalWorkOrderTask::getValid, Constant.TASK_VALID)
                 .eq(NormalWorkOrderTask::getId, auditVO.getId()));
     }
@@ -315,6 +318,13 @@ public class NormalWorkOrderTaskServiceImpl extends SuperServiceImpl<NormalWorkO
                     list.forEach(t -> t.setLevel(Constant.TASK_LEVEL_1));
                     superManager.updateBatchById(list);
                 }
+            }
+            //如果是 结案12.2 不通过,并且是任意结案 本条task level置1
+            if (Constant.NODE_CODE_BASIC_FINAL_LEADER_REJECT.equals(nodeCode) && taskTempList.size()>1) {
+                superManager.update(new NormalWorkOrderTask(), Wrappers.<NormalWorkOrderTask>lambdaUpdate()
+                        .set(NormalWorkOrderTask::getLevel, Constant.TASK_LEVEL_1)
+                        .eq(NormalWorkOrderTask::getValid, Constant.TASK_VALID)
+                        .eq(NormalWorkOrderTask::getId, auditVO.getId()));
             }
         }
         return true;
@@ -368,9 +378,12 @@ public class NormalWorkOrderTaskServiceImpl extends SuperServiceImpl<NormalWorkO
         ArgumentAssert.notEmpty(taskTempList, "工单编号有误");
         List<String> employeeIdList = Lists.newArrayList();
         String titleTemplate = "工单【%s】已撤回";
-        List<BaseEmployeeResultVO> employeeList = baseEmployeeService.getEmployeeIdByRoleCodeAndOrgId(Arrays.asList(Constant.ROLE_CODE_DEPT_LEADER, Constant.ROLE_CODE_DEPT_DIRECTOR, Constant.ROLE_CODE_DEPT_SPECIALIST), taskTempList.stream().map(NormalWorkOrderTask::getLeadUnitId).collect(Collectors.toList()));
+        List<BaseEmployeeResultVO> employeeList = baseEmployeeService.getEmployeeIdByRoleCodeAndOrgId(Arrays.asList(Constant.ROLE_CODE_DEPT_DIRECTOR, Constant.ROLE_CODE_DEPT_SPECIALIST), taskTempList.stream().map(NormalWorkOrderTask::getLeadUnitId).collect(Collectors.toList()));
         if (!CollectionUtils.isEmpty(employeeList))
             employeeIdList.addAll(employeeList.stream().map(e -> String.valueOf(e.getId())).toList());
+        Set<String> leaderEmployeeIdSet = taskTempList.stream().map(NormalWorkOrderTask::getLeadEmployeeId).filter(Objects::nonNull).map(String::valueOf).collect(Collectors.toSet());
+        if (!CollectionUtils.isEmpty(leaderEmployeeIdSet))
+            employeeIdList.addAll(leaderEmployeeIdSet);
         NormalWorkOrder workOrderTemp = normalWorkOrderManager.getOne(Wraps.<NormalWorkOrder>lbQ().eq(NormalWorkOrder::getOrderNo, revokeVO.getOrderNo()));
         ExtendMsgPublishVO data = new ExtendMsgPublishVO();
         data.setTitle(String.format(titleTemplate, workOrderTemp.getOrderTitle()));
@@ -404,9 +417,11 @@ public class NormalWorkOrderTaskServiceImpl extends SuperServiceImpl<NormalWorkO
         taskTempList.forEach(taskTemp -> {
             String roleCode = NoticeNodeCodeEnum.getRoleCode(taskTemp.getCurrentNodeCode());
             if (StringUtils.isNotBlank(roleCode)) {
-                List<BaseEmployeeResultVO> employeeList = baseEmployeeService.getEmployeeIdByRoleCodeAndOrgId(List.of(roleCode), List.of(taskTemp.getLeadUnitId()));
-                if (!CollectionUtils.isEmpty(employeeList)) {
-                    employeeIdList.addAll(employeeList.stream().map(e -> String.valueOf(e.getId())).toList());
+                if(Constant.ROLE_CODE_DEPT_LEADER.equals(roleCode)) {
+                    employeeIdList.add(taskTemp.getLeadEmployeeId().toString());
+                }else {
+                    List<BaseEmployeeResultVO> employeeList = baseEmployeeService.getEmployeeIdByRoleCodeAndOrgId(List.of(roleCode), List.of(taskTemp.getLeadUnitId()));
+                    if (!CollectionUtils.isEmpty(employeeList)) employeeIdList.addAll(employeeList.stream().map(e -> String.valueOf(e.getId())).toList());
                 }
             }
         });

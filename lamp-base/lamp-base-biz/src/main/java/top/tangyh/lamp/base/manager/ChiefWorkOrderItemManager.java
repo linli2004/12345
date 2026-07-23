@@ -31,9 +31,9 @@ public interface ChiefWorkOrderItemManager extends SuperManager<ChiefWorkOrderIt
 
     IPage<ChiefWorkOrderItemResultVO> selectNotCommentResultVO(IPage<ChiefWorkOrderItem> page, Wrapper<ChiefWorkOrderItem> wrapper, ChiefWorkOrderItemPageQuery model);
 
-    Long getWorkOrderCount(String displayStatus, String roleCode, String leadUnitId);
+    Long getWorkOrderCount(String displayStatus, String roleCode, String leadUnitId, String leadEmployeeId);
 
-    List<SignCategoryIsNullNormalWorkOrderResultVO> groupByCategoryWorkOrderCount(String roleCode, String leadUnitId);
+    List<SignCategoryIsNullNormalWorkOrderResultVO> groupByCategoryWorkOrderCount(String roleCode, String leadUnitId, String leadEmployeeId);
 
     Long signCategoryIsNull();
 

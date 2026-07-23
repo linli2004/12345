@@ -333,20 +333,22 @@ public class ChiefWorkOrderItemServiceImpl extends SuperServiceImpl<ChiefWorkOrd
     @Override
     public void getFinishOrBackContentJson(List<ChiefWorkOrderItemResultVO> records, ChiefWorkOrderItemPageQuery model) {
         if (CollectionUtils.isEmpty(records)) return;
-        List<String> orderNoList = records.stream().map(ChiefWorkOrderItemResultVO::getWorkOrderNo).collect(Collectors.toList());
+        List<String> orderNoList = records.stream().map(item -> String.valueOf(item.getId())).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(orderNoList)) {
             setContentJson(records, model.getDisplayStatus(), orderNoList);
         }
     }
 
     @Override
-    public Long getWorkOrderCount(String displayStatus, String roleCode, String leadUnitId) {
-        return superManager.getWorkOrderCount(displayStatus, roleCode, leadUnitId);
+    public Long getWorkOrderCount(String displayStatus, String roleCode, String leadUnitId, String leadEmployeeId) {
+        return superManager.getWorkOrderCount(displayStatus, roleCode, leadUnitId, leadEmployeeId);
+
     }
 
     @Override
-    public List<SignCategoryIsNullNormalWorkOrderResultVO> groupByCategoryWorkOrderCount(String roleCode, String leadUnitId) {
-        return superManager.groupByCategoryWorkOrderCount(roleCode, leadUnitId);
+    public List<SignCategoryIsNullNormalWorkOrderResultVO> groupByCategoryWorkOrderCount(String roleCode, String leadUnitId, String leadEmployeeId) {
+        return superManager.groupByCategoryWorkOrderCount(roleCode, leadUnitId, leadEmployeeId);
+
     }
 
     @Override

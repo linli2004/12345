@@ -82,5 +82,9 @@ public class NormalWorkOrderTask extends Entity<Long> {
     private Long createdOrgId;
     private String readRandomStr;
 
-
+    /**
+     * 分管领导id
+     */
+    @TableField(value = "lead_employee_id", condition = EQUAL)
+    private Long leadEmployeeId;
 }

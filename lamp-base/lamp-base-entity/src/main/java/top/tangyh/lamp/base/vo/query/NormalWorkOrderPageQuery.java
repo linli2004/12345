@@ -214,4 +214,6 @@ public class NormalWorkOrderPageQuery implements Serializable {
     private String orderFlag;
     private String currentDeptId;
 
+    @Schema(description = "分管领导id")
+    private Long leadEmployeeId;
 }

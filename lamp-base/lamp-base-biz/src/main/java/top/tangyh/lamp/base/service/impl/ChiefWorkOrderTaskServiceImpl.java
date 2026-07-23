@@ -157,10 +157,17 @@ public class ChiefWorkOrderTaskServiceImpl extends SuperServiceImpl<ChiefWorkOrd
             dynamicTemp.setNodeCode(Constant.NODE_CODE_TOWN_BACK);
             dynamicTemp.setProcessType(Constant.PROCESS_TYPE_MAP.get(Constant.NODE_CODE_TOWN_BACK));
             workOrderDynamicList.add(dynamicTemp);
-            updateChiefWorkOrderStatus(backVO.getOrderNo());
+            //updateChiefWorkOrderStatus(backVO.getOrderNo());
         });
         chiefWorkOrderDynamicManager.saveBatch(workOrderDynamicList);
-        return superManager.updateBatchById(normalWorkOrderTaskList);
+        boolean result =  superManager.updateBatchById(normalWorkOrderTaskList);
+        if(result){
+            backVOList.stream()
+                    .map(NormalWorkOrderTaskActionVO::getOrderNo)
+                    .distinct()
+                    .forEach(this::updateChiefWorkOrderStatus);
+        }
+        return result;
     }
 
     @Override
@@ -189,8 +196,13 @@ public class ChiefWorkOrderTaskServiceImpl extends SuperServiceImpl<ChiefWorkOrd
         workOrderDynamicList.add(dynamicTemp);
         superManager.updateBatchById(normalWorkOrderTaskList);
         chiefWorkOrderDynamicManager.saveBatch(workOrderDynamicList);
-        updateChiefWorkOrderStatus(finishVO.getOrderNo());
-        return chiefWorkOrderItemManager.updateBatchById(workOrderList);
+        //updateChiefWorkOrderStatus(finishVO.getOrderNo());
+        boolean result =  chiefWorkOrderItemManager.updateBatchById(workOrderList);
+        if(result){
+            updateChiefWorkOrderStatus(finishVO.getOrderNo());
+
+        }
+        return result;
     }
 
     @Override
@@ -226,6 +238,7 @@ public class ChiefWorkOrderTaskServiceImpl extends SuperServiceImpl<ChiefWorkOrd
         //更改normal_work_order_task node_code 5.3 基层退回
         return superManager.update(new ChiefWorkOrderTask(), Wrappers.<ChiefWorkOrderTask>lambdaUpdate()
                 .set(ChiefWorkOrderTask::getCurrentNodeCode, Constant.NODE_CODE_BASIC_BACK)
+                .set(ChiefWorkOrderTask::getLeadEmployeeId, backVO.getLeadEmployeeId())
                 .eq(ChiefWorkOrderTask::getValid, Constant.TASK_VALID)
                 .eq(ChiefWorkOrderTask::getId, backVO.getId()));
     }
@@ -243,6 +256,7 @@ public class ChiefWorkOrderTaskServiceImpl extends SuperServiceImpl<ChiefWorkOrd
         //更改normal_work_order_task node_code 5.2 基层办结
         return superManager.update(new ChiefWorkOrderTask(), Wrappers.<ChiefWorkOrderTask>lambdaUpdate()
                 .set(ChiefWorkOrderTask::getCurrentNodeCode, Constant.NODE_CODE_BASIC_FINAL)
+                .set(ChiefWorkOrderTask::getLeadEmployeeId, finishVO.getLeadEmployeeId())
                 .eq(ChiefWorkOrderTask::getValid, Constant.TASK_VALID)
                 .eq(ChiefWorkOrderTask::getId, finishVO.getId()));
     }
@@ -260,6 +274,7 @@ public class ChiefWorkOrderTaskServiceImpl extends SuperServiceImpl<ChiefWorkOrd
         chiefWorkOrderDynamicManager.save(dynamicTemp);
         return superManager.update(new ChiefWorkOrderTask(), Wrappers.<ChiefWorkOrderTask>lambdaUpdate()
                 .set(ChiefWorkOrderTask::getCurrentNodeCode, nodeCode)
+                .set(ChiefWorkOrderTask::getLeadEmployeeId, auditVO.getLeadEmployeeId())
                 .eq(ChiefWorkOrderTask::getValid, Constant.TASK_VALID)
                 .eq(ChiefWorkOrderTask::getId, auditVO.getId()));
     }
@@ -310,6 +325,13 @@ public class ChiefWorkOrderTaskServiceImpl extends SuperServiceImpl<ChiefWorkOrd
                     superManager.updateBatchById(list);
                 }
             }
+            //如果是 结案12.2 不通过,并且是任意结案 本条task level置1
+            if (Constant.NODE_CODE_BASIC_FINAL_LEADER_REJECT.equals(nodeCode) && taskTempList.size()>1) {
+                superManager.update(new ChiefWorkOrderTask(), Wrappers.<ChiefWorkOrderTask>lambdaUpdate()
+                        .set(ChiefWorkOrderTask::getLevel, Constant.TASK_LEVEL_1)
+                        .eq(ChiefWorkOrderTask::getValid, Constant.TASK_VALID)
+                        .eq(ChiefWorkOrderTask::getId, auditVO.getId()));
+            }
         }
         return true;
     }
@@ -325,12 +347,17 @@ public class ChiefWorkOrderTaskServiceImpl extends SuperServiceImpl<ChiefWorkOrd
         dynamicTemp.setNodeCode(Constant.NODE_CODE_TOWN_BASIC_BACK);
         dynamicTemp.setProcessType(Constant.PROCESS_TYPE_MAP.get(Constant.NODE_CODE_TOWN_BASIC_BACK));
         chiefWorkOrderDynamicManager.save(dynamicTemp);
-        updateChiefWorkOrderStatus(backVO.getOrderNo());
-        return superManager.update(new ChiefWorkOrderTask(), Wrappers.<ChiefWorkOrderTask>lambdaUpdate()
+        //updateChiefWorkOrderStatus(backVO.getOrderNo());
+        boolean result =  superManager.update(new ChiefWorkOrderTask(), Wrappers.<ChiefWorkOrderTask>lambdaUpdate()
                 .set(ChiefWorkOrderTask::getCurrentNodeCode, Constant.NODE_CODE_TOWN_BASIC_BACK)
                 .set(ChiefWorkOrderTask::getLevel, Constant.TASK_LEVEL_0)
                 .eq(ChiefWorkOrderTask::getValid, Constant.TASK_VALID)
                 .eq(ChiefWorkOrderTask::getOrderNo, backVO.getOrderNo()));
+        if(result){
+            updateChiefWorkOrderStatus(backVO.getOrderNo());
+
+        }
+        return result;
     }
 
     @Override
@@ -349,12 +376,17 @@ public class ChiefWorkOrderTaskServiceImpl extends SuperServiceImpl<ChiefWorkOrd
         workOrderTemp.setOrderCategoryName(finishVO.getOrderCategoryName());
         chiefWorkOrderItemManager.updateById(workOrderTemp);
         chiefWorkOrderDynamicManager.save(dynamicTemp);
-        updateChiefWorkOrderStatus(finishVO.getOrderNo());
-        return superManager.update(new ChiefWorkOrderTask(), Wrappers.<ChiefWorkOrderTask>lambdaUpdate()
+        //updateChiefWorkOrderStatus(finishVO.getOrderNo());
+        boolean result =  superManager.update(new ChiefWorkOrderTask(), Wrappers.<ChiefWorkOrderTask>lambdaUpdate()
                 .set(ChiefWorkOrderTask::getCurrentNodeCode, Constant.NODE_CODE_TOWN_BASIC_FINAL)
                 .set(ChiefWorkOrderTask::getLevel, Constant.TASK_LEVEL_0)
                 .eq(ChiefWorkOrderTask::getValid, Constant.TASK_VALID)
                 .eq(ChiefWorkOrderTask::getOrderNo, finishVO.getOrderNo()));
+        if(result){
+            updateChiefWorkOrderStatus(finishVO.getOrderNo());
+
+        }
+        return result;
     }
 
     @Override
@@ -364,9 +396,12 @@ public class ChiefWorkOrderTaskServiceImpl extends SuperServiceImpl<ChiefWorkOrd
         ArgumentAssert.notEmpty(taskTempList, "工单编号有误");
         List<String> employeeIdList = Lists.newArrayList();
         String titleTemplate = "工单【%s】已撤回";
-        List<BaseEmployeeResultVO> employeeList = baseEmployeeService.getEmployeeIdByRoleCodeAndOrgId(Arrays.asList(Constant.ROLE_CODE_DEPT_LEADER, Constant.ROLE_CODE_DEPT_DIRECTOR, Constant.ROLE_CODE_DEPT_SPECIALIST), taskTempList.stream().map(ChiefWorkOrderTask::getLeadUnitId).collect(Collectors.toList()));
+        List<BaseEmployeeResultVO> employeeList = baseEmployeeService.getEmployeeIdByRoleCodeAndOrgId(Arrays.asList(Constant.ROLE_CODE_DEPT_DIRECTOR, Constant.ROLE_CODE_DEPT_SPECIALIST), taskTempList.stream().map(ChiefWorkOrderTask::getLeadUnitId).collect(Collectors.toList()));
         if (!CollectionUtils.isEmpty(employeeList))
             employeeIdList.addAll(employeeList.stream().map(e -> String.valueOf(e.getId())).toList());
+        Set<String> leaderEmployeeIdSet = taskTempList.stream().map(ChiefWorkOrderTask::getLeadEmployeeId).filter(Objects::nonNull).map(String::valueOf).collect(Collectors.toSet());
+        if (!CollectionUtils.isEmpty(leaderEmployeeIdSet))
+            employeeIdList.addAll(leaderEmployeeIdSet);
         ChiefWorkOrderItem workOrderTemp = chiefWorkOrderItemManager.getOne(Wraps.<ChiefWorkOrderItem>lbQ().eq(ChiefWorkOrderItem::getId, revokeVO.getOrderNo()));
         ExtendMsgPublishVO data = new ExtendMsgPublishVO();
         data.setTitle(String.format(titleTemplate, workOrderTemp.getTitle()));
@@ -400,9 +435,12 @@ public class ChiefWorkOrderTaskServiceImpl extends SuperServiceImpl<ChiefWorkOrd
         taskTempList.forEach(taskTemp -> {
             String roleCode = NoticeNodeCodeEnum.getRoleCode(taskTemp.getCurrentNodeCode());
             if (StringUtils.isNotBlank(roleCode)) {
-                List<BaseEmployeeResultVO> employeeList = baseEmployeeService.getEmployeeIdByRoleCodeAndOrgId(List.of(roleCode), List.of(taskTemp.getLeadUnitId()));
-                if (!CollectionUtils.isEmpty(employeeList)) {
-                    employeeIdList.addAll(employeeList.stream().map(e -> String.valueOf(e.getId())).toList());
+                if(Constant.ROLE_CODE_DEPT_LEADER.equals(roleCode)) {
+                    employeeIdList.add(taskTemp.getLeadEmployeeId().toString());
+                }else {
+                    List<BaseEmployeeResultVO> employeeList = baseEmployeeService.getEmployeeIdByRoleCodeAndOrgId(List.of(roleCode), List.of(taskTemp.getLeadUnitId()));
+                    if (!CollectionUtils.isEmpty(employeeList)) employeeIdList.addAll(employeeList.stream().map(e -> String.valueOf(e.getId())).toList());
+
                 }
             }
         });
@@ -510,7 +548,7 @@ public class ChiefWorkOrderTaskServiceImpl extends SuperServiceImpl<ChiefWorkOrd
         ChiefWorkOrderItemPageQuery chiefWorkOrderItemPageQuery = new ChiefWorkOrderItemPageQuery();
         chiefWorkOrderItemPageQuery.setOrderNoList(orderNoList);
         Integer count = chiefWorkOrderItemManager.selectCountResultVO(chiefWorkOrderItemPageQuery);
-        if (count == orderNoList.size() - 1) {
+        if (count == orderNoList.size()) {
             chiefWorkOrderManager.update(Wrappers.<ChiefWorkOrder>lambdaUpdate()
                     .eq(ChiefWorkOrder::getBatchNo, batchNo)
                     .set(ChiefWorkOrder::getStatus, Constant.CHIEF_ORDER_FINISH));

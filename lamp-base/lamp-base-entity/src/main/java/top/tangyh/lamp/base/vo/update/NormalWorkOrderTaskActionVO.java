@@ -149,5 +149,6 @@ public class NormalWorkOrderTaskActionVO implements Serializable {
     @Schema(description = "审批事项:1-结案;2-退回")
     String auditType;
 
-
+    @Schema(description = "分管领导id")
+    private Long leadEmployeeId;
 }

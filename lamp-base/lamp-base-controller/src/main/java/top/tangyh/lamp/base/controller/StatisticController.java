@@ -34,18 +34,18 @@ public class StatisticController {
 
     @GetMapping("/getWorkOrderStatistic")
     @Operation(summary = "统计数据", description = "统计数据")
-    public R<Map<String, Object>> getWorkOrderStatistic(@RequestParam String roleCode, @RequestParam String leadUnitId) {
+    public R<Map<String, Object>> getWorkOrderStatistic(@RequestParam String roleCode, @RequestParam(required = false) String leadUnitId, @RequestParam(required = false) String leadEmployeeId) {
         Map<String, Object> responseMap = Maps.newLinkedHashMap();
         Map<String, Object> nomalCountMap = Maps.newLinkedHashMap();
-        nomalCountMap.put("待签收", normalWorkOrderService.getWorkOrderCount("待签收", roleCode, leadUnitId));
-        nomalCountMap.put("处办中", normalWorkOrderService.getWorkOrderCount("处办中", roleCode, leadUnitId));
-        nomalCountMap.put("下级已退回", normalWorkOrderService.getWorkOrderCount("下级已退回", roleCode, leadUnitId));
-        nomalCountMap.put("下派跟踪", normalWorkOrderService.getWorkOrderCount("下派跟踪", roleCode, leadUnitId));
-        nomalCountMap.put("结案待审", normalWorkOrderService.getWorkOrderCount("结案待审", roleCode, leadUnitId));
-        nomalCountMap.put("办结", normalWorkOrderService.getWorkOrderCount("办结", roleCode, leadUnitId));
-        nomalCountMap.put("已退回", normalWorkOrderService.getWorkOrderCount("已退回", roleCode, leadUnitId));
+        nomalCountMap.put("待签收", normalWorkOrderService.getWorkOrderCount("待签收", roleCode, leadUnitId, leadEmployeeId));
+        nomalCountMap.put("处办中", normalWorkOrderService.getWorkOrderCount("处办中", roleCode, leadUnitId, leadEmployeeId));
+        nomalCountMap.put("下级已退回", normalWorkOrderService.getWorkOrderCount("下级已退回", roleCode, leadUnitId, leadEmployeeId));
+        nomalCountMap.put("下派跟踪", normalWorkOrderService.getWorkOrderCount("下派跟踪", roleCode, leadUnitId, leadEmployeeId));
+        nomalCountMap.put("结案待审", normalWorkOrderService.getWorkOrderCount("结案待审", roleCode, leadUnitId, leadEmployeeId));
+        nomalCountMap.put("办结", normalWorkOrderService.getWorkOrderCount("办结", roleCode, leadUnitId, leadEmployeeId));
+        nomalCountMap.put("已退回", normalWorkOrderService.getWorkOrderCount("已退回", roleCode, leadUnitId, leadEmployeeId));
         responseMap.put("常规工单数量", nomalCountMap);
-        List<SignCategoryIsNullNormalWorkOrderResultVO> groupCategoryList = normalWorkOrderService.groupByCategoryWorkOrderCount(roleCode, leadUnitId);
+        List<SignCategoryIsNullNormalWorkOrderResultVO> groupCategoryList = normalWorkOrderService.groupByCategoryWorkOrderCount(roleCode, leadUnitId, leadEmployeeId);
         Map<String, Long> groupCategoryMap = groupCategoryList.stream().collect(Collectors.toMap(
                 SignCategoryIsNullNormalWorkOrderResultVO::getCategoryName,
                 SignCategoryIsNullNormalWorkOrderResultVO::getTotal));
@@ -61,17 +61,17 @@ public class StatisticController {
 
     @GetMapping("/getChiefWorkOrderStatistic")
     @Operation(summary = "督办工单统计数据", description = "督办工单统计数据")
-    public R<Map<String, Object>> getChiefWorkOrderStatistic(@RequestParam String roleCode, @RequestParam String leadUnitId) {
+    public R<Map<String, Object>> getChiefWorkOrderStatistic(@RequestParam String roleCode, @RequestParam(required = false) String leadUnitId, @RequestParam(required = false) String leadEmployeeId) {
         Map<String, Object> responseMap = Maps.newLinkedHashMap();
         Map<String, Object> chiefCountMap = Maps.newLinkedHashMap();
-        chiefCountMap.put("处办中", chiefWorkOrderItemService.getWorkOrderCount("处办中", roleCode, leadUnitId));
-        chiefCountMap.put("下级已退回", chiefWorkOrderItemService.getWorkOrderCount("下级已退回", roleCode, leadUnitId));
-        chiefCountMap.put("下派跟踪", chiefWorkOrderItemService.getWorkOrderCount("下派跟踪", roleCode, leadUnitId));
-        chiefCountMap.put("结案待审", chiefWorkOrderItemService.getWorkOrderCount("结案待审", roleCode, leadUnitId));
-        chiefCountMap.put("办结", chiefWorkOrderItemService.getWorkOrderCount("办结", roleCode, leadUnitId));
-        chiefCountMap.put("已退回", chiefWorkOrderItemService.getWorkOrderCount("已退回", roleCode, leadUnitId));
+        chiefCountMap.put("处办中", chiefWorkOrderItemService.getWorkOrderCount("处办中", roleCode, leadUnitId,leadEmployeeId));
+        chiefCountMap.put("下级已退回", chiefWorkOrderItemService.getWorkOrderCount("下级已退回", roleCode, leadUnitId,leadEmployeeId));
+        chiefCountMap.put("下派跟踪", chiefWorkOrderItemService.getWorkOrderCount("下派跟踪", roleCode, leadUnitId,leadEmployeeId));
+        chiefCountMap.put("结案待审", chiefWorkOrderItemService.getWorkOrderCount("结案待审", roleCode, leadUnitId,leadEmployeeId));
+        chiefCountMap.put("办结", chiefWorkOrderItemService.getWorkOrderCount("办结", roleCode, leadUnitId,leadEmployeeId));
+        chiefCountMap.put("已退回", chiefWorkOrderItemService.getWorkOrderCount("已退回", roleCode, leadUnitId,leadEmployeeId));
         responseMap.put("督办工单数量", chiefCountMap);
-        List<SignCategoryIsNullNormalWorkOrderResultVO> groupCategoryList = chiefWorkOrderItemService.groupByCategoryWorkOrderCount(roleCode, leadUnitId);
+        List<SignCategoryIsNullNormalWorkOrderResultVO> groupCategoryList = chiefWorkOrderItemService.groupByCategoryWorkOrderCount(roleCode, leadUnitId,leadEmployeeId);
         Map<String, Long> groupCategoryMap = groupCategoryList.stream().collect(Collectors.toMap(
                 SignCategoryIsNullNormalWorkOrderResultVO::getCategoryName,
                 SignCategoryIsNullNormalWorkOrderResultVO::getTotal));

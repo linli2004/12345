@@ -39,3 +39,5 @@ third-party/nacos/data/
 third-party/nacos/work/
 
 01-docs/分享/
+.flattened-pom.xml
+hs_err_*.log

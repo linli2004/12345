@@ -36,9 +36,9 @@ public interface NormalWorkOrderService extends SuperService<Long, NormalWorkOrd
 
     void getFinishOrBackContentJson(List<NormalWorkOrderResultVO> resultVOList, NormalWorkOrderPageQuery model);
 
-    Long getWorkOrderCount(String displayStatus, String roleCode, String leadUnitId);
+    Long getWorkOrderCount(String displayStatus, String roleCode, String leadUnitId, String leadEmployeeId);
 
-    List<SignCategoryIsNullNormalWorkOrderResultVO> groupByCategoryWorkOrderCount(String roleCode, String leadUnitId);
+    List<SignCategoryIsNullNormalWorkOrderResultVO> groupByCategoryWorkOrderCount(String roleCode, String leadUnitId, String leadEmployeeId);
 
     Long signCategoryIsNull();
 

@@ -87,7 +87,8 @@
                     </when>
                     <otherwise>
                         t2.current_node_code IN ( SELECT t1.node_code FROM role_status_mapping t1 WHERE t1.display_status = #{model.displayStatus} AND t1.role_code = #{model.roleCode} )
-                        <if test='model.roleCode != null and (model.roleCode != "1" and model.roleCode != "0")'>AND t2.lead_unit_id = #{model.leadUnitId} </if>
+                        <if test='model.roleCode != null and (model.roleCode != "1" and model.roleCode != "0" and model.roleCode != "2")'>AND t2.lead_unit_id = #{model.leadUnitId} </if>
+                        <if test="model.roleCode != null and model.roleCode eq '2'.toString()"> AND t2.lead_employee_id = #{model.leadEmployeeId} </if>
                         and t2.valid = '1' <if test="model.roleCode != null and (model.roleCode eq '1'.toString() or model.roleCode eq '0'.toString())"> and t2.level = '0'</if>
                     </otherwise>
                 </choose>
@@ -119,7 +120,8 @@
         normal_work_order_task t2
         WHERE
         t2.current_node_code IN ( SELECT t1.node_code FROM role_status_mapping t1 WHERE t1.display_status = #{displayStatus} AND t1.role_code = #{roleCode} )
-        <if test='roleCode != null and (roleCode != "1" and roleCode != "0")'>AND t2.lead_unit_id = #{leadUnitId} </if>
+        <if test='roleCode != null and (roleCode != "1" and roleCode != "0" and roleCode != "2")'>AND t2.lead_unit_id = #{leadUnitId} </if>
+        <if test="roleCode != null and roleCode eq '2'.toString()"> AND t2.lead_employee_id = #{leadEmployeeId} </if>
         and t2.valid = '1' <if test="roleCode != null and (roleCode eq '1'.toString() or roleCode eq '0'.toString())"> and t2.level = '0'</if>
         ) t4 ON t3.order_no = t4.task_order_no
     </select>
@@ -136,7 +138,8 @@
         FROM
         normal_work_order_task t2
         WHERE 1 = 1
-        <if test='roleCode != null and (roleCode != "1" and roleCode != "0")'>AND t2.lead_unit_id = #{leadUnitId} </if>
+        <if test='roleCode != null and (roleCode != "1" and roleCode != "0" and roleCode != "2")'>AND t2.lead_unit_id = #{leadUnitId} </if>
+        <if test="roleCode != null and roleCode eq '2'.toString()"> AND t2.lead_employee_id = #{leadEmployeeId} </if>
         and t2.valid = '1' <if test="roleCode != null and (roleCode eq '1'.toString() or roleCode eq '0'.toString())"> and t2.level = '0'</if>
         ) t4 ON t3.order_no = t4.task_order_no
         where t3.order_category_name is not null
