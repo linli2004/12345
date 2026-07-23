@@ -94,7 +94,13 @@ public class ChiefWorkOrderServiceImpl extends SuperServiceImpl<ChiefWorkOrderMa
                 .build();
         superManager.save(chiefWorkOrder);
 
-        // 3. 解析Excel并保存子表信息
+        // 3. 查询已有的工单（按 work_order_no 全局去重）
+        List<ChiefWorkOrderItem> existingItemList = chiefWorkOrderItemManager.list(
+                Wraps.<ChiefWorkOrderItem>lbQ().isNotNull(ChiefWorkOrderItem::getWorkOrderNo));
+        Map<String, ChiefWorkOrderItem> existingItemMap = existingItemList.stream()
+                .collect(Collectors.toMap(ChiefWorkOrderItem::getWorkOrderNo, i -> i, (v1, v2) -> v2));
+
+        // 4. 解析Excel并保存子表信息
         List<ChiefWorkOrderItem> itemList = Lists.newArrayList();
         List<NormalWorkOrderTask> normalWorkOrderTaskList = Lists.newArrayList();
         List<WorkOrderDynamic> workOrderDynamicList = Lists.newArrayList();
@@ -102,13 +108,25 @@ public class ChiefWorkOrderServiceImpl extends SuperServiceImpl<ChiefWorkOrderMa
             for (ChiefWorkOrderItemExcel excel : dataList) {
                 ChiefWorkOrderItem item = BeanUtil.toBean(excel, ChiefWorkOrderItem.class);
                 item.setBatchNo(batchNo);
-                
+
                 // 处理LocalDateTime字段
-                item.setId(uidGenerator.getUid());
                 item.setSupervisionReturnTime(parseDateTime(excel.getSupervisionReturnTime()));
                 item.setSupervisionFinishTime(parseDateTime(excel.getSupervisionFinishTime()));
                 item.setPlanFinishTime(parseDateTime(excel.getPlanFinishTime()));
-                
+
+                // 按 work_order_no 去重：已存在则更新，否则新增
+                ChiefWorkOrderItem existing = existingItemMap.get(excel.getWorkOrderNo());
+                if (existing != null) {
+                    item.setId(existing.getId());
+                    // 旧task置无效
+                    List<NormalWorkOrderTask> oldTaskList = normalWorkOrderTaskManager.list(
+                            Wraps.<NormalWorkOrderTask>lbQ().eq(NormalWorkOrderTask::getOrderNo, String.valueOf(existing.getId())));
+                    oldTaskList.forEach(t -> t.setValid(Constant.TASK_INVALID));
+                    normalWorkOrderTaskList.addAll(oldTaskList);
+                } else {
+                    item.setId(uidGenerator.getUid());
+                }
+
                 itemList.add(item);
 
                 NormalWorkOrderTask taskTemp = new NormalWorkOrderTask();
@@ -133,9 +151,10 @@ public class ChiefWorkOrderServiceImpl extends SuperServiceImpl<ChiefWorkOrderMa
         })).headRowNumber(2).sheet().doRead();
 
         if (!itemList.isEmpty()) {
-            chiefWorkOrderItemManager.saveBatch(itemList);
+            // 混合同一批次的insert和update
+            chiefWorkOrderItemManager.saveOrUpdateBatch(itemList);
+            normalWorkOrderTaskManager.saveOrUpdateBatch(normalWorkOrderTaskList);
             workOrderDynamicManager.saveBatch(workOrderDynamicList);
-            normalWorkOrderTaskManager.saveBatch(normalWorkOrderTaskList);
         }
 
 

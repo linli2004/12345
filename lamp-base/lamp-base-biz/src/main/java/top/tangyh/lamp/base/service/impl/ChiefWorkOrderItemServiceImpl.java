@@ -82,7 +82,7 @@ public class ChiefWorkOrderItemServiceImpl extends SuperServiceImpl<ChiefWorkOrd
                 .like(ChiefWorkOrderItem::getAppealContent, model.getAppealContent())
                 .like(ChiefWorkOrderItem::getAppealType, model.getAppealType())
                 .like(ChiefWorkOrderItem::getContactPhone, model.getContactPhone())
-                .like(ChiefWorkOrderItem::getSettleCondition, model.getSettleCondition())
+                .eq(ChiefWorkOrderItem::getSettleCondition, model.getSettleCondition())
                 .like(ChiefWorkOrderItem::getBatchNo, model.getBatchNo())
                 .and(model.getIsJointQuery(), w -> {
                     if (model.getIsJointQuery() && StringUtils.isNotBlank(model.getKeyword())) {
@@ -257,7 +257,7 @@ public class ChiefWorkOrderItemServiceImpl extends SuperServiceImpl<ChiefWorkOrd
                 .like(ChiefWorkOrderItem::getAppealContent, model.getAppealContent())
                 .like(ChiefWorkOrderItem::getAppealType, model.getAppealType())
                 .like(ChiefWorkOrderItem::getContactPhone, model.getContactPhone())
-                .like(ChiefWorkOrderItem::getSettleCondition, model.getSettleCondition())
+                .eq(ChiefWorkOrderItem::getSettleCondition, model.getSettleCondition())
                 .like(ChiefWorkOrderItem::getBatchNo, model.getBatchNo())
                 .and(model.getIsJointQuery(), w -> {
                     if (model.getIsJointQuery() && StringUtils.isNotBlank(model.getKeyword())) {
@@ -284,7 +284,7 @@ public class ChiefWorkOrderItemServiceImpl extends SuperServiceImpl<ChiefWorkOrd
                 .like(ChiefWorkOrderItem::getAppealContent, model.getAppealContent())
                 .like(ChiefWorkOrderItem::getAppealType, model.getAppealType())
                 .like(ChiefWorkOrderItem::getContactPhone, model.getContactPhone())
-                .like(ChiefWorkOrderItem::getSettleCondition, model.getSettleCondition())
+                .eq(ChiefWorkOrderItem::getSettleCondition, model.getSettleCondition())
                 .like(ChiefWorkOrderItem::getBatchNo, model.getBatchNo())
                 .and(model.getIsJointQuery(), w -> {
                     if (model.getIsJointQuery() && StringUtils.isNotBlank(model.getKeyword())) {
@@ -311,7 +311,7 @@ public class ChiefWorkOrderItemServiceImpl extends SuperServiceImpl<ChiefWorkOrd
                 .like(ChiefWorkOrderItem::getAppealContent, model.getAppealContent())
                 .like(ChiefWorkOrderItem::getAppealType, model.getAppealType())
                 .like(ChiefWorkOrderItem::getContactPhone, model.getContactPhone())
-                .like(ChiefWorkOrderItem::getSettleCondition, model.getSettleCondition())
+                .eq(ChiefWorkOrderItem::getSettleCondition, model.getSettleCondition())
                 .like(ChiefWorkOrderItem::getBatchNo, model.getBatchNo())
                 .between(model.getLastOperateTimeStart() != null && model.getLastOperateTimeEnd() != null ,ChiefWorkOrderItem::getLastOperateTime, model.getLastOperateTimeStart(), model.getLastOperateTimeEnd());
         return superManager.selectOrderAllConditions(page, wrap, model);
@@ -326,7 +326,7 @@ public class ChiefWorkOrderItemServiceImpl extends SuperServiceImpl<ChiefWorkOrd
                 .like(ChiefWorkOrderItem::getAppealContent, params.getAppealContent())
                 .like(ChiefWorkOrderItem::getAppealType, params.getAppealType())
                 .like(ChiefWorkOrderItem::getContactPhone, params.getContactPhone())
-                .like(ChiefWorkOrderItem::getSettleCondition, params.getSettleCondition());
+                .eq(ChiefWorkOrderItem::getSettleCondition, params.getSettleCondition());
         return superManager.selectOrderAllConditions(wrap, params);
     }
 

@@ -157,17 +157,11 @@ public class ChiefWorkOrderTaskServiceImpl extends SuperServiceImpl<ChiefWorkOrd
             dynamicTemp.setNodeCode(Constant.NODE_CODE_TOWN_BACK);
             dynamicTemp.setProcessType(Constant.PROCESS_TYPE_MAP.get(Constant.NODE_CODE_TOWN_BACK));
             workOrderDynamicList.add(dynamicTemp);
-            //updateChiefWorkOrderStatus(backVO.getOrderNo());
+            updateChiefWorkOrderStatus(backVO.getOrderNo());
         });
         chiefWorkOrderDynamicManager.saveBatch(workOrderDynamicList);
-        boolean result =  superManager.updateBatchById(normalWorkOrderTaskList);
-        if(result){
-            backVOList.stream()
-                    .map(NormalWorkOrderTaskActionVO::getOrderNo)
-                    .distinct()
-                    .forEach(this::updateChiefWorkOrderStatus);
-        }
-        return result;
+        return superManager.updateBatchById(normalWorkOrderTaskList);
+        
     }
 
     @Override
@@ -196,13 +190,9 @@ public class ChiefWorkOrderTaskServiceImpl extends SuperServiceImpl<ChiefWorkOrd
         workOrderDynamicList.add(dynamicTemp);
         superManager.updateBatchById(normalWorkOrderTaskList);
         chiefWorkOrderDynamicManager.saveBatch(workOrderDynamicList);
-        //updateChiefWorkOrderStatus(finishVO.getOrderNo());
-        boolean result =  chiefWorkOrderItemManager.updateBatchById(workOrderList);
-        if(result){
-            updateChiefWorkOrderStatus(finishVO.getOrderNo());
-
-        }
-        return result;
+        updateChiefWorkOrderStatus(finishVO.getOrderNo());
+        return  chiefWorkOrderItemManager.updateBatchById(workOrderList);
+        
     }
 
     @Override
@@ -347,17 +337,13 @@ public class ChiefWorkOrderTaskServiceImpl extends SuperServiceImpl<ChiefWorkOrd
         dynamicTemp.setNodeCode(Constant.NODE_CODE_TOWN_BASIC_BACK);
         dynamicTemp.setProcessType(Constant.PROCESS_TYPE_MAP.get(Constant.NODE_CODE_TOWN_BASIC_BACK));
         chiefWorkOrderDynamicManager.save(dynamicTemp);
-        //updateChiefWorkOrderStatus(backVO.getOrderNo());
-        boolean result =  superManager.update(new ChiefWorkOrderTask(), Wrappers.<ChiefWorkOrderTask>lambdaUpdate()
+        updateChiefWorkOrderStatus(backVO.getOrderNo());
+        return  superManager.update(new ChiefWorkOrderTask(), Wrappers.<ChiefWorkOrderTask>lambdaUpdate()
                 .set(ChiefWorkOrderTask::getCurrentNodeCode, Constant.NODE_CODE_TOWN_BASIC_BACK)
                 .set(ChiefWorkOrderTask::getLevel, Constant.TASK_LEVEL_0)
                 .eq(ChiefWorkOrderTask::getValid, Constant.TASK_VALID)
                 .eq(ChiefWorkOrderTask::getOrderNo, backVO.getOrderNo()));
-        if(result){
-            updateChiefWorkOrderStatus(backVO.getOrderNo());
-
-        }
-        return result;
+        
     }
 
     @Override
@@ -376,17 +362,13 @@ public class ChiefWorkOrderTaskServiceImpl extends SuperServiceImpl<ChiefWorkOrd
         workOrderTemp.setOrderCategoryName(finishVO.getOrderCategoryName());
         chiefWorkOrderItemManager.updateById(workOrderTemp);
         chiefWorkOrderDynamicManager.save(dynamicTemp);
-        //updateChiefWorkOrderStatus(finishVO.getOrderNo());
-        boolean result =  superManager.update(new ChiefWorkOrderTask(), Wrappers.<ChiefWorkOrderTask>lambdaUpdate()
+        updateChiefWorkOrderStatus(finishVO.getOrderNo());
+        return  superManager.update(new ChiefWorkOrderTask(), Wrappers.<ChiefWorkOrderTask>lambdaUpdate()
                 .set(ChiefWorkOrderTask::getCurrentNodeCode, Constant.NODE_CODE_TOWN_BASIC_FINAL)
                 .set(ChiefWorkOrderTask::getLevel, Constant.TASK_LEVEL_0)
                 .eq(ChiefWorkOrderTask::getValid, Constant.TASK_VALID)
                 .eq(ChiefWorkOrderTask::getOrderNo, finishVO.getOrderNo()));
-        if(result){
-            updateChiefWorkOrderStatus(finishVO.getOrderNo());
-
-        }
-        return result;
+        
     }
 
     @Override
@@ -548,7 +530,7 @@ public class ChiefWorkOrderTaskServiceImpl extends SuperServiceImpl<ChiefWorkOrd
         ChiefWorkOrderItemPageQuery chiefWorkOrderItemPageQuery = new ChiefWorkOrderItemPageQuery();
         chiefWorkOrderItemPageQuery.setOrderNoList(orderNoList);
         Integer count = chiefWorkOrderItemManager.selectCountResultVO(chiefWorkOrderItemPageQuery);
-        if (count == orderNoList.size()) {
+        if (count == orderNoList.size() - 1) {
             chiefWorkOrderManager.update(Wrappers.<ChiefWorkOrder>lambdaUpdate()
                     .eq(ChiefWorkOrder::getBatchNo, batchNo)
                     .set(ChiefWorkOrder::getStatus, Constant.CHIEF_ORDER_FINISH));
