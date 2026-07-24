@@ -21,9 +21,11 @@ import top.tangyh.basic.interfaces.echo.EchoService;
 import top.tangyh.lamp.Constant;
 import top.tangyh.lamp.base.entity.NormalWorkOrder;
 import top.tangyh.lamp.base.entity.NormalWorkOrderTask;
+import top.tangyh.lamp.base.entity.WorkOrderDynamic;
 import top.tangyh.lamp.base.entity.user.BaseEmployee;
 import top.tangyh.lamp.base.service.NormalWorkOrderService;
 import top.tangyh.lamp.base.service.NormalWorkOrderTaskService;
+import top.tangyh.lamp.base.service.WorkOrderDynamicService;
 import top.tangyh.lamp.base.service.user.BaseEmployeeService;
 import top.tangyh.lamp.base.vo.query.NormalWorkOrderPageQuery;
 import top.tangyh.lamp.base.vo.result.NormalWorkOrderResultVO;
@@ -37,6 +39,7 @@ import top.tangyh.lamp.msg.service.ExtendMsgService;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -68,6 +71,7 @@ public class NormalWorkOrderController extends SuperController<NormalWorkOrderSe
     private final NormalWorkOrderTaskService normalWorkOrderTaskService;
     private final BaseEmployeeService baseEmployeeService;
     private final ExtendMsgService extendMsgService;
+    private final WorkOrderDynamicService workOrderDynamicService;
     /**
      * 普通工单导入
      *
@@ -146,6 +150,8 @@ public class NormalWorkOrderController extends SuperController<NormalWorkOrderSe
                 ));
         params.getModel().setOrderNoList(orderNoList);
         superService.getFinishOrBackContentJson(page.getRecords(), params.getModel());
+        // BUGFIX-12345-001: 社区/部门列表展示镇交办时间和镇交办期限
+        patchTownAssignTimeForBasicRole(page.getRecords(), params.getModel(), taskMap);
         List<ExtendMsg> urgeList = extendMsgService.list(Wraps.<ExtendMsg>lbQ().eq(ExtendMsg::getStatus, "SUCCESS").eq(ExtendMsg::getRemindMode, "01").in(ExtendMsg::getContent, orderNoList));
         Map<String, List<ExtendMsg>> urgeMap = urgeList.stream()
                 .collect(Collectors.groupingBy(
@@ -174,6 +180,80 @@ public class NormalWorkOrderController extends SuperController<NormalWorkOrderSe
     public void exportTaskZip(@RequestBody List<String> orderNoList, String status, HttpServletResponse response) {
         superService.exportTaskZip(orderNoList, response, status);
     }
+
+    // BUGFIX-12345-001 START
+    private void patchTownAssignTimeForBasicRole(List<NormalWorkOrderResultVO> records,
+                                                 NormalWorkOrderPageQuery model,
+                                                 Map<String, List<NormalWorkOrderTaskResultVO>> taskMap) {
+        if (CollectionUtils.isEmpty(records) || model == null || CollectionUtils.isEmpty(taskMap)) {
+            return;
+        }
+        String roleCode = model.getRoleCode();
+        if (!isBasicRole(roleCode)) {
+            return;
+        }
+        List<String> orderNoList = records.stream()
+                .map(NormalWorkOrderResultVO::getOrderNo)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+        if (CollectionUtils.isEmpty(orderNoList)) {
+            return;
+        }
+        // 镇交办时间：优先取动态表中镇级交办动态的创建时间
+        List<WorkOrderDynamic> assignDynamicList = workOrderDynamicService.list(
+                Wraps.<WorkOrderDynamic>lbQ()
+                        .in(WorkOrderDynamic::getOrderNo, orderNoList)
+                        .in(WorkOrderDynamic::getNodeCode, List.of(
+                                Constant.NODE_CODE_TOWN_FIRST_PROCESSING,
+                                Constant.NODE_CODE_TOWN_AGAIN_PROCESSING
+                        ))
+                        .orderByDesc(WorkOrderDynamic::getCreatedTime)
+        );
+        Map<String, LocalDateTime> townAssignTimeMap = assignDynamicList.stream()
+                .filter(dynamic -> dynamic.getOrderNo() != null && dynamic.getCreatedTime() != null)
+                .collect(Collectors.toMap(
+                        WorkOrderDynamic::getOrderNo,
+                        WorkOrderDynamic::getCreatedTime,
+                        (a, b) -> a,
+                        LinkedHashMap::new
+                ));
+        records.forEach(record -> {
+            String orderNo = record.getOrderNo();
+            List<NormalWorkOrderTaskResultVO> taskList = taskMap.get(orderNo);
+            // 镇交办时间：动态 createdTime
+            LocalDateTime townAssignTime = townAssignTimeMap.get(orderNo);
+            // 兼容历史数据：如果没有交办动态，则退一步使用当前有效任务创建时间
+            if (townAssignTime == null && !CollectionUtils.isEmpty(taskList)) {
+                townAssignTime = taskList.stream()
+                        .map(NormalWorkOrderTaskResultVO::getCreatedTime)
+                        .filter(Objects::nonNull)
+                        .min(LocalDateTime::compareTo)
+                        .orElse(null);
+            }
+            if (townAssignTime != null) {
+                record.setRegionAssignTime(townAssignTime);
+            }
+            // 镇交办办结期限：当前有效子任务 processDeadline
+            if (!CollectionUtils.isEmpty(taskList)) {
+                LocalDateTime townDeadline = taskList.stream()
+                        .map(NormalWorkOrderTaskResultVO::getProcessDeadline)
+                        .filter(Objects::nonNull)
+                        .min(LocalDateTime::compareTo)
+                        .orElse(null);
+                if (townDeadline != null) {
+                    record.setRegionDeadline(townDeadline);
+                }
+            }
+        });
+    }
+
+    private boolean isBasicRole(String roleCode) {
+        return Constant.ROLE_CODE_DEPT_LEADER.equals(roleCode)
+                || Constant.ROLE_CODE_DEPT_DIRECTOR.equals(roleCode)
+                || Constant.ROLE_CODE_DEPT_SPECIALIST.equals(roleCode);
+    }
+    // BUGFIX-12345-001 END
 
     @PostMapping("/testList")
     @Operation(summary = "测试list", description = "测试list")

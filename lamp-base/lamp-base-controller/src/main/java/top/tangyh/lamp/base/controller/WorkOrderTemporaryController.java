@@ -54,7 +54,18 @@ public class WorkOrderTemporaryController extends SuperController<WorkOrderTempo
                 .eq(WorkOrderTemporary::getOperatorId, data.getOperatorId())
                 .apply("FIND_IN_SET({0}, task_ids)", data.getTaskId())
                 .orderByDesc(WorkOrderTemporary::getCreatedTime));
-        if (!CollectionUtils.isEmpty(list)) return success(BeanPlusUtil.toBeanList(list, getResultVOClass()).get(0));
+        if (!CollectionUtils.isEmpty(list)) {
+            return success(BeanPlusUtil.toBeanList(list, getResultVOClass()).get(0));
+        }
+
+        // BUGFIX-12345-004: 结案待审无暂存时，构造单派结案审批默认值
+        if ("结案待审结案".equals(data.getNodeName())) {
+            WorkOrderTemporaryResultVO prefill = superService.buildFinishAuditTemporary(data);
+            if (prefill != null) {
+                return success(prefill);
+            }
+        }
+
         return success();
     }
 }
